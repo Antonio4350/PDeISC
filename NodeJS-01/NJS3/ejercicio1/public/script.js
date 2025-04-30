@@ -1,4 +1,4 @@
-const $btn = document.getElementById("btn");
+const $btn = document.getElementById("btn");//creo la const btn con la id btn
 
 $btn.addEventListener("click", () => {
     const $h1 = document.createElement("h1");
