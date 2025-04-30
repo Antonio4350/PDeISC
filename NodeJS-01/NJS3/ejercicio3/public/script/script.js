@@ -1,5 +1,5 @@
 document.addEventListener("mousedown",contar);
-
+//con esta funcion cuenta los hilos de donde se presiono 
 function contar(event)
 {
     const elemento = event.target;

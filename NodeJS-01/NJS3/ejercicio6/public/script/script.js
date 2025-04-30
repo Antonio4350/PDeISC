@@ -1,7 +1,7 @@
 document.getElementById("form").addEventListener("submit", (e) => {
     e.preventDefault();
-  
-    const $text = document.getElementById("text");
+  //creo la funcionalidad gracias a usar la id del formulario y el submit del boton
+    const $text = document.getElementById("text");//creo todas las constantes y sus ids
     const $select = document.getElementById("select");
     const $check = document.getElementById("check");
     const $num = document.getElementById("num");
@@ -10,7 +10,7 @@ document.getElementById("form").addEventListener("submit", (e) => {
   
     document.getElementById("respuesta").innerHTML =
       "Texto: " + $text.value + "<br>" +
-      "Radio: " + (radio ? radio.value : "Ninguno") + "<br>" +
+      "Radio: " + (radio ? radio.value : "Ninguno") + "<br>" +//muestro todos los resultados del formulario y lo mando a respuesta
       "Opción seleccionada: " + $select.value + "<br>" +
       "Checkbox: " + ($check.checked ? "Sí" : "No") + "<br>" +
       "Número: " + $num.value + "<br>" +

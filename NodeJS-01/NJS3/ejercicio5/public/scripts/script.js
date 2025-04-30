@@ -1,5 +1,5 @@
 function funcion(n){
-    switch(n){
+    switch(n){//uso un switch y dependiendo el case pongo un h1, p, img o boton
         case 0:
             document.body.innerHTML+="<h1>Titulo</h1>"
         break;
