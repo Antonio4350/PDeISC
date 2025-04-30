@@ -7,13 +7,13 @@ const personas =[];
 app.use(express.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, "public")));//carpeta estatica publica donde vamos a estar trabajando
 
-app.post('enviar',(req,res)=>{
+app.post('/enviar',(req,res)=>{
     const persona ={
         user:req.body.user,contra:req.body.contra,
     }
     personas.push(persona);
     console.log(personas);
-    res.send('persona agregada <a href="/">voler</a>');
+    res.send('persona agregada <a href="/">volver</a>');
 });
 
 app.get('/personas', (req,res)=>{
@@ -21,7 +21,7 @@ app.get('/personas', (req,res)=>{
     personas.forEach(p=>{
         lista+='<li>'+p.user+ ' '+ p.contra+ '</li>';
     })
-    lista += '</ul><a href="/>volver</a>';
+    lista += '</ul><a href="/">volver</a>';
     res.send(lista);
 });
 
