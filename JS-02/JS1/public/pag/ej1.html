@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario de Frutas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+  
+  <form id="formulario1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+    <h1 class="text-2xl font-bold text-violet-700 text-center">Formulario de Frutas</h1>
+    
+    <input id="fruta1" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Ingrese una Fruta">
+    <input id="fruta2" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Ingrese una Fruta">
+    <input id="fruta3" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Ingrese una Fruta">
+    
+    <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Enviar Frutas</button>
+    
+    <p id="warning" class="text-red-500 text-sm text-center"></p>
+    <div id="listaFrutas" class="space-y-2 rounded-lg text-sm text-center"></div>
+  </form>
+  
+  <form id="formulario2" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+    <h1 class="text-2xl font-bold text-violet-700 text-center">Formulario de Amigos</h1>
+    
+    <input id="amigo1" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Ingrese un Amigo">
+    <input id="amigo2" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Ingrese un Amigo">
+    <input id="amigo3" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Ingrese un Amigo">
+    
+    <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Enviar Amigos</button>
+    
+    <p id="warningAmigo" class="text-red-500 text-sm text-center"></p>
+    <div id="listaAmigos" class="space-y-2 rounded-lg text-sm text-center"></div>
+  </form>
+
+  <form id="formulario3" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+    <h1 class="text-2xl font-bold text-violet-700 text-center">Formulario de Números</h1>
+    
+    <input id="number" class="w-full p-2 border border-gray-300 rounded-xl" type="number" placeholder="Ingrese un Número">
+    
+    <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Enviar Número</button>
+    
+    <p id="warningNumeros" class="text-red-500 text-sm text-center"></p>
+    <div id="listaNumeros" class="space-y-2 rounded-lg text-sm text-center"></div>
+  </form>
+
+  <script src="../script/ej1.js"></script>
+</body>
+</html>
