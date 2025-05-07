@@ -1,4 +1,4 @@
-const nombre = document.getElementById("nombre");
+const nombre = document.getElementById("nombre");//declaro las constantes de todos los ids
 const apellido = document.getElementById("apellido");
 const edad = document.getElementById("edad");
 const fechaNacimiento = document.getElementById("fechaNacimiento");
@@ -14,14 +14,25 @@ const hijos = document.getElementById("hijos");
 const form = document.getElementById("form");
 const parrafo = document.getElementById("warning");
 
+chHijos.addEventListener("change", () => {//esto es para que se vea el campo del hijo
+    if (chHijos.checked) {
+      hijos.classList.remove("hidden");
+      hijos.setAttribute("required", "true");
+    } else {
+      hijos.classList.add("hidden");
+      hijos.removeAttribute("required");
+      hijos.value = "";
+    }
+  });
+
 form.addEventListener("submit", e => {
-    e.preventDefault();
-    let entrar = false;
+    e.preventDefault();// con esta linea hacemos que no se recarge la pagina al darle submit y declaro el entrar
+    let entrar = false;// que va a servir para saber si algo esta mal y lo muestre
     let warnings = "";
-    let regexEmail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,4})+$/;
+    const regexEmail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,4})+$/;
     parrafo.innerHTML = "";
 
-    if (nombre.value.length < 4) {
+    if (nombre.value.length < 4) {//esto se repite en cada campo para validar el registro
         warnings += 'El nombre es demasiado corto<br>';
         entrar = true;
     }
@@ -51,8 +62,8 @@ form.addEventListener("submit", e => {
         entrar = true;
     }
 
-    if (estadoCivil.value.length < 3) {
-        warnings += 'Estado civil inválido<br>';
+    if (estadoCivil.value === "") {
+        warnings += 'Debe seleccionar un estado civil<br>';
         entrar = true;
     }
 
@@ -71,7 +82,7 @@ form.addEventListener("submit", e => {
         entrar = true;
     }
 
-    if (chHijos.checked && (hijos.value === "" || hijos.value < 0)) {
+    if (chHijos.checked && (hijos.value === "" || hijos.value < 1)) {
         warnings += 'Ingrese una cantidad válida de hijos<br>';
         entrar = true;
     }
@@ -82,8 +93,12 @@ form.addEventListener("submit", e => {
     }
 
     if (entrar) {
-        parrafo.innerHTML = warnings;
+        parrafo.innerHTML = warnings;//mostramos los problemas si no se envio
     } else {
-        parrafo.innerHTML = "Enviado exitosamente";
+        parrafo.textContent = "Enviado exitosamente";//aca se envia y modificamos los campos para mostrar la lista
+        const lista = document.getElementById("listaPersonas");
+        const li = document.createElement("li");
+        li.textContent = `${nombre.value} ${apellido.value}`;
+        lista.appendChild(li);
     }
 });
