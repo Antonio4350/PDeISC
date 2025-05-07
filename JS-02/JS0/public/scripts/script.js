@@ -43,7 +43,7 @@ form.addEventListener("submit", e => {
     }
 
     if (edad.value < 0 || edad.value > 120 || edad.value === "") {
-        warnings += 'Edad inválida<br>';
+        warnings += 'Edad invalida<br>';
         entrar = true;
     }
 
@@ -53,12 +53,12 @@ form.addEventListener("submit", e => {
     }
 
     if (!masculino.checked && !femenino.checked) {
-        warnings += 'Debe seleccionar un género<br>';
+        warnings += 'Debe seleccionar un genero<br>';
         entrar = true;
     }
 
     if (dni.value.length < 7 || dni.value.length > 9) {
-        warnings += 'DNI inválido<br>';
+        warnings += 'DNI invalido<br>';
         entrar = true;
     }
 
@@ -68,37 +68,40 @@ form.addEventListener("submit", e => {
     }
 
     if (nacionalidad.value.length < 3) {
-        warnings += 'Nacionalidad inválida<br>';
+        warnings += 'Nacionalidad invalida<br>';
         entrar = true;
     }
 
     if (tel.value.length < 6) {
-        warnings += 'Teléfono inválido<br>';
+        warnings += 'Teléfono invalido<br>';
         entrar = true;
     }
 
     if (!regexEmail.test(mail.value)) {
-        warnings += 'Correo electrónico no válido<br>';
+        warnings += 'Correo electronico no valido<br>';
         entrar = true;
     }
 
     if (chHijos.checked && (hijos.value === "" || hijos.value < 1)) {
-        warnings += 'Ingrese una cantidad válida de hijos<br>';
+        warnings += 'Ingrese una cantidad valida de hijos<br>';
         entrar = true;
     }
 
     if (!chHijos.checked && hijos.value > 0) {
-        warnings += 'Marcá la casilla de hijos si ingresaste cantidad<br>';
+        warnings += 'Marca la casilla de hijos si ingresaste cantidad<br>';
         entrar = true;
     }
 
     if (entrar) {
-        parrafo.innerHTML = warnings;//mostramos los problemas si no se envio
+        parrafo.innerHTML = warnings; // mostramos los problemas si no se envió
+        parrafo.className = "mt-2 px-4 py-2 rounded-lg text-sm text-left whitespace-pre-line bg-red-100 border border-red-400 text-red-700";
     } else {
-        parrafo.textContent = "Enviado exitosamente";//aca se envia y modificamos los campos para mostrar la lista
+        parrafo.textContent = "Enviado exitosamente"; // se envia y mostramos en la lista
         const lista = document.getElementById("listaPersonas");
         const li = document.createElement("li");
         li.textContent = `${nombre.value} ${apellido.value}`;
         lista.appendChild(li);
+        parrafo.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
     }
+    
 });
