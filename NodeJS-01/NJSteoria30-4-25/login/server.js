@@ -27,5 +27,5 @@ app.get('/personas', (req,res)=>{
 
 
 app.listen(port, () => {//puerto
-  console.log("http://localhost:3000");
+  console.log("http://localhost:" + port);
 });

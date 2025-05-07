@@ -6,11 +6,29 @@
     <title>Document</title>
 </head>
 <body>
+    <form action="" id="form">
+        <h1>Registro</h1>
+        <input type="text" id="nombre" placeholder="Nombre">
+        <input type="text" id="apellido" placeholder="Apellido">
+        <input type="number" id="edad" placeholder="Edad">
+        <input type="date" id="fechaNacimiento" placeholder="Fecha de Nacimiento">
+        <p>Masculino:</p>
+        <input type="radio" id="masculino" name="genero" placeholder="Masculino">
+        <p>Femenino:</p>
+        <input type="radio" id="femenino" name="genero" placeholder="Femenino">
+        <input type="number" id="dni" placeholder="DNI">
+        <input type="text" id="estadoCivil" placeholder="Estado civil">
+        <input type="text" id="nacionalidad" placeholder="Nacionalidad">
+        <input type="number" id="tel" placeholder="Telefono">
+        <input type="email" id="mail" placeholder="Mail/Correo">
+        <p>Hijos:</p>
+        <input type="checkbox" id="chHijos" placeholder="Hijos">
+        <input type="number" id="hijos" placeholder="Cantidad">
     
+        <button type="submit">Registrar</button>
 
-
-
-
+        <p id="warning"></p>
+    </form>
     <script src="../scripts/script.js"></script>
 </body>
 </html>
