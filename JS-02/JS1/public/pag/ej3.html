@@ -4,13 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <form id="form1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Colores</h1>
+        <input id="color1" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue un Color">
+
+        <input id="color2" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue un Color">
+
+        <input id="color3" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue un Color">
+
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Enviar Colores</button>
+
+        <p id="warning1" ></p>
+    </form>
+
+    <form id="form2" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Tareas</h1>
+        <input id="tareaComun" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue una Tarea">
+
+        <input id="tareaUrgente" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue una Tarea Urgente">
+
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Enviar Tareas</button>
+
+        <p id="warning2" ></p>
+    </form>
+
+    <form id="form3" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Usuario</h1>
+        <input id="usuario" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue un usuario">
+
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Enviar Usuario</button>
+
+        <p id="warning3" ></p>
+    </form>
     
-
-
-
-
 
 
     <script src="../script/ej3.js"></script>

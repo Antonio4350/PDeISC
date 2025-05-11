@@ -4,11 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    
+<body class="bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <form id="form1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
 
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Numeros</h1>
+        <input id="numero" class="w-full p-2 border border-gray-300 rounded-xl" type="number" placeholder="Agregue un Numero">
 
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar Numero</button>
+        <button type="button" id="eliminarNumero" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Eliminar Numero</button>
+
+        <p id="warning1" ></p>
+    </form>
+
+    <form id="form2" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Mensajes</h1>
+        <input id="mensaje" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue un Mensaje">
+
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar Mensaje</button>
+        <button type="button" id="eliminarMensaje" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Eliminar Mensaje</button>
+
+        <p id="warning2" ></p>
+    </form>
+
+    <form id="form3" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Clientes</h1>
+        <input id="cliente" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue un Cliente">
+
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar Cliente</button>
+        <button type="button" id="eliminarCliente" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Eliminar Cliente</button>
+
+        <p id="warning3" ></p>
+    </form>
 
 
 
