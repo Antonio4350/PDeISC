@@ -4,12 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    
+<body class="bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <form id="form1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
 
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Letras</h1>
+        <input id="letra" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue una letra">
 
+        <input id="letra2" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue otra letra">
 
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar Letras</button>
+        <button type="button" id="elLetras" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Eliminar letras</button>
+
+        <p id="warning1" ></p>
+    </form>
+
+    <form id="form2" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Nombres</h1>
+        <input id="nombre" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue un nombre">
+
+        <input id="nombre2" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue otro nombre">
+
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar Nombres</button>
+
+        <input id="nombre3" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue el nombre entre medio">
+        
+        <button type="button" id="remNombres" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar nombre entre medio</button>
+
+        <p id="warning2" ></p>
+    </form>
+
+    <form id="form3" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Elementos</h1>
+        <input id="elemento" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue un elemento">
+
+        <input id="elemento2" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue otro elemento">
+
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar elementos</button>
+
+        <input id="elemento3" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue el primer elemento entre medio">
+        
+        <input id="elemento4" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue el segundo elemento entre medio">
+        
+        <button type="button" id="remElementos" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar elementos entre medio</button>
+
+        <p id="warning3" ></p>
+    </form>
 
 
 
