@@ -4,14 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    
+<body class="bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <form id="form1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
 
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Numeros</h1>
+        <input id="numero" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="number" placeholder="Agregue un numero">
 
+        <input id="numero2" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="number" placeholder="Agregue otro numero">
+        
+        <input id="numero3" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="number" placeholder="Agregue otro numero">
 
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar</button>
+        <button type="button" id="copNumeros" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Copiar Numeros</button>
 
+        <p id="warning1" ></p>
+    </form>
 
+    <form id="form2" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Agregue 6 peliculas</h1>
+        <input id="pelicula" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue una pelicula">
+
+        <input id="pelicula2" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue otra pelicula">
+        
+        <input id="pelicula3" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue otra pelicula">
+
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar</button>
+        <button type="button" id="copPeliculas" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Copiar Peliculas</button>
+
+        <p id="warning2" ></p>
+    </form>
+
+    <form id="form3" class="bg-white shadow-lg rounded-2xl p-6 space-y-4 md:col-span-2 flex flex-col items-center mx-auto max-w-md w-full">
+
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Agregue mas de 3 textos</h1>
+        <input id="array" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue cualquier texto">
+
+        <input id="array2" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue cualquier texto">
+
+        <input id="array3" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue cualquier texto">
+
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar</button>
+        <button type="button" id="copArray" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Copiar ultimos 3 del Array</button>
+
+        <p id="warning3" ></p>
+    </form>
 
     <script src="../script/ej6.js"></script>
 </body>
