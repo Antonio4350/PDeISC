@@ -4,13 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
     
+    <form id="form1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Agregue</h1>
+        <input id="id1" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue">
+
+        <input id="id2" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue">
+        
+        <input id="id3" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue">
+
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar</button>
+        <button type="button" id="copPeliculas" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Copiar</button>
+
+        <p id="warning1" ></p>
+    </form>
+
+    <form id="form2" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Agregue</h1>
+        <input id="id4" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue">
+
+        <input id="id5" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue">
+        
+        <input id="id6" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue">
+
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar</button>
+        <button type="button" id="copPeliculas" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Copiar</button>
+
+        <p id="warning2" ></p>
+    </form>
 
 
+    <form id="form3" class="bg-white shadow-lg rounded-2xl p-6 space-y-4 md:col-span-2 flex flex-col items-center mx-auto max-w-md w-full">
 
+        <h1 class="text-2xl font-bold text-violet-700 text-center">Agregue</h1>
+        <input id="id7" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue">
 
+        <input id="id8" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue">
+
+        <input id="id9" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue">
+
+        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar</button>
+        <button type="button" id="copArray" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Copiar</button>
+
+        <p id="warning3" ></p>
+    </form>
 
 
     <script src="../script/ej14.js"></script>
