@@ -1,27 +1,28 @@
+// Se agrega el evento submit a los formularios para llamar a las funciones correspondientes.
 document.getElementById("form1").addEventListener("submit",agNumero);
 document.getElementById("copNumeros").addEventListener("click",copNumeros);
 document.getElementById("form2").addEventListener("submit",peli);
 document.getElementById("copPeliculas").addEventListener("click",copPeliculas);
 document.getElementById("form3").addEventListener("submit",agarray);
 document.getElementById("copArray").addEventListener("click",copArray);
-
+// Se crean los arrays donde se guardaran los valores ingresados.
 let numeros = [];
 let peliculas= [];
 let array = [];
-
+// Se obtienen los elementos del DOM donde se mostraran los mensajes.
 let parrafo1 = document.getElementById("warning1");
 let parrafo2 = document.getElementById("warning2");
 let parrafo3 = document.getElementById("warning3");
-
+// Funcion que maneja el primer formulario
 
 function agNumero(e){
-    e.preventDefault();
+    e.preventDefault();// Se evita que se recargue la pagina al enviar el formulario
 
     let validar = true;
     let numero = document.getElementById("numero").value;
-    let numero2 = document.getElementById("numero2").value;
+    let numero2 = document.getElementById("numero2").value;// Se obtiene el valor del campo id1
     let numero3 = document.getElementById("numero3").value;
-
+// Se valida que el campo no este vacio y sea un numero
     if(numero == "" || isNaN(numero)||numero2 == "" || isNaN(numero2)||numero3 == "" || isNaN(numero3)){
         parrafo1.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
         parrafo1.innerHTML = ("Introduzca un Numero en todos los campos:");
@@ -30,14 +31,14 @@ function agNumero(e){
         numero3 = "";
         validar = false;
     }
-
+// Si la validacion es correcta, se agrega el numero al array y se muestra el resultado
     if(validar){
         parrafo1.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        numeros.push(numero,numero2,numero3);
+        numeros.push(numero,numero2,numero3);// Se agrega el numero al array
         
         parrafo1.innerHTML = "Numeros: ";
         numeros.forEach(re =>{
-            parrafo1.innerHTML += re + ", ";
+            parrafo1.innerHTML += re + ", ";// Se muestran
         })
     }
 }
@@ -45,7 +46,7 @@ function agNumero(e){
 function copNumeros(e){
     e.preventDefault();
 
-    let cop =  numeros.slice(0,3);
+    let cop =  numeros.slice(0,3);//copio 3 elementos
 
     parrafo1.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-yellow-100 border border-yellow-400 text-yellow-700";
         
@@ -87,7 +88,7 @@ function peli(e){
 function copPeliculas(e){
     e.preventDefault();
 
-    let cop =  peliculas.slice(2,5);
+    let cop =  peliculas.slice(2,5);//creo una copia desde pos 2 al 4
 
     parrafo2.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-yellow-100 border border-yellow-400 text-yellow-700";
         
@@ -128,7 +129,7 @@ function agarray(e){
 function copArray(e){
     e.preventDefault();
 
-    let cop = array.slice(-3);
+    let cop = array.slice(-3);//creo copia de los ultimos 3 elementos
 
     parrafo3.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-yellow-100 border border-yellow-400 text-yellow-700";
         

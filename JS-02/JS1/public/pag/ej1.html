@@ -6,15 +6,17 @@
   <title>Formulario de Frutas</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<!-- high min de la pantalla, fondo gris, padding general, grid responsive y un espacio entre columnas -->
 <body class="min-h-screen bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-  
+  <!-- formulario : fondo blanco, sombra, bordes redondeados, padding, espacio entre elementos -->
   <form id="formulario1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+     <!-- titulo: texto grande, negrita, violeta y centrado -->
     <h1 class="text-2xl font-bold text-violet-700 text-center">Formulario de Frutas</h1>
-    
+    <!-- inputs con width completo, padding, border gris, bordes redondeados -->
     <input id="fruta1" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Ingrese una Fruta">
     <input id="fruta2" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Ingrese una Fruta">
     <input id="fruta3" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Ingrese una Fruta">
-    
+    <!-- boton con fondo violeta, texto blanco, padding, bordes, hover con transicion -->
     <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Enviar Frutas</button>
     
     <p id="warning" class="text-red-500 text-sm text-center"></p>
@@ -44,11 +46,11 @@
     <p id="warningNumeros" class="text-red-500 text-sm text-center"></p>
     <div id="listaNumeros" class="space-y-2 rounded-lg text-sm text-center"></div>
   </form>
-
+<!-- boton para volver -->
   <div class="md:col-span-2 flex justify-center">
     <a href="/" class="mt-4 bg-violet-600 text-white px-6 py-2 rounded-xl hover:bg-violet-700 transition text-center">Volver</a>
   </div>
-
+<!-- script asociado -->
   <script src="../script/ej1.js"></script>
 </body>
 </html>

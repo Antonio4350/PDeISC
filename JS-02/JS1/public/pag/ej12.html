@@ -6,13 +6,15 @@
     <title>Document</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<!-- high min de la pantalla, fondo gris, padding general, grid responsive y un espacio entre columnas -->
 <body class="bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-    
+    <!-- formulario : fondo blanco, sombra, bordes redondeados, padding, espacio entre elementos -->
     <form id="form1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-
+<!-- titulo: texto grande, negrita, violeta y centrado -->
         <h1 class="text-2xl font-bold text-violet-700 text-center">Suma</h1>
+        <!-- inputs con width completo, padding, border gris, bordes redondeados -->
         <input id="id1" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue un texto">
-
+<!-- boton con fondo violeta, texto blanco, padding, bordes, hover con transicion -->
         <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar</button>
 
         <p id="warning1" ></p>
@@ -21,7 +23,7 @@
     <form id="form2" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
 
         <h1 class="text-2xl font-bold text-violet-700 text-center">Multiplica</h1>
-        <input id="id4" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="number" placeholder="Agregue un numero">
+        <input id="id2" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="number" placeholder="Agregue un numero">
 
         <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar</button>
 
@@ -32,7 +34,7 @@
     <form id="form3" class="bg-white shadow-lg rounded-2xl p-6 space-y-4 md:col-span-2 flex flex-col items-center mx-auto max-w-md w-full">
 
         <h1 class="text-2xl font-bold text-violet-700 text-center">Precio</h1>
-        <input id="id7" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="number" placeholder="Agregue un precio">
+        <input id="id3" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="number" placeholder="Agregue un precio">
 
         <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar numero</button>
 

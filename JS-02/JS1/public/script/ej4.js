@@ -1,37 +1,42 @@
+// Se agrega el evento submit a los formularios para llamar a las funciones correspondientes.
 document.getElementById("form1").addEventListener("submit",agNumero);
 document.getElementById("eliminarNumero").addEventListener("click",elNumero);
 document.getElementById("form2").addEventListener("submit",agMensaje);
 document.getElementById("eliminarMensaje").addEventListener("click",elMensaje);
 document.getElementById("form3").addEventListener("submit",agCliente);
 document.getElementById("eliminarCliente").addEventListener("click",elCliente);
-
+// Se crean los arrays donde se guardaran los valores ingresados.
 let numeros = [];
 let mensajes = [];
 let clientes = [];
+// Se obtienen los elementos del DOM donde se mostraran los mensajes.
 
 let parrafo1 = document.getElementById("warning1");
 let parrafo2 = document.getElementById("warning2");
 let parrafo3 = document.getElementById("warning3");
+// Funcion que maneja el primer formulario
 
 function agNumero(e){
     e.preventDefault();
     
     let validar = true;
     let numero = document.getElementById("numero").value;
-    
+    // Se valida que el campo no este vacio
+
     if(numero == "" || isNaN(numero)){
         parrafo1.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
         parrafo1.innerHTML = ("Introduzca un Numero:");
         validar = false;
     }
-    
+    // Si la validacion es correcta, se agrega el elemento al array
+
     if(validar){
         parrafo1.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        numeros.push(numero);
+        numeros.push(numero);// Se agrega el elemento al array
         
         parrafo1.innerHTML = "Numeros: ";
         numeros.forEach(re =>{
-            parrafo1.innerHTML += re + ", ";
+            parrafo1.innerHTML += re + ", ";// Se muestran
         })
     }
 }
@@ -42,7 +47,7 @@ function elNumero(e){
     let validar = true;
 
     if(validar){
-        numeros.shift();
+        numeros.shift();//quito el primer numero
         parrafo1.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-yellow-100 border border-yellow-400 text-yellow-700";
         
         parrafo1.innerHTML = "Primer numero eliminado: ";
@@ -86,7 +91,7 @@ function elMensaje(e){
     validar = true;
 
     if(validar){
-        mensajes.shift();
+        mensajes.shift();//elimino el primer mensaje
         parrafo2.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-yellow-100 border border-yellow-400 text-yellow-700";
         
         parrafo2.innerHTML = "Primer mensaje eliminado: ";
@@ -131,7 +136,7 @@ function elCliente(e){
     validar = true;
 
     if(validar){
-        clientes.shift();
+        clientes.shift();//atiendo al primer cliente
         parrafo3.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-yellow-100 border border-yellow-400 text-yellow-700";
         
         parrafo3.innerHTML = "Primer cliente atendido: ";

@@ -6,12 +6,15 @@
     <title>Lista de Ejercicios</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<!-- alto minimo de pantalla, fondo gris claro, contenido centrado con flexbox, padding general -->
 <body class="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-
+    <!-- div blanco con sombra, bordes redondeados, padding, ancho máximo y espacio entre elementos -->
     <div class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-md space-y-2">
+        <!-- título grande, negrita, violeta y centrado -->
         <h1 class="text-2xl font-bold text-violet-700 text-center mb-4">Lista de Ejercicios</h1>
-    
+    <!-- grilla de 2 columnas con espacio entre botones y texto centrado -->
         <nav class="grid grid-cols-2 gap-3 text-center">
+             <!-- botones con fondo violeta claro, padding, bordes redondeados y transición al pasar el mouse -->
             <a href="/ej1" class="px-4 py-2 bg-violet-100 rounded-xl hover:bg-violet-200 transition">Ejercicio 1</a>
             <a href="/ej2" class="px-4 py-2 bg-violet-100 rounded-xl hover:bg-violet-200 transition">Ejercicio 2</a>
             <a href="/ej3" class="px-4 py-2 bg-violet-100 rounded-xl hover:bg-violet-200 transition">Ejercicio 3</a>
@@ -26,6 +29,7 @@
             <a href="/ej12" class="px-4 py-2 bg-violet-100 rounded-xl hover:bg-violet-200 transition">Ejercicio 12</a>
             <a href="/ej13" class="px-4 py-2 bg-violet-100 rounded-xl hover:bg-violet-200 transition">Ejercicio 13</a>
             <a href="/ej14" class="px-4 py-2 bg-violet-100 rounded-xl hover:bg-violet-200 transition">Ejercicio 14</a>
+            <!-- botón especial: ocupa 2 columnas, fondo amarillo, texto destacado, con transición -->
             <a href="/ejsecreto" class="col-span-2 px-4 py-2 bg-yellow-100 rounded-xl hover:bg-yellow-200 font-semibold transition">Ejercicio secreto</a>
         </nav>
     </div>

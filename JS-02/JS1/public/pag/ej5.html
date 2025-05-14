@@ -6,14 +6,17 @@
     <title>Document</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<!-- high min de la pantalla, fondo gris, padding general, grid responsive y un espacio entre columnas -->
 <body class="bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- formulario : fondo blanco, sombra, bordes redondeados, padding, espacio entre elementos -->
     <form id="form1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-
+<!-- titulo: texto grande, negrita, violeta y centrado -->
         <h1 class="text-2xl font-bold text-violet-700 text-center">Letras</h1>
+        <!-- inputs con width completo, padding, border gris, bordes redondeados -->
         <input id="letra" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue una letra">
 
         <input id="letra2" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue otra letra">
-
+<!-- boton con fondo violeta, texto blanco, padding, bordes, hover con transicion -->
         <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar Letras</button>
         <button type="button" id="elLetras" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Eliminar letras</button>
 
