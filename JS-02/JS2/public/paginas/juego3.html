@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Piedra Papel o Tijera</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-between p-4">
 
   <!-- Controles de música arriba -->
@@ -32,9 +34,12 @@
           </button>
         </div>
         <div id="nameForm" class="hidden space-y-2 text-left">
-          <input type="text" id="name1" placeholder="Nombre del Jugador 1" class="w-full p-2 rounded bg-gray-700 text-white placeholder-gray-400" />
-          <input type="text" id="name2" placeholder="Nombre del Jugador 2" class="w-full p-2 rounded bg-gray-700 text-white placeholder-gray-400 hidden" />
-          <button id="startBtn" class="w-full bg-green-600 hover:bg-green-700 rounded p-2 font-semibold">Comenzar</button>
+          <input type="text" id="name1" placeholder="Nombre del Jugador 1"
+            class="w-full p-2 rounded bg-gray-700 text-white placeholder-gray-400" />
+          <input type="text" id="name2" placeholder="Nombre del Jugador 2"
+            class="w-full p-2 rounded bg-gray-700 text-white placeholder-gray-400 hidden" />
+          <button id="startBtn"
+            class="w-full bg-green-600 hover:bg-green-700 rounded p-2 font-semibold">Comenzar</button>
         </div>
         <p id="errorMsg" class="text-red-500 text-sm hidden">Por favor, ingresá todos los nombres.</p>
       </div>
@@ -42,8 +47,9 @@
   </div>
 
   <!-- Juego principal -->
-  <div id="game" class="hidden w-full max-w-6xl flex flex-col md:flex-row gap-4 items-center md:items-stretch justify-center">
-    
+  <div id="game"
+    class="hidden w-full max-w-6xl flex flex-col md:flex-row gap-4 items-center md:items-stretch justify-center">
+
     <!-- Botón cambio de modo -->
     <div class="flex justify-center w-full md:w-32">
       <button id="changeModeBtn"
@@ -77,17 +83,21 @@
 
   <!-- Botones de navegación -->
   <div class="w-full flex flex-wrap justify-center gap-4 mt-10">
-    <button onclick="location.href='/'" class="bg-purple-950 hover:bg-blue-950 text-white font-semibold py-2 px-4 rounded-xl transition">
+    <button onclick="location.href='/'"
+      class="bg-purple-950 hover:bg-blue-950 text-white font-semibold py-2 px-4 rounded-xl transition">
       Inicio
     </button>
-    <button onclick="location.href='/simondice'" class="bg-purple-950 hover:bg-blue-950 text-white font-semibold py-2 px-4 rounded-xl transition">
+    <button onclick="location.href='/simondice'"
+      class="bg-purple-950 hover:bg-blue-950 text-white font-semibold py-2 px-4 rounded-xl transition">
       🔴🟢Simon dice🔵🟡
     </button>
-    <button onclick="location.href='/tateti'" class="bg-purple-950 hover:bg-blue-950 text-white font-semibold py-2 px-4 rounded-xl transition">
+    <button onclick="location.href='/tateti'"
+      class="bg-purple-950 hover:bg-blue-950 text-white font-semibold py-2 px-4 rounded-xl transition">
       ❌TaTeTi⭕
     </button>
   </div>
 
   <script src="../scripts/juego3.js"></script>
 </body>
+
 </html>
