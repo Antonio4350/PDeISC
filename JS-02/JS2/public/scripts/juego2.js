@@ -170,7 +170,7 @@ changeModeBtn.addEventListener("click", () => {
 cells.forEach((cell) => cell.addEventListener("click", handleCellClick));
 //audio
 const audio = document.getElementById("musica-fondo");
-audio.volume = 0.1; // volumen al 30%
+audio.volume = 0.1; // volumen al 10%
 audio.loop = true;
 audio.play();
 //activa o desactiva el sonido de fondo

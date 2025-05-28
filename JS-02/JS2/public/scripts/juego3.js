@@ -160,7 +160,7 @@ function showResult(p1, p2, result) {
 }
 //audio
 const audio = document.getElementById("musica-fondo");
-audio.volume = 0.1; // volumen al 30%
+audio.volume = 0.1; // volumen al 10%
 audio.loop = true;
 audio.play();
 //Activa o quita la musica
