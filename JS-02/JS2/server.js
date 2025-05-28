@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const path = require("path");//utilizamos el express y el path para el serv
-const PORT =8530;
+const PORT =8081;
 
 app.use(express.static(path.join(__dirname, "public")));//carpeta estatica publica donde vamos a estar trabajando
 // rutas para enviar archivos html segun la url 
