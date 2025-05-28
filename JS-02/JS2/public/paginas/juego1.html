@@ -9,7 +9,7 @@
 <body class="bg-gray-800 text-white min-h-screen flex flex-col items-center justify-start p-4">
 
   <!-- Botón de música centrado arriba -->
-<div class="flex justify-center mt-4 mb-6">
+  <div class="flex justify-center mt-4 mb-6">
     <audio id="musica-fondo" src="../multimedia/Mfondo.mp3" autoplay loop></audio>
     <button id="boton-musica" class="bg-amber-950 hover:bg-red-800 text-white font-semibold py-2 px-4 rounded-xl">
       Silenciar música
@@ -45,6 +45,11 @@
       <!-- Estado -->
       <p id="status" class="text-lg md:text-xl font-medium text-center mt-6 px-4 min-h-[1.5rem]"></p>
       <p id="errorName" class="hidden text-red-600 mt-2 text-center font-semibold"></p>
+
+      <!-- Botón para cambiar jugador -->
+      <button id="changePlayerBtn" class="mt-4 bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 px-4 rounded transition">
+        Cambiar jugador
+      </button>
     </div>
 
     <!-- Ranking -->
