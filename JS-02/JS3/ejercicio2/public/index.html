@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Subir y filtrar archivo TXT</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      user-select: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-200 flex items-center justify-center min-h-screen">
+  <form id="fileForm" class="bg-gray-100 p-8 rounded-2xl shadow-lg w-full max-w-lg space-y-6 text-center">
+    <h1 class="text-3xl font-semibold text-gray-700">Subir y filtrar archivo TXT</h1>
+
+    <input
+      id="inputFile"
+      type="file"
+      accept=".txt"
+      class="w-full p-3 rounded-xl border border-gray-400 text-center text-lg"
+    />
+
+    <button
+      type="button"
+      id="btnUpload"
+      class="w-full py-3 rounded-xl font-semibold bg-green-500 text-white hover:bg-green-600 focus:ring-4 focus:ring-green-300 disabled:bg-gray-400 transition duration-300 shadow-md"
+      disabled>
+      Procesar Archivo
+    </button>
+
+    <div id="result" class="text-left text-gray-700 font-semibold mt-4 max-h-60 overflow-auto"></div>
+  </form>
+
+  <script src="script.js"></script>
+</body>
+</html>

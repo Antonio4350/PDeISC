@@ -1,0 +1,15 @@
+Números validos:
+77
+101
+101
+121
+121
+232
+232
+404
+3453
+3453
+
+Cantidad validos: 10
+Cantidad invalidos: 0
+Porcentaje validos: 100.00%
