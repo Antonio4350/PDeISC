@@ -33,10 +33,10 @@ btnUpload.addEventListener('click', () => {
         const validSorted = data.válidos.sort((a, b) => a - b);
 
         resultDiv.innerHTML = `
-          <p><strong>Números válidos (orden ascendente):</strong> ${validSorted.join(', ')}</p>
-          <p><strong>Cantidad válidos:</strong> ${data.válidosCount}</p>
-          <p><strong>Cantidad inválidos:</strong> ${data.inválidosCount}</p>
-          <p><strong>Porcentaje válidos:</strong> ${data.porcentajeVálidos}%</p>
+          <p><strong>Números validos (orden ascendente):</strong> ${validSorted.join(', ')}</p>
+          <p><strong>Cantidad validos:</strong> ${data.válidosCount}</p>
+          <p><strong>Cantidad invalidos:</strong> ${data.inválidosCount}</p>
+          <p><strong>Porcentaje validos:</strong> ${data.porcentajeVálidos}%</p>
           <p class="mt-3 text-green-600 font-semibold">${data.message}</p>
         `;
       })
