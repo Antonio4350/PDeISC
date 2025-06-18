@@ -2,36 +2,97 @@
 <html lang="es" class="dark">
 <head>
   <meta charset="UTF-8">
-  <title>Formulario Dark</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zoológico</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 min-h-screen flex items-center justify-center">
-  <form class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md space-y-6">
-    <h2 class="text-2xl font-bold text-center text-white">Formulario</h2>
+<body class="bg-gray-900 min-h-screen text-white p-4">
 
-    <div>
-      <label class="block text-sm font-medium text-gray-300 mb-1">Nombre</label>
-      <input type="text" name="nombre" class="w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-    </div>
+  <div class="max-w-7xl mx-auto space-y-10">
 
-    <div>
-      <label class="block text-sm font-medium text-gray-300 mb-1">Correo</label>
-      <input type="email" name="correo" class="w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-    </div>
+    <form id="animalForm" class="bg-gray-800 p-6 rounded-xl shadow space-y-4">
+      <h2 class="text-2xl font-bold text-center">Agregar Animal</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="text" id="nombre" placeholder="Nombre del animal" class="p-2 rounded bg-gray-700 text-white" required />
+        <input type="number" id="jaula" placeholder="Número de jaula" class="p-2 rounded bg-gray-700 text-white" required />
+        <input type="text" id="tipoAnimal" placeholder="Tipo de animal" class="p-2 rounded bg-gray-700 text-white" required />
+        <input type="number" step="0.01" id="peso" placeholder="Peso" class="p-2 rounded bg-gray-700 text-white" required />
+      </div>
+      <button type="submit" class="w-full bg-green-600 py-2 rounded hover:bg-green-700">Agregar Animal</button>
+    </form>
 
-    <div>
-      <label class="block text-sm font-medium text-gray-300 mb-1">Edad</label>
-      <input type="number" name="edad" class="w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-    </div>
+    <section class="space-y-10">
 
-    <div>
-      <label class="block text-sm font-medium text-gray-300 mb-1">Contraseña</label>
-      <input type="password" name="password" class="w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-    </div>
+      <div>
+        <h2 class="text-2xl font-bold mb-2 text-center">Tabla entera</h2>
+        <div class="overflow-x-auto rounded-xl shadow">
+          <table class="min-w-full text-sm bg-gray-800">
+            <thead class="bg-gray-700">
+              <tr>
+                <th class="px-4 py-2 text-center">Nombre</th>
+                <th class="px-4 py-2 text-center">Jaula</th>
+                <th class="px-4 py-2 text-center">Tipo</th>
+                <th class="px-4 py-2 text-center">Peso</th>
+              </tr>
+            </thead>
+            <tbody id="tablaAnimales" class="text-center"></tbody>
+          </table>
+        </div>
+      </div>
 
-    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition">
-      Enviar
-    </button>
-  </form>
+      <div>
+        <h2 class="text-2xl font-bold mb-2 text-center">Resultados jaula 5 y peso menor a 3kg</h2>
+        <div class="overflow-x-auto rounded-xl shadow">
+          <table class="min-w-full text-sm bg-gray-800">
+            <thead class="bg-gray-700">
+              <tr>
+                <th class="px-4 py-2 text-center">Nombre</th>
+                <th class="px-4 py-2 text-center">Jaula</th>
+                <th class="px-4 py-2 text-center">Tipo</th>
+                <th class="px-4 py-2 text-center">Peso</th>
+              </tr>
+            </thead>
+            <tbody id="tablaAnimalesfiltrado1" class="text-center"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-2xl font-bold mb-2 text-center">Resultados felinos entre jaulas 2 a 5</h2>
+        <div class="overflow-x-auto rounded-xl shadow">
+          <table class="min-w-full text-sm bg-gray-800">
+            <thead class="bg-gray-700">
+              <tr>
+                <th class="px-4 py-2 text-center">Nombre</th>
+                <th class="px-4 py-2 text-center">Jaula</th>
+                <th class="px-4 py-2 text-center">Tipo</th>
+                <th class="px-4 py-2 text-center">Peso</th>
+              </tr>
+            </thead>
+            <tbody id="tablaAnimalesfiltrado2" class="text-center"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-2xl font-bold mb-2 text-center">Resultados jaula 4 peso menor a 120</h2>
+        <div class="overflow-x-auto rounded-xl shadow">
+          <table class="min-w-full text-sm bg-gray-800">
+            <thead class="bg-gray-700">
+              <tr>
+                <th class="px-4 py-2 text-center">Nombre</th>
+                <th class="px-4 py-2 text-center">Jaula</th>
+                <th class="px-4 py-2 text-center">Tipo</th>
+                <th class="px-4 py-2 text-center">Peso</th>
+              </tr>
+            </thead>
+            <tbody id="tablaAnimalesfiltrado3" class="text-center"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="script/script.js"></script>
 </body>
 </html>

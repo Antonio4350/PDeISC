@@ -1,17 +1,10 @@
-export class CZooAnimal{
-    constructor(idAnimal,nombre,jaulaNumero,idTipoAnimal,peso){
-        this.idAnimal = idAnimal;
-        this.nombre = nombre;
-        this.jaulaNumero = jaulaNumero;
-        this.idTipoAnimal = idTipoAnimal;
-        this.peso = peso;
-    }
+export class Animal {
 
-    get tabla(){
-        return this.idAnimal,this.nombre,this.jaulaNumero,this.idTipoAnimal,this.peso;
-    }
-
-    set nombre(nombreAnimal){
-        this.nombre = nombreAnimal;
-    }
+  constructor(nombre, jaula, tipo, peso) {
+    this.id = Date.now();
+    this.nombre = nombre;
+    this.jaula = parseInt(jaula);
+    this.tipo = tipo.toLowerCase();
+    this.peso = parseFloat(peso);
+  }
 }
