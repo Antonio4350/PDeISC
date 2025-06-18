@@ -1,40 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestor de Animales y Supermercado</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<!-- high min de la pantalla, fondo gris, padding general, grid responsive y un espacio entre columnas -->
-<body class="bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- formulario : fondo blanco, sombra, bordes redondeados, padding, espacio entre elementos -->
-    <form id="formulario1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-        <!-- titulo: texto grande, negrita, violeta y centrado -->
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Animales</h1>
-        <!-- inputs con width completo, padding, border gris, bordes redondeados -->
-        <input id="inAnimal" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Ingrese un Animal">
-        <!-- boton con fondo violeta, texto blanco, padding, bordes, hover con transicion -->
-        <button id="agAnimal" type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Ingresar Animal</button>
-        <button id="dlAnimal" type="button" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Eliminar animal</button>
-        <p id="warningAnimales" ></p>
-        <div id="listaAnimales" class="space-y-2 rounded-lg text-sm text-center"></div>
+<body class="bg-gray-900 text-white min-h-screen p-6">
+  <!-- TÍTULO GENERAL -->
+  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">Gestor de Animales y Supermercado</h1>
+
+  <!-- GRID PRINCIPAL -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+    
+    <!-- FORMULARIO ANIMALES -->
+    <form id="formularioAnimales" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Animales</h2>
+      <input id="inAnimal" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Ingrese un Animal" />
+      <div class="flex gap-4">
+        <button id="agAnimal" type="submit" class="flex-grow bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Ingresar Animal</button>
+        <button id="dlAnimal" type="button" class="bg-red-600 hover:bg-red-700 transition text-white py-2 px-4 rounded-xl">Eliminar</button>
+      </div>
     </form>
 
-    <form id="formulario2" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Supermercado</h1>
-        <input id="inProducto" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Ingresar Producto">
-        <button id="agProducto" type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Ingresar Producto</button>
-        <button id="dlProducto" type="button" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Eliminar Producto</button>
-        <button id="dlLista" type="button" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Eliminar Lista</button>
-        <p id="warningSupermercado" ></p>
-        <div id="listaProductos" class="space-y-2 rounded-lg text-sm text-center"></div>
-    </form>
-
-    <div class="md:col-span-2 flex justify-center">
-        <a href="/" class="mt-4 bg-violet-600 text-white px-6 py-2 rounded-xl hover:bg-violet-700 transition text-center">Volver</a>
+    <!-- RESULTADOS ANIMALES -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Animales Ingresados</h2>
+      <p id="listaAnimales" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
+      <p id="warningAnimales" class="text-sm text-center mt-1"></p>
     </div>
-      
-    <script src="../script/ej2.js"></script>
+
+    <!-- FORMULARIO SUPERMERCADO -->
+    <form id="formularioSupermercado" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Supermercado</h2>
+      <input id="inProducto" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Ingrese un Producto" />
+      <div class="flex gap-4 flex-wrap">
+        <button id="agProducto" type="submit" class="flex-grow bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Ingresar Producto</button>
+        <button id="dlProducto" type="button" class="bg-red-600 hover:bg-red-700 transition text-white py-2 px-4 rounded-xl">Eliminar</button>
+        <button id="dlLista" type="button" class="bg-red-600 hover:bg-red-700 transition text-white py-2 px-4 rounded-xl">Eliminar Lista</button>
+      </div>
+    </form>
+
+    <!-- RESULTADOS SUPERMERCADO -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Productos Ingresados</h2>
+      <p id="listaProductos" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
+      <p id="warningSupermercado" class="text-sm text-center mt-1"></p>
+    </div>
+
+  </div>
+
+  <!-- BOTÓN VOLVER -->
+  <div class="mt-10 flex justify-center">
+    <a href="/" class="bg-red-600 text-white px-6 py-2 rounded-xl hover:bg-red-700 transition">Volver</a>
+  </div>
+
+  <script src="../script/ej2.js"></script>
 </body>
 </html>
