@@ -1,53 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ejercicio 7</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<!-- high min de la pantalla, fondo gris, padding general, grid responsive y un espacio entre columnas -->
-<body class="bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- formulario : fondo blanco, sombra, bordes redondeados, padding, espacio entre elementos -->
-    <form id="form1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-<!-- titulo: texto grande, negrita, violeta y centrado -->
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Perro</h1>
-        <!-- inputs con width completo, padding, border gris, bordes redondeados -->
-        <input id="id1" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Escriba unos textos y que contenga la palabra perro">
-<!-- boton con fondo violeta, texto blanco, padding, bordes, hover con transicion -->
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar Texto</button>
-        <button type="button" id="event" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Buscar en texto</button>
+<body class="bg-gray-900 text-white min-h-screen p-6">
 
-        <p id="warning1" ></p>
+  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">Ejercicio 7</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+
+    <!-- FORMULARIO PERRO -->
+    <form id="form1" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Textos con "Perro"</h2>
+      <input
+        id="id1"
+        class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center"
+        type="text"
+        placeholder="Escriba textos que contengan la palabra 'perro'"
+      />
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">
+        Agregar Texto
+      </button>
+      <button type="button" id="event" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">
+        Buscar en texto
+      </button>
+      <p id="warning1" class="text-sm text-center mt-2"></p>
     </form>
 
-    <form id="form2" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Numero</h1>
-        <input id="id2" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="number" placeholder="Agregue algunos Numeros">
-
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar Numeros</button>
-        <button type="button" id="event2" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Encontrar el numero 50 en el array</button>
-
-        <p id="warning2" ></p>
-    </form>
-
-
-    <form id="form3" class="bg-white shadow-lg rounded-2xl p-6 space-y-4 md:col-span-2 flex flex-col items-center mx-auto max-w-md w-full">
-
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Ciudades</h1>
-        <input id="id3" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue algunas ciudades">
-
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar ciudades</button>
-        <button type="button" id="event3" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">encontrar la ciudad Madrid</button>
-
-        <p id="warning3" ></p>
-    </form>
-
-    <div class="md:col-span-2 flex justify-center">
-        <a href="/" class="mt-4 bg-violet-600 text-white px-6 py-2 rounded-xl hover:bg-violet-700 transition text-center">Volver</a>
+    <!-- RESULTADOS PERRO -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Textos Ingresados</h2>
+      <p id="listaTextos" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
+      <p id="warningResult1" class="text-sm text-center mt-1"></p>
     </div>
 
-    <script src="../script/ej7.js"></script>
+    <!-- FORMULARIO NÚMEROS -->
+    <form id="form2" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Números</h2>
+      <input
+        id="id2"
+        class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center"
+        type="number"
+        placeholder="Agregue algunos números"
+      />
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">
+        Agregar Números
+      </button>
+      <button type="button" id="event2" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">
+        Encontrar el número 50 en el array
+      </button>
+      <p id="warning2" class="text-sm text-center mt-2"></p>
+    </form>
+
+    <!-- RESULTADOS NÚMEROS -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Números Ingresados</h2>
+      <p id="listaNumeros" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
+      <p id="warningResult2" class="text-sm text-center mt-1"></p>
+    </div>
+
+    <!-- FORMULARIO CIUDADES -->
+    <form
+      id="form3"
+      class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center "
+    >
+      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Ciudades</h2>
+      <input
+        id="id3"
+        class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center"
+        type="text"
+        placeholder="Agregue algunas ciudades"
+      />
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">
+        Agregar Ciudades
+      </button>
+      <button type="button" id="event3" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">
+        Encontrar la ciudad Madrid
+      </button>
+      <p id="warning3" class="text-sm text-center mt-2"></p>
+    </form>
+
+    <!-- RESULTADOS CIUDADES -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center ">
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Ciudades Ingresadas</h2>
+      <p id="listaCiudades" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
+      <p id="warningResult3" class="text-sm text-center mt-1"></p>
+    </div>
+
+  </div>
+
+  <!-- BOTÓN VOLVER -->
+  <div class="mt-10 flex justify-center">
+    <a href="/" class="bg-red-600 text-white px-6 py-2 rounded-xl hover:bg-red-700 transition">Volver</a>
+  </div>
+
+  <script src="../script/ej7.js"></script>
 </body>
 </html>

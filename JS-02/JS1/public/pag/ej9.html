@@ -1,52 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ejercicio 9</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<!-- high min de la pantalla, fondo gris, padding general, grid responsive y un espacio entre columnas -->
-<body class="bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- formulario : fondo blanco, sombra, bordes redondeados, padding, espacio entre elementos -->
-    <form id="form1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-<!-- titulo: texto grande, negrita, violeta y centrado -->
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Saludo</h1>
-        <!-- inputs con width completo, padding, border gris, bordes redondeados -->
-        <input id="id1" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Ingrese algunos nombres">
-<!-- boton con fondo violeta, texto blanco, padding, bordes, hover con transicion -->
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar Nombre</button>
+<body class="bg-gray-900 text-white min-h-screen p-6">
+  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">Ejercicio 9</h1>
 
-        <p id="warning1" ></p>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+    <!-- Formulario Nombres -->
+    <form id="form1" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Nombres</h2>
+      <input id="id1" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center" type="text" placeholder="Ingrese algunos nombres" />
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar Nombre</button>
     </form>
 
-    <form id="form2" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Doble de un numero</h1>
-        <input id="id2" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="number" placeholder="Agregue algunos numeros">
-
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar numero</button>
-
-        <p id="warning2" ></p>
-    </form>
-
-
-    <form id="form3" class="bg-white shadow-lg rounded-2xl p-6 space-y-4 md:col-span-2 flex flex-col items-center mx-auto max-w-md w-full">
-
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Personas</h1>
-        <input id="id3" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue un nombre">
-
-        <input id="id4" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="number" placeholder="Agregue una edad">
-
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar Persona</button>
-
-        <p id="warning3" ></p>
-    </form>
-
-    <div class="md:col-span-2 flex justify-center">
-        <a href="/" class="mt-4 bg-violet-600 text-white px-6 py-2 rounded-xl hover:bg-violet-700 transition text-center">Volver</a>
+    <!-- Resultados Nombres -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Nombres Ingresados</h2>
+      <p id="listaNombres" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
+      <p id="warning1" class="text-sm text-center mt-1"></p>
     </div>
 
-    <script src="../script/ej9.js"></script>
+    <!-- Formulario Números -->
+    <form id="form2" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Números</h2>
+      <input id="id2" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center" type="number" placeholder="Agregue algunos números" />
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar Número</button>
+    </form>
+
+    <!-- Resultados Números -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Doble de Números</h2>
+      <p id="listaNumeros" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
+      <p id="warning2" class="text-sm text-center mt-1"></p>
+    </div>
+
+    <!-- Formulario Personas -->
+    <form id="form3" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 flex flex-col justify-center ">
+      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Personas</h2>
+      <input id="id3" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center" type="text" placeholder="Agregue un nombre" />
+      <input id="id4" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center" type="number" placeholder="Agregue una edad" />
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar Persona</button>
+    </form>
+
+    <!-- Resultados Personas -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center ">
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Personas Ingresadas</h2>
+      <p id="listaPersonas" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
+      <p id="warning3" class="text-sm text-center mt-1"></p>
+    </div>
+  </div>
+
+  <div class="mt-10 flex justify-center">
+    <a href="/" class="bg-red-600 text-white px-6 py-2 rounded-xl hover:bg-red-700 transition">Volver</a>
+  </div>
+
+  <script src="../script/ej9.js"></script>
 </body>
 </html>

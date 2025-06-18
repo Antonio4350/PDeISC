@@ -1,53 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Formularios Estilizados</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<!-- high min de la pantalla, fondo gris, padding general, grid responsive y un espacio entre columnas -->
-<body class="bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- formulario : fondo blanco, sombra, bordes redondeados, padding, espacio entre elementos -->
-    <form id="form1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-<!-- titulo: texto grande, negrita, violeta y centrado -->
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Colores</h1>
-        <!-- inputs con width completo, padding, border gris, bordes redondeados -->
-        <input id="color1" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue un Color">
-        <input id="color2" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue un Color">
-        <input id="color3" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue un Color">
-<!-- boton con fondo violeta, texto blanco, padding, bordes, hover con transicion -->
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Enviar Colores</button>
+<body class="bg-gray-900 text-white min-h-screen p-6">
 
-        <p id="warning1" ></p>
-    </form>
+  <!-- TÍTULO GENERAL -->
+  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">Ejercicio 3</h1>
 
-    <form id="form2" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
+  <!-- Contenedor principal con espacio entre cada fila -->
+  <div class="max-w-6xl mx-auto space-y-10">
 
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Tareas</h1>
-        <input id="tareaComun" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue una Tarea">
-
-        <input id="tareaUrgente" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue una Tarea Urgente">
-
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Enviar Tareas</button>
-
-        <p id="warning2" ></p>
-    </form>
-
-    <form id="form3" class="bg-white shadow-lg rounded-2xl p-6 space-y-4 md:col-span-2 flex flex-col items-center mx-auto max-w-md w-full">
-
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Usuario</h1>
-        <input id="usuario" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue un usuario">
-
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Enviar Usuario</button>
-
-        <p id="warning3" ></p>
-    </form>
-    
-    <div class="md:col-span-2 flex justify-center">
-        <a href="/" class="mt-4 bg-violet-600 text-white px-6 py-2 rounded-xl hover:bg-violet-700 transition text-center">Volver</a>
+    <!-- FILA 1: Formulario Colores + Resultados -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+      <!-- Formulario -->
+      <form id="form1" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 flex flex-col justify-center">
+        <h2 class="text-xl font-semibold text-red-300 text-center">Colores</h2>
+        <input id="color1" class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-red-400" type="text" placeholder="Agregue un Color" />
+        <input id="color2" class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-red-400" type="text" placeholder="Agregue un Color" />
+        <input id="color3" class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-red-400" type="text" placeholder="Agregue un Color" />
+        <button type="submit" class="w-full py-2 rounded-xl bg-red-600 hover:bg-red-700 transition font-semibold text-white">Enviar Colores</button>
+      </form>
+      <!-- Resultados -->
+      <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
+        <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Colores Ingresados</h2>
+        <p id="mensajeColores" class="text-right text-sm mb-2"></p> <!-- Mensajes aquí -->
+        <p id="listaColores" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
+        <p id="listaColoresExtra" class="text-center text-base font-mono text-gray-200 min-h-[2rem] mt-2"></p>
+      </div>
     </div>
 
-    <script src="../script/ej3.js"></script>
+    <!-- FILA 2: Formulario Tareas + Resultados -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+      <!-- Formulario -->
+      <form id="form2" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 flex flex-col justify-center">
+        <h2 class="text-xl font-semibold text-red-300 text-center">Tareas</h2>
+        <input id="tareaComun" class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-red-400" type="text" placeholder="Agregue una Tarea" />
+        <input id="tareaUrgente" class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-red-400" type="text" placeholder="Agregue una Tarea Urgente" />
+        <button type="submit" class="w-full py-2 rounded-xl bg-red-600 hover:bg-red-700 transition font-semibold text-white">Enviar Tareas</button>
+      </form>
+      <!-- Resultados -->
+      <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
+        <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Tareas Ingresadas</h2>
+        <p id="mensajeTareas" class="text-right text-sm mb-2"></p> <!-- Mensajes aquí -->
+        <p id="listaTareas" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
+      </div>
+    </div>
+
+    <!-- FILA 3: Formulario Usuario + Resultados -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+      <!-- Formulario -->
+      <form id="form3" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 flex flex-col justify-center">
+        <h2 class="text-xl font-semibold text-red-300 text-center">Usuario</h2>
+        <input id="usuario" class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-red-400" type="text" placeholder="Agregue un usuario" />
+        <button type="submit" class="w-full py-2 rounded-xl bg-red-600 hover:bg-red-700 transition font-semibold text-white">Enviar Usuario</button>
+      </form>
+      <!-- Resultados -->
+      <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
+        <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Usuario Ingresado</h2>
+        <p id="mensajeUsuario" class="text-right text-sm mb-2"></p> <!-- Mensajes aquí -->
+        <p id="listaUsuario" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTÓN VOLVER -->
+  <div class="mt-10 flex justify-center">
+    <a href="/" class="bg-red-600 text-white px-6 py-2 rounded-xl hover:bg-red-700 transition">Volver</a>
+  </div>
+
+  <script src="../script/ej3.js"></script>
 </body>
 </html>

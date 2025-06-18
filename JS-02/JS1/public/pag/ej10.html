@@ -1,50 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ejercicio 10</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<!-- high min de la pantalla, fondo gris, padding general, grid responsive y un espacio entre columnas -->
-<body class="bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- formulario : fondo blanco, sombra, bordes redondeados, padding, espacio entre elementos -->
-    <form id="form1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-<!-- titulo: texto grande, negrita, violeta y centrado -->
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Numeros</h1>
-        <!-- inputs con width completo, padding, border gris, bordes redondeados -->
-        <input id="id1" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue un numero">
-<!-- boton con fondo violeta, texto blanco, padding, bordes, hover con transicion -->
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar Numero</button>
+<body class="bg-gray-900 text-white min-h-screen p-6">
+  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">Ejercicio 10</h1>
 
-        <p id="warning1" ></p>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+
+    <!-- Formulario Números -->
+    <form id="form1" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[220px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center">Números</h2>
+      <input id="id1" type="text" placeholder="Agregue un número"
+        class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center" />
+      <button type="submit"
+        class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar Número</button>
     </form>
 
-    <form id="form2" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Nombre</h1>
-        <input id="id2" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue un Nombre">
-
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar nombre</button>
-
-        <p id="warning2" ></p>
-    </form>
-
-
-    <form id="form3" class="bg-white shadow-lg rounded-2xl p-6 space-y-4 md:col-span-2 flex flex-col items-center mx-auto max-w-md w-full">
-
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Precio</h1>
-        <input id="id3" class="w-full p-2 border border-gray-300 rounded-xl text-center" type="text" placeholder="Agregue un precio">
-
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar precio</button>
-
-        <p id="warning3" ></p>
-    </form>
-
-    <div class="md:col-span-2 flex justify-center">
-        <a href="/" class="mt-4 bg-violet-600 text-white px-6 py-2 rounded-xl hover:bg-violet-700 transition text-center">Volver</a>
+    <!-- Resultados Números -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[220px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Resultados Números</h2>
+      <p id="listaNumeros" class="text-center text-base font-mono text-gray-200 min-h-[3rem]"></p>
+      <p id="warning1" class="text-sm text-center mt-1"></p>
     </div>
 
-    <script src="../script/ej10.js"></script>
+    <!-- Formulario Nombres -->
+    <form id="form2" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[220px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center">Nombres</h2>
+      <input id="id2" type="text" placeholder="Agregue un nombre"
+        class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center" />
+      <button type="submit"
+        class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar Nombre</button>
+    </form>
+
+    <!-- Resultados Nombres -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[220px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Resultados Nombres</h2>
+      <p id="listaNombres" class="text-center text-base font-mono text-gray-200 min-h-[3rem]"></p>
+      <p id="warning2" class="text-sm text-center mt-1"></p>
+    </div>
+
+    <!-- Formulario Precios -->
+    <form id="form3" class="bg-gray-800 p-6 rounded-2xl shadow flex flex-col justify-center space-y-4 min-h-[220px]">
+      <h2 class="text-xl font-semibold text-red-300 text-center">Precios</h2>
+      <input id="id3" type="text" placeholder="Agregue un precio"
+        class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center" />
+      <button type="submit"
+        class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar Precio</button>
+    </form>
+
+    <!-- Resultados Precios -->
+    <div
+      class="bg-gray-800 p-6 rounded-2xl shadow flex flex-col justify-center min-h-[220px]">
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Resultados Precios</h2>
+      <p id="listaPrecios" class="text-center text-base font-mono text-gray-200 min-h-[3rem]"></p>
+      <p id="warning3" class="text-sm text-center mt-1"></p>
+    </div>
+
+  </div>
+
+  <div class="mt-10 flex justify-center">
+    <a href="/" class="bg-red-600 text-white px-6 py-2 rounded-xl hover:bg-red-700 transition">Volver</a>
+  </div>
+
+  <script src="../script/ej10.js"></script>
 </body>
 </html>

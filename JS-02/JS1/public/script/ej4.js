@@ -1,154 +1,122 @@
-// Se agrega el evento submit a los formularios para llamar a las funciones correspondientes.
-document.getElementById("form1").addEventListener("submit",agNumero);
-document.getElementById("eliminarNumero").addEventListener("click",elNumero);
-document.getElementById("form2").addEventListener("submit",agMensaje);
-document.getElementById("eliminarMensaje").addEventListener("click",elMensaje);
-document.getElementById("form3").addEventListener("submit",agCliente);
-document.getElementById("eliminarCliente").addEventListener("click",elCliente);
-// Se crean los arrays donde se guardaran los valores ingresados.
-let numeros = [];
-let mensajes = [];
-let clientes = [];
-// Se obtienen los elementos del DOM donde se mostraran los mensajes.
+const numeros = [];
+const mensajes = [];
+const clientes = [];
 
-let parrafo1 = document.getElementById("warning1");
-let parrafo2 = document.getElementById("warning2");
-let parrafo3 = document.getElementById("warning3");
-// Funcion que maneja el primer formulario
+const parrafo1 = document.getElementById("warning1");
+const parrafo2 = document.getElementById("warning2");
+const parrafo3 = document.getElementById("warning3");
 
-function agNumero(e){
-    e.preventDefault();
-    
-    let validar = true;
-    let numero = document.getElementById("numero").value;
-    // Se valida que el campo no este vacio
+const contenedorNumeros = document.getElementById("listaNumeros");
+const contenedorMensajes = document.getElementById("listaMensajes");
+const contenedorClientes = document.getElementById("listaClientes");
 
-    if(numero == "" || isNaN(numero)){
-        parrafo1.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo1.innerHTML = ("Introduzca un Numero:");
-        validar = false;
-    }
-    // Si la validacion es correcta, se agrega el elemento al array
+// FORM 1 - NÚMEROS
+document.getElementById("form1").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const input = document.getElementById("numero");
+  const valor = input.value.trim();
 
-    if(validar){
-        parrafo1.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        numeros.push(numero);// Se agrega el elemento al array
-        
-        parrafo1.innerHTML = "Numeros: ";
-        numeros.forEach(re =>{
-            parrafo1.innerHTML += re + ", ";// Se muestran
-        })
-    }
-}
+  parrafo1.textContent = "";
+  contenedorNumeros.textContent = "";
 
-function elNumero(e){
-    e.preventDefault();
+  if (valor === "" || isNaN(valor)) {
+    parrafo1.textContent = "Introduzca un número válido";
+    parrafo1.className = "text-sm text-center text-red-400";
+    return;
+  }
 
-    let validar = true;
+  numeros.push(valor);
+  contenedorNumeros.textContent = numeros.join(", ");
+  parrafo1.textContent = "Número agregado exitosamente";
+  parrafo1.className = "text-sm text-center text-green-400";
+  input.value = "";
+});
 
-    if(validar){
-        numeros.shift();//quito el primer numero
-        parrafo1.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-yellow-100 border border-yellow-400 text-yellow-700";
-        
-        parrafo1.innerHTML = "Primer numero eliminado: ";
-        numeros.forEach(re =>{
-            parrafo1.innerHTML += re + ", ";
-        })
-    }
-    
-    if(numeros == ""){
-        parrafo1.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo1.innerHTML = ("No hay numeros por eliminar.");
-        validar = false;
-    }
-}
+document.getElementById("eliminarNumero").addEventListener("click", (e) => {
+  e.preventDefault();
+  if (numeros.length === 0) {
+    parrafo1.textContent = "No hay números por eliminar.";
+    parrafo1.className = "text-sm text-center text-red-400";
+    contenedorNumeros.textContent = "";
+    return;
+  }
 
-function agMensaje(e){
-    e.preventDefault();
-    validar = true ;
+  numeros.shift();
+  contenedorNumeros.textContent = numeros.join(", ");
+  parrafo1.textContent = "Primer número eliminado";
+  parrafo1.className = "text-sm text-center text-yellow-400";
+});
 
-    let mensaje = document.getElementById("mensaje").value;
+// FORM 2 - MENSAJES
+document.getElementById("form2").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const input = document.getElementById("mensaje");
+  const valor = input.value.trim();
 
-    if(mensaje == ""){
-        parrafo2.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo2.innerHTML = ("Introduzca un Mensaje:");
-        validar = false;
-    }
+  parrafo2.textContent = "";
+  contenedorMensajes.textContent = "";
 
-    if(validar){
-        parrafo2.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        mensajes.push(mensaje);
-        
-        parrafo2.innerHTML = "Mensaje: ";
-        mensajes.forEach(re =>{
-            parrafo2.innerHTML += re + ", ";
-        })
-    }
-}
+  if (valor === "") {
+    parrafo2.textContent = "Introduzca un mensaje";
+    parrafo2.className = "text-sm text-center text-red-400";
+    return;
+  }
 
-function elMensaje(e){
-    e.preventDefault();
-    validar = true;
+  mensajes.push(valor);
+  contenedorMensajes.textContent = mensajes.join(", ");
+  parrafo2.textContent = "Mensaje agregado exitosamente";
+  parrafo2.className = "text-sm text-center text-green-400";
+  input.value = "";
+});
 
-    if(validar){
-        mensajes.shift();//elimino el primer mensaje
-        parrafo2.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-yellow-100 border border-yellow-400 text-yellow-700";
-        
-        parrafo2.innerHTML = "Primer mensaje eliminado: ";
-        mensajes.forEach(re =>{
-            parrafo2.innerHTML += re + ", ";
-        })
-    }
-    
-    if(mensajes == ""){
-        parrafo2.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo2.innerHTML = ("No hay mensajes por eliminar.");
-        validar = false;
-    }
-}
+document.getElementById("eliminarMensaje").addEventListener("click", (e) => {
+  e.preventDefault();
+  if (mensajes.length === 0) {
+    parrafo2.textContent = "No hay mensajes por eliminar.";
+    parrafo2.className = "text-sm text-center text-red-400";
+    contenedorMensajes.textContent = "";
+    return;
+  }
 
+  mensajes.shift();
+  contenedorMensajes.textContent = mensajes.join(", ");
+  parrafo2.textContent = "Primer mensaje eliminado";
+  parrafo2.className = "text-sm text-center text-yellow-400";
+});
 
-function agCliente(e){
-    e.preventDefault();
-    validar = true ;
+// FORM 3 - CLIENTES
+document.getElementById("form3").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const input = document.getElementById("cliente");
+  const valor = input.value.trim();
 
-    let cliente = document.getElementById("cliente").value;
+  parrafo3.textContent = "";
+  contenedorClientes.textContent = "";
 
-    if(cliente == ""){
-        parrafo3.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo3.innerHTML = ("Introduzca un Cliente:");
-        validar = false;
-    }
+  if (valor === "") {
+    parrafo3.textContent = "Introduzca un cliente";
+    parrafo3.className = "text-sm text-center text-red-400";
+    return;
+  }
 
-    if(validar){
-        parrafo3.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        clientes.push(cliente);
-        
-        parrafo3.innerHTML = "Cliente: ";
-        clientes.forEach(re =>{
-            parrafo3.innerHTML += re + ", ";
-        })
-    }
-}
+  clientes.push(valor);
+  contenedorClientes.textContent = clientes.join(", ");
+  parrafo3.textContent = "Cliente agregado exitosamente";
+  parrafo3.className = "text-sm text-center text-green-400";
+  input.value = "";
+});
 
-function elCliente(e){
-    e.preventDefault();
-    validar = true;
+document.getElementById("eliminarCliente").addEventListener("click", (e) => {
+  e.preventDefault();
+  if (clientes.length === 0) {
+    parrafo3.textContent = "No hay clientes por atender.";
+    parrafo3.className = "text-sm text-center text-red-400";
+    contenedorClientes.textContent = "";
+    return;
+  }
 
-    if(validar){
-        clientes.shift();//atiendo al primer cliente
-        parrafo3.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-yellow-100 border border-yellow-400 text-yellow-700";
-        
-        parrafo3.innerHTML = "Primer cliente atendido: ";
-        clientes.forEach(re =>{
-            parrafo3.innerHTML += re + ", ";
-        })
-    }
-    
-    if(clientes == ""){
-        parrafo3.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo3.innerHTML = ("No hay clientes por atender.");
-        validar = false;
-    }
-}
-
+  clientes.shift();
+  contenedorClientes.textContent = clientes.join(", ");
+  parrafo3.textContent = "Primer cliente atendido";
+  parrafo3.className = "text-sm text-center text-yellow-400";
+});

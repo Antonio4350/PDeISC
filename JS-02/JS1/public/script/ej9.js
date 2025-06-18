@@ -1,93 +1,95 @@
-// Se agrega el evento submit a los formularios para llamar a las funciones correspondientes.
-document.getElementById("form1").addEventListener("submit",agNombre);
-document.getElementById("form2").addEventListener("submit",agNumero);
-document.getElementById("form3").addEventListener("submit",agPersona);
-// Se crean los arrays donde se guardaran los valores ingresados.
-let array1 = [];
-let array2 = [];
-let array3 = [];
-// Se obtienen los elementos del DOM donde se mostraran los mensajes.
-let parrafo1 = document.getElementById("warning1");
-let parrafo2 = document.getElementById("warning2");
-let parrafo3 = document.getElementById("warning3");
-// Funcion que maneja el primer formulario
-function agNombre(e){
-    e.preventDefault();// Se evita que se recargue la pagina al enviar el formulario
+document.getElementById("form1").addEventListener("submit", agNombre);
+document.getElementById("form2").addEventListener("submit", agNumero);
+document.getElementById("form3").addEventListener("submit", agPersona);
 
-    let validar = true;
-    let id1 = document.getElementById("id1").value;// Se obtiene el valor del campo id1
-// Se valida que el campo no este vacio
-    if(id1 == ""){
-        parrafo1.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo1.innerHTML = ("Introduzca un nombre en el campo:");
-        id1 = "";
-        validar = false;
-    }
-// Si la validacion es correcta, se agrega el elemento al array y se muestra el resultado
-    if(validar){
-        parrafo1.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        array1.push(id1);// Se agrega el elemento al array
-        parrafo1.innerHTML = "Nombres ingresado: ";
-        array1.forEach(re =>{
-            parrafo1.innerHTML +="Saludos " + re + ", " ;// Se muestran los nombres y saludos
-        })
-    }
+let arrayNombres = [];
+let arrayNumeros = [];
+let arrayPersonas = [];
+
+const parrafo1 = document.getElementById("warning1");
+const contenedor1 = document.getElementById("listaNombres");
+
+const parrafo2 = document.getElementById("warning2");
+const contenedor2 = document.getElementById("listaNumeros");
+
+const parrafo3 = document.getElementById("warning3");
+const contenedor3 = document.getElementById("listaPersonas");
+
+function agNombre(e) {
+  e.preventDefault();
+  const input = document.getElementById("id1");
+  const valor = input.value.trim();
+
+  parrafo1.textContent = "";
+  contenedor1.textContent = "";
+
+  if (valor === "") {
+    parrafo1.textContent = "Introduzca un nombre en el campo";
+    parrafo1.className = "text-sm text-center text-red-400";
+    return;
+  }
+
+  arrayNombres.push(valor);
+  contenedor1.textContent = arrayNombres.map(n => `Saludos ${n}`).join(", ");
+  parrafo1.textContent = "Nombre agregado exitosamente";
+  parrafo1.className = "text-sm text-center text-green-400";
+
+  input.value = "";
 }
 
-function agNumero(e){
-    e.preventDefault();
+function agNumero(e) {
+  e.preventDefault();
+  const input = document.getElementById("id2");
+  const valor = input.value.trim();
 
-    let validar = true;
-    let id2 = document.getElementById("id2").value;
+  parrafo2.textContent = "";
+  contenedor2.textContent = "";
 
-    if(id2 == ""||  isNaN(id2)){
-        parrafo2.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo2.innerHTML = ("Introduzca un numero en el campo:");
-        id2 = "";
-        validar = false;
-    }
+  if (valor === "" || isNaN(valor)) {
+    parrafo2.textContent = "Introduzca un número válido en el campo";
+    parrafo2.className = "text-sm text-center text-red-400";
+    return;
+  }
 
-    if(validar){
-        parrafo2.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        array2.push(parseInt(id2));
-        parrafo2.innerHTML = "Doble del numero ingresado: ";
-        array2.forEach(re =>{
-            parrafo2.innerHTML +=re*2 + ", " ;//imprimo el doble del numero
-        })
-    }
+  const num = parseInt(valor);
+  arrayNumeros.push(num);
+  contenedor2.textContent = arrayNumeros.map(n => n * 2).join(", ");
+  parrafo2.textContent = "Número agregado exitosamente";
+  parrafo2.className = "text-sm text-center text-green-400";
+
+  input.value = "";
 }
 
-function agPersona(e){
-    e.preventDefault();
+function agPersona(e) {
+  e.preventDefault();
+  const nombreInput = document.getElementById("id3");
+  const edadInput = document.getElementById("id4");
 
-    let validar = true;
-    let id3 = document.getElementById("id3").value;
-    let id4 = document.getElementById("id4").value;
+  const nombre = nombreInput.value.trim();
+  const edad = edadInput.value.trim();
 
-    if(id3 == ""){
-        parrafo3.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo3.innerHTML = ("Introduzca un nombre en el campo:");
-        id3 = "";
-        validar = false;
-    }
+  parrafo3.textContent = "";
+  contenedor3.textContent = "";
 
-    if(id4 == ""||  isNaN(id4)){
-        parrafo3.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo3.innerHTML = ("Introduzca un numero en el campo:");
-        id4 = "";
-        validar = false;
-    }
+  if (nombre === "") {
+    parrafo3.textContent = "Introduzca un nombre en el campo";
+    parrafo3.className = "text-sm text-center text-red-400";
+    return;
+  }
+  if (edad === "" || isNaN(edad)) {
+    parrafo3.textContent = "Introduzca una edad válida en el campo";
+    parrafo3.className = "text-sm text-center text-red-400";
+    return;
+  }
 
-    if(validar){
-        parrafo3.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        let obj = {
-            nombre : id3,
-            edad : parseInt(id4),
-        };
-        array3.push(obj);
-        parrafo3.innerHTML = "Doble del numero ingresado: ";
-        array3.forEach(re =>{
-            parrafo3.innerHTML +=re.nombre + ", " + re.edad;//muestro cada nombre con la edad
-        })
-    }
+  const edadNum = parseInt(edad);
+  arrayPersonas.push({ nombre, edad: edadNum });
+  contenedor3.textContent = arrayPersonas
+    .map(p => `${p.nombre}, ${p.edad} años`)
+    .join(" | ");
+  parrafo3.textContent = "Persona agregada exitosamente";
+  parrafo3.className = "text-sm text-center text-green-400";
+
+  nombreInput.value = "";
+  edadInput.value = "";
 }

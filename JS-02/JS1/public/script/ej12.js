@@ -1,97 +1,99 @@
-// Se agrega el evento submit a los formularios para llamar a las funciones correspondientes.
-document.getElementById("form1").addEventListener("submit",ag1);
-document.getElementById("form2").addEventListener("submit",ag2);
-document.getElementById("form3").addEventListener("submit",ag3);
-// Se crean los arrays donde se guardaran los valores ingresados.
-let array1 = [];
-let array2 = [];
-let array3 = [];
-// Se obtienen los elementos del DOM donde se mostraran los mensajes.
-let parrafo1 = document.getElementById("warning1");
-let parrafo2 = document.getElementById("warning2");
-let parrafo3 = document.getElementById("warning3");
-// Funcion que maneja el primer formulario
-function ag1(e){
-    e.preventDefault();// Se evita que se recargue la pagina al enviar el formulario
+document.getElementById("form1").addEventListener("submit", ag1);
+document.getElementById("form2").addEventListener("submit", ag2);
+document.getElementById("form3").addEventListener("submit", ag3);
 
-    let validar = true;
-    let id1 = document.getElementById("id1").value;// Se obtiene el valor del campo id1
-// Se valida que el campo no este vacio
-    if (id1== "") {
-        parrafo1.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo1.innerHTML = "Introduzca un texto en el campo:";
-        validar = false;
-    }
-// Si la validacion es correcta, se agrega el elemento al array y se muestra el resultado
-    if (validar) {
-        parrafo1.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        
-        array1.push(id1);// Se agrega el elemento al array
+let arraySuma = [];
+let arrayMultiplica = [];
+let arrayPrecio = [];
 
-        let aux = array1.reduce((acum, tex) => acum + tex, '');//sumo todos los elementos del array
+const parrafo1 = document.getElementById("warning1");
+const contenedor1 = document.getElementById("listaSuma");
 
-        parrafo1.innerHTML = "Textos ingresados: ";
-        array1.forEach(re => {
-            parrafo1.innerHTML += re + ", ";// Se muestran
-        });
+const parrafo2 = document.getElementById("warning2");
+const contenedor2 = document.getElementById("listaMultiplica");
 
-        parrafo1.innerHTML += "<br>Textos juntos: " + aux;
-    }
+const parrafo3 = document.getElementById("warning3");
+const contenedor3 = document.getElementById("listaPrecio");
+
+function ag1(e) {
+  e.preventDefault();
+
+  const input = document.getElementById("id1");
+  const valor = input.value.trim();
+
+  parrafo1.textContent = "";
+  contenedor1.textContent = "";
+
+  if (valor === "") {
+    parrafo1.textContent = "Introduzca un texto en el campo";
+    parrafo1.className = "text-sm text-center text-red-400";
+    return;
+  }
+
+  arraySuma.push(valor);
+
+  // Sumo todos los textos concatenándolos
+  const sumaTexto = arraySuma.reduce((acum, texto) => acum + texto, "");
+
+  contenedor1.textContent = `Textos ingresados: ${arraySuma.join(", ")}\nTextos juntos: ${sumaTexto}`;
+  parrafo1.textContent = "Texto agregado exitosamente";
+  parrafo1.className = "text-sm text-center text-green-400";
+
+  input.value = "";
 }
 
-function ag2(e){
-    e.preventDefault();
+function ag2(e) {
+  e.preventDefault();
 
-    let validar = true;
-    let id2 = document.getElementById("id2").value;
+  const input = document.getElementById("id2");
+  const valor = input.value.trim();
 
-    if (id2 == ""||isNaN(id2)) {
-        parrafo2.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo2.innerHTML = "Introduzca un numero en el campo:";
-        validar = false;
-    }
+  parrafo2.textContent = "";
+  contenedor2.textContent = "";
 
-    if (validar) {
-        parrafo2.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        
-        array2.push(id2);
+  if (valor === "" || isNaN(valor)) {
+    parrafo2.textContent = "Introduzca un número en el campo";
+    parrafo2.className = "text-sm text-center text-red-400";
+    return;
+  }
 
-        let aux = array2.reduce((acum, num) => acum * num, 1);//multiplico todos los elementos del array y su valor inicial es 1
+  const num = Number(valor);
+  arrayMultiplica.push(num);
 
-        parrafo2.innerHTML = "Numeros ingresados: ";
-        array2.forEach(re => {
-            parrafo2.innerHTML += re + ", ";
-        });
+  // Multiplico todos los números
+  const producto = arrayMultiplica.reduce((acum, n) => acum * n, 1);
 
-        parrafo2.innerHTML += "<br>Numeros multiplicados: " + aux;
-    }
+  contenedor2.textContent = `Números ingresados: ${arrayMultiplica.join(", ")}\nNúmeros multiplicados: ${producto}`;
+  parrafo2.textContent = "Número agregado exitosamente";
+  parrafo2.className = "text-sm text-center text-green-400";
+
+  input.value = "";
 }
 
-function ag3(e){
-    e.preventDefault();
+function ag3(e) {
+  e.preventDefault();
 
-    let validar = true;
-    let id3 = document.getElementById("id3").value;
+  const input = document.getElementById("id3");
+  const valor = input.value.trim();
 
-    if (id3 == ""||isNaN(id3)) {
-        parrafo3.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo3.innerHTML = "Introduzca un numero(precio) en el campo:";
-        validar = false;
-    }
+  parrafo3.textContent = "";
+  contenedor3.textContent = "";
 
-    if (validar) {
-        parrafo3.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        
-        let precio= {
-            precio : parseInt(id3),
-        }
-        array3.push(precio);
-        let aux = array3.reduce((acum, num) => acum + num.precio, 0);//obtengo el total de todo el array sumado iniciando con el valor 0
+  if (valor === "" || isNaN(valor)) {
+    parrafo3.textContent = "Introduzca un número (precio) en el campo";
+    parrafo3.className = "text-sm text-center text-red-400";
+    return;
+  }
 
-        parrafo3.innerHTML = "Precios ingresados: ";
-        array3.forEach(re => {
-            parrafo3.innerHTML += re.precio + ", ";
-        });
-        parrafo3.innerHTML += "<br>Total de los Precios: " + aux;
-    }
+  const precioObj = { precio: parseInt(valor) };
+  arrayPrecio.push(precioObj);
+
+  // Sumo todos los precios
+  const total = arrayPrecio.reduce((acum, obj) => acum + obj.precio, 0);
+
+  contenedor3.textContent = `Precios ingresados: ${arrayPrecio.map(o => o.precio).join(", ")}\nTotal de los precios: ${total}`;
+  parrafo3.textContent = "Precio agregado exitosamente";
+  parrafo3.className = "text-sm text-center text-green-400";
+
+  input.value = "";
 }

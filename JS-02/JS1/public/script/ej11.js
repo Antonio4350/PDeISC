@@ -1,107 +1,100 @@
-// Se agrega el evento submit a los formularios para llamar a las funciones correspondientes.
-document.getElementById("form1").addEventListener("submit",agNumero);
-document.getElementById("form2").addEventListener("submit",agTexto);
-document.getElementById("form3").addEventListener("submit",agUsuario);
-// Se crean los arrays donde se guardaran los valores ingresados.
-let array1 = [];
-let array2 = [];
-let array3 = [];
-// Se obtienen los elementos del DOM donde se mostraran los mensajes.
-let parrafo1 = document.getElementById("warning1");
-let parrafo2 = document.getElementById("warning2");
-let parrafo3 = document.getElementById("warning3");
-// Funcion que maneja el primer formulario
+document.getElementById("form1").addEventListener("submit", agNumero);
+document.getElementById("form2").addEventListener("submit", agTexto);
+document.getElementById("form3").addEventListener("submit", agUsuario);
+
+let arrayNumeros = [];
+let arrayTextos = [];
+let arrayUsuarios = [];
+
+const parrafo1 = document.getElementById("warning1");
+const contenedor1 = document.getElementById("listaNumeros");
+
+const parrafo2 = document.getElementById("warning2");
+const contenedor2 = document.getElementById("listaTexto");
+
+const parrafo3 = document.getElementById("warning3");
+const contenedor3 = document.getElementById("listaUsuarios");
+
 function agNumero(e) {
-    e.preventDefault();// Se evita que se recargue la pagina al enviar el formulario
+  e.preventDefault();
 
-    let validar = true;
-    let id1 = document.getElementById("id1").value;// Se obtiene el valor del campo id1
-// Se valida que el campo no este vacio sea mayor a 10 y sea numero
-    if (id1 == "" || isNaN(id1) || id1<10) {
-        parrafo1.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo1.innerHTML = "Introduzca un numero mayor a 10 en el campo:";
-        validar = false;
-    }
-// Si la validacion es correcta, se agrega el numero al array y se muestra el resultado
-    if (validar) {
-        parrafo1.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        
-        array1.push(parseInt(id1));// Se agrega el numero al array
+  const input = document.getElementById("id1");
+  const valor = input.value.trim();
 
-        let aux = array1.filter(n => n >= 10);//filtro numeros mayores a 10
+  parrafo1.textContent = "";
+  contenedor1.textContent = "";
 
-        parrafo1.innerHTML = "Numeros ingresados: ";
-        array1.forEach(re => {
-            parrafo1.innerHTML += re + ", ";// Se muestran
-        });
+  if (valor === "" || isNaN(valor) || Number(valor) < 10) {
+    parrafo1.textContent = "Introduzca un número mayor a 10 en el campo";
+    parrafo1.className = "text-sm text-center text-red-400";
+    return;
+  }
 
-        parrafo1.innerHTML += "<br>Numeros ordenados: ";
-        aux.forEach(re => {
-            parrafo1.innerHTML += re + ", ";// Se muestran
-        });
-    }
+  const num = parseInt(valor);
+  arrayNumeros.push(num);
+
+  const mayores = arrayNumeros.filter(n => n >= 10);
+
+  contenedor1.textContent = `Números ingresados: ${arrayNumeros.join(", ")}\nNúmeros mayores o iguales a 10: ${mayores.join(", ")}`;
+  parrafo1.textContent = "Número agregado exitosamente";
+  parrafo1.className = "text-sm text-center text-green-400";
+
+  input.value = "";
 }
 
 function agTexto(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    let validar = true;
-    let id2 = document.getElementById("id2").value;
+  const input = document.getElementById("id2");
+  const valor = input.value.trim();
 
-    if (id2 == "") {
-        parrafo2.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo2.innerHTML = "Introduzca un texto en el campo:";
-        validar = false;
-    }
+  parrafo2.textContent = "";
+  contenedor2.textContent = "";
 
-    if (validar) {
-        parrafo2.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        
-        array2.push(id2);
+  if (valor === "") {
+    parrafo2.textContent = "Introduzca un texto en el campo";
+    parrafo2.className = "text-sm text-center text-red-400";
+    return;
+  }
 
-        let aux = array2.filter(p => p.length > 5);//filtro palabras con mas de 5 letras
+  arrayTextos.push(valor);
 
-        parrafo2.innerHTML = "Textos ingresados: ";
-        array2.forEach(re => {
-            parrafo2.innerHTML += re + ", ";
-        });
+  const largos = arrayTextos.filter(p => p.length > 5);
 
-        parrafo2.innerHTML += "<br>Textos mayores a 5 letras: ";
-        aux.forEach(re => {
-            parrafo2.innerHTML += re + ", ";
-        });
-    }
+  contenedor2.textContent = `Textos ingresados: ${arrayTextos.join(", ")}\nTextos mayores a 5 letras: ${largos.join(", ")}`;
+  parrafo2.textContent = "Texto agregado exitosamente";
+  parrafo2.className = "text-sm text-center text-green-400";
+
+  input.value = "";
 }
 
 function agUsuario(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    let validar = true;
+  const inputNombre = document.getElementById("id3");
+  const inputActivo = document.getElementById("id4");
 
-    let id3 = document.getElementById("id3").value;
-    let id4 = document.getElementById("id4").checked;
+  parrafo3.textContent = "";
+  contenedor3.textContent = "";
 
-    if (id3 == "") {
-        parrafo3.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo3.innerHTML = "Introduzca un nombre para el usuario:";
-        validar = false;
-    }
+  const nombre = inputNombre.value.trim();
+  const activo = inputActivo.checked;
 
-    if(validar){
-        array3.push({ id3, id4 });
-    
-        let activos = array3.filter(u => u.id4);
-    
-        parrafo3.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-    
-        parrafo3.innerHTML = "Usuarios ingresados:<br>";
-        array3.forEach(u => {
-            parrafo3.innerHTML += `${u.id3} (${u.id4 ? 'activo' : 'inactivo'}), `;//filtro usuarios activos y inactivos
-        });
-    
-        parrafo3.innerHTML += "<br>Usuarios activos:<br>";
-        activos.forEach(u => {
-            parrafo3.innerHTML += u.id3 ;
-        });
-    }
+  if (nombre === "") {
+    parrafo3.textContent = "Introduzca un nombre para el usuario";
+    parrafo3.className = "text-sm text-center text-red-400";
+    return;
+  }
+
+  arrayUsuarios.push({ nombre, activo });
+
+  const activos = arrayUsuarios.filter(u => u.activo);
+
+  contenedor3.innerHTML = `Usuarios ingresados:<br>${arrayUsuarios.map(u => `${u.nombre} (${u.activo ? "activo" : "inactivo"})`).join(", ")}<br><br>Usuarios activos:<br>${activos.map(u => u.nombre).join(", ")}`;
+
+  parrafo3.textContent = "Usuario agregado exitosamente";
+  parrafo3.className = "text-sm text-center text-green-400";
+
+  inputNombre.value = "";
+  inputActivo.checked = false;
 }

@@ -1,140 +1,159 @@
-// Se agrega el evento submit a los formularios para llamar a las funciones correspondientes.
-document.getElementById("form1").addEventListener("submit",agNumero);
-document.getElementById("copNumeros").addEventListener("click",copNumeros);
-document.getElementById("form2").addEventListener("submit",peli);
-document.getElementById("copPeliculas").addEventListener("click",copPeliculas);
-document.getElementById("form3").addEventListener("submit",agarray);
-document.getElementById("copArray").addEventListener("click",copArray);
-// Se crean los arrays donde se guardaran los valores ingresados.
+// Arrays para guardar datos
 let numeros = [];
 let peliculas= [];
 let array = [];
-// Se obtienen los elementos del DOM donde se mostraran los mensajes.
-let parrafo1 = document.getElementById("warning1");
-let parrafo2 = document.getElementById("warning2");
-let parrafo3 = document.getElementById("warning3");
-// Funcion que maneja el primer formulario
+
+// Elementos DOM para mensajes y resultados
+const parrafo1 = document.getElementById("warning1");
+const contenedorNumeros = document.getElementById("listaNumeros");
+
+const parrafo2 = document.getElementById("warning2");
+const contenedorPeliculas = document.getElementById("listaPeliculas");
+
+const parrafo3 = document.getElementById("warning3");
+const contenedorArray = document.getElementById("listaArray");
+
+// Eventos
+document.getElementById("form1").addEventListener("submit", agNumero);
+document.getElementById("copNumeros").addEventListener("click", copNumeros);
+
+document.getElementById("form2").addEventListener("submit", peli);
+document.getElementById("copPeliculas").addEventListener("click", copPeliculas);
+
+document.getElementById("form3").addEventListener("submit", agarray);
+document.getElementById("copArray").addEventListener("click", copArray);
+
+// Funciones
 
 function agNumero(e){
-    e.preventDefault();// Se evita que se recargue la pagina al enviar el formulario
+    e.preventDefault();
 
-    let validar = true;
-    let numero = document.getElementById("numero").value;
-    let numero2 = document.getElementById("numero2").value;// Se obtiene el valor del campo id1
-    let numero3 = document.getElementById("numero3").value;
-// Se valida que el campo no este vacio y sea un numero
-    if(numero == "" || isNaN(numero)||numero2 == "" || isNaN(numero2)||numero3 == "" || isNaN(numero3)){
-        parrafo1.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo1.innerHTML = ("Introduzca un Numero en todos los campos:");
-        numero = "";
-        numero2 = "";
-        numero3 = "";
-        validar = false;
+    let numero = document.getElementById("numero").value.trim();
+    let numero2 = document.getElementById("numero2").value.trim();
+    let numero3 = document.getElementById("numero3").value.trim();
+
+    parrafo1.textContent = "";
+    contenedorNumeros.textContent = "";
+
+    if(numero === "" || isNaN(numero) || numero2 === "" || isNaN(numero2) || numero3 === "" || isNaN(numero3)){
+        parrafo1.textContent = "Introduzca un número válido en todos los campos";
+        parrafo1.className = "text-sm text-center text-red-400";
+        return;
     }
-// Si la validacion es correcta, se agrega el numero al array y se muestra el resultado
-    if(validar){
-        parrafo1.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        numeros.push(numero,numero2,numero3);// Se agrega el numero al array
-        
-        parrafo1.innerHTML = "Numeros: ";
-        numeros.forEach(re =>{
-            parrafo1.innerHTML += re + ", ";// Se muestran
-        })
-    }
+
+    numeros.push(numero, numero2, numero3);
+    contenedorNumeros.textContent = numeros.join(", ");
+
+    parrafo1.textContent = "Números agregados exitosamente";
+    parrafo1.className = "text-sm text-center text-green-400";
+
+    // Limpiar inputs
+    document.getElementById("numero").value = "";
+    document.getElementById("numero2").value = "";
+    document.getElementById("numero3").value = "";
 }
 
 function copNumeros(e){
     e.preventDefault();
 
-    let cop =  numeros.slice(0,3);//copio 3 elementos
+    if(numeros.length === 0){
+        parrafo1.textContent = "No hay números para copiar";
+        parrafo1.className = "text-sm text-center text-red-400";
+        contenedorNumeros.textContent = "";
+        return;
+    }
 
-    parrafo1.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-yellow-100 border border-yellow-400 text-yellow-700";
-        
-    parrafo1.innerHTML = "Tres elementos copiados desde el inicio: ";
-    cop.forEach(re =>{
-        parrafo1.innerHTML += re + ", ";
-    })
+    const cop = numeros.slice(0,3);
+    contenedorNumeros.textContent = cop.join(", ");
+
+    parrafo1.textContent = "Tres elementos copiados desde el inicio";
+    parrafo1.className = "text-sm text-center text-yellow-400";
 }
 
 function peli(e){
     e.preventDefault();
-    
-    let validar = true;
-    let pelicula = document.getElementById("pelicula").value;
-    let pelicula2 = document.getElementById("pelicula2").value;
-    let pelicula3 = document.getElementById("pelicula3").value;
 
-    if(pelicula == "" ||pelicula2 == ""||pelicula3 == ""){
-        parrafo2.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo2.innerHTML = ("Introduzca una pelicula en todos los campos:");
-        pelicula = "";
-        pelicula2 = "";
-        pelicula3 = "";
-        validar = false;
+    let pelicula = document.getElementById("pelicula").value.trim();
+    let pelicula2 = document.getElementById("pelicula2").value.trim();
+    let pelicula3 = document.getElementById("pelicula3").value.trim();
+
+    parrafo2.textContent = "";
+    contenedorPeliculas.textContent = "";
+
+    if(pelicula === "" || pelicula2 === "" || pelicula3 === ""){
+        parrafo2.textContent = "Introduzca una película en todos los campos";
+        parrafo2.className = "text-sm text-center text-red-400";
+        return;
     }
 
-    if(validar){
-        parrafo2.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        peliculas.push(pelicula,pelicula2,pelicula3);
-        
-        parrafo2.innerHTML = "Peliculas: ";
-        peliculas.forEach(re =>{
-            parrafo2.innerHTML += re + ", ";
-        })
+    peliculas.push(pelicula, pelicula2, pelicula3);
+    contenedorPeliculas.textContent = peliculas.join(", ");
 
-    }
+    parrafo2.textContent = "Películas agregadas exitosamente";
+    parrafo2.className = "text-sm text-center text-green-400";
+
+    document.getElementById("pelicula").value = "";
+    document.getElementById("pelicula2").value = "";
+    document.getElementById("pelicula3").value = "";
 }
 
 function copPeliculas(e){
     e.preventDefault();
 
-    let cop =  peliculas.slice(2,5);//creo una copia desde pos 2 al 4
+    if(peliculas.length < 3){
+        parrafo2.textContent = "No hay suficientes películas para copiar";
+        parrafo2.className = "text-sm text-center text-red-400";
+        contenedorPeliculas.textContent = "";
+        return;
+    }
 
-    parrafo2.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-yellow-100 border border-yellow-400 text-yellow-700";
-        
-    parrafo2.innerHTML = "Elementos copiados del 2, 4: ";
-    cop.forEach(re =>{
-        parrafo2.innerHTML += re + ", ";
-    })
+    const cop = peliculas.slice(2,5);
+    contenedorPeliculas.textContent = cop.join(", ");
+
+    parrafo2.textContent = "Elementos copiados del 2 al 4";
+    parrafo2.className = "text-sm text-center text-yellow-400";
 }
 
 function agarray(e){
     e.preventDefault();
 
-    let validar = true;
-    let elArray = document.getElementById("array").value;
-    let elArray2 = document.getElementById("array2").value;
-    let elArray3 = document.getElementById("array3").value;
+    let elArray = document.getElementById("array").value.trim();
+    let elArray2 = document.getElementById("array2").value.trim();
+    let elArray3 = document.getElementById("array3").value.trim();
 
-    if(elArray == ""||elArray2 == ""||elArray3 == ""){
-        parrafo3.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo3.innerHTML = ("Introduzca un texto en el campo:");
-        elArray = "";
-        elArray2 = "";
-        elArray3 = "";
-        validar = false;
+    parrafo3.textContent = "";
+    contenedorArray.textContent = "";
+
+    if(elArray === "" || elArray2 === "" || elArray3 === ""){
+        parrafo3.textContent = "Introduzca un texto en todos los campos";
+        parrafo3.className = "text-sm text-center text-red-400";
+        return;
     }
 
-    if(validar){
-        parrafo3.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        array.push(elArray, elArray2, elArray3);
-        
-        parrafo3.innerHTML = "Array: ";
-        array.forEach(re =>{
-            parrafo3.innerHTML += re + ", ";
-        })
-    }
+    array.push(elArray, elArray2, elArray3);
+    contenedorArray.textContent = array.join(", ");
+
+    parrafo3.textContent = "Textos agregados exitosamente";
+    parrafo3.className = "text-sm text-center text-green-400";
+
+    document.getElementById("array").value = "";
+    document.getElementById("array2").value = "";
+    document.getElementById("array3").value = "";
 }
 
 function copArray(e){
     e.preventDefault();
 
-    let cop = array.slice(-3);//creo copia de los ultimos 3 elementos
+    if(array.length < 3){
+        parrafo3.textContent = "No hay suficientes textos para copiar";
+        parrafo3.className = "text-sm text-center text-red-400";
+        contenedorArray.textContent = "";
+        return;
+    }
 
-    parrafo3.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-yellow-100 border border-yellow-400 text-yellow-700";
-        
-    parrafo3.innerHTML = "Ultimos 3 elementos copiados: ";
-    cop.forEach(re =>{
-        parrafo3.innerHTML += re + ", ";
-    })
+    const cop = array.slice(-3);
+    contenedorArray.textContent = cop.join(", ");
+
+    parrafo3.textContent = "Últimos 3 textos copiados";
+    parrafo3.className = "text-sm text-center text-yellow-400";
 }

@@ -1,66 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestor de Datos - Letras, Nombres y Elementos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<!-- high min de la pantalla, fondo gris, padding general, grid responsive y un espacio entre columnas -->
-<body class="bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- formulario : fondo blanco, sombra, bordes redondeados, padding, espacio entre elementos -->
-    <form id="form1" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-<!-- titulo: texto grande, negrita, violeta y centrado -->
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Letras</h1>
-        <!-- inputs con width completo, padding, border gris, bordes redondeados -->
-        <input id="letra" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue una letra">
+<body class="bg-gray-900 text-white min-h-screen p-6">
+  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">Ejercicio Letras, Nombres y Elementos</h1>
 
-        <input id="letra2" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue otra letra">
-<!-- boton con fondo violeta, texto blanco, padding, bordes, hover con transicion -->
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar Letras</button>
-        <button type="button" id="elLetras" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Eliminar letras</button>
-
-        <p id="warning1" ></p>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+    
+    <!-- FORMULARIO LETRAS -->
+    <form id="form1" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[220px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Letras</h2>
+      <input id="letra" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Agregue una letra" />
+      <input id="letra2" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Agregue otra letra" />
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar Letras</button>
+      <button type="button" id="elLetras" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Eliminar letras</button>
+    </form>
+    
+    <!-- RESULTADOS LETRAS -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[220px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Letras Ingresadas</h2>
+      <p id="warning1" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
+    </div>
+    
+    <!-- FORMULARIO NOMBRES -->
+    <form id="form2" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[260px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Nombres</h2>
+      <input id="nombre" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Agregue un nombre" />
+      <input id="nombre2" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Agregue otro nombre" />
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar Nombres</button>
+      <input id="nombre3" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Agregue el nombre entre medio" />
+      <button type="button" id="remNombres" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar nombre entre medio</button>
     </form>
 
-    <form id="form2" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Nombres</h1>
-        <input id="nombre" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue un nombre">
-
-        <input id="nombre2" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue otro nombre">
-
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar Nombres</button>
-
-        <input id="nombre3" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue el nombre entre medio">
-        
-        <button type="button" id="remNombres" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar nombre entre medio</button>
-
-        <p id="warning2" ></p>
-    </form>
-
-    <form id="form3" class="bg-white shadow-lg rounded-2xl p-6 space-y-4 md:col-span-2 flex flex-col items-center mx-auto max-w-md w-full">
-
-        <h1 class="text-2xl font-bold text-violet-700 text-center">Elementos</h1>
-        <input id="elemento" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue un elemento">
-
-        <input id="elemento2" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue otro elemento">
-
-        <button type="submit" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar elementos</button>
-
-        <input id="elemento3" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue el primer elemento entre medio">
-        
-        <input id="elemento4" class="w-full p-2 border border-gray-300 rounded-xl" type="text" placeholder="Agregue el segundo elemento entre medio">
-        
-        <button type="button" id="remElementos" class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Agregar elementos entre medio</button>
-
-        <p id="warning3" ></p>
-    </form>
-
-    <div class="md:col-span-2 flex justify-center">
-        <a href="/" class="mt-4 bg-violet-600 text-white px-6 py-2 rounded-xl hover:bg-violet-700 transition text-center">Volver</a>
+    <!-- RESULTADOS NOMBRES -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[260px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Nombres Ingresados</h2>
+      <p id="warning2" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
     </div>
 
-    <script src="../script/ej5.js"></script>
+    <!-- FORMULARIO ELEMENTOS -->
+    <form id="form3" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[300px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Elementos</h2>
+      <input id="elemento" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Agregue un elemento" />
+      <input id="elemento2" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Agregue otro elemento" />
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar elementos</button>
+      <input id="elemento3" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Agregue el primer elemento entre medio" />
+      <input id="elemento4" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Agregue el segundo elemento entre medio" />
+      <button type="button" id="remElementos" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar elementos entre medio</button>
+    </form>
+
+    <!-- RESULTADOS ELEMENTOS -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[300px] flex flex-col justify-center">
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Elementos Ingresados</h2>
+      <p id="warning3" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
+    </div>
+
+  </div>
+
+  <div class="mt-10 flex justify-center">
+    <a href="/" class="bg-red-600 text-white px-6 py-2 rounded-xl hover:bg-red-700 transition">Volver</a>
+  </div>
+
+  <script src="../script/ej5.js"></script>
 </body>
 </html>

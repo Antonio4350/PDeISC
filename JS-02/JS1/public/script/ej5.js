@@ -1,166 +1,129 @@
-// Se agrega el evento submit a los formularios para llamar a las funciones correspondientes.
-document.getElementById("form1").addEventListener("submit",agLetra);
-document.getElementById("elLetras").addEventListener("click",elLetras);
-document.getElementById("form2").addEventListener("submit",agNombre);
-document.getElementById("remNombres").addEventListener("click",remNombres);
-document.getElementById("form3").addEventListener("submit",agElemento);
-document.getElementById("remElementos").addEventListener("click",remElementos);
-// Se crean los arrays donde se guardaran los valores ingresados.
+// Eventos
+document.getElementById("form1").addEventListener("submit", agLetra);
+document.getElementById("elLetras").addEventListener("click", elLetras);
+document.getElementById("form2").addEventListener("submit", agNombre);
+document.getElementById("remNombres").addEventListener("click", remNombres);
+document.getElementById("form3").addEventListener("submit", agElemento);
+document.getElementById("remElementos").addEventListener("click", remElementos);
+
+// Arrays
 let letras = [];
 let nombres = [];
 let elementos = [];
-// Se obtienen los elementos del DOM donde se mostraran los mensajes.
 
+// Referencias a párrafos para mensajes
 let parrafo1 = document.getElementById("warning1");
 let parrafo2 = document.getElementById("warning2");
 let parrafo3 = document.getElementById("warning3");
-// Funcion que maneja el primer formulario
-function agLetra (e){
-    e.preventDefault();// Se evita que se recargue la pagina al enviar el formulario
 
-    let validar = true;
-    let letra = document.getElementById("letra").value;// Se obtiene el valor del campo id1
-    let letra2 = document.getElementById("letra2").value;
-// Se valida que el campo no este vacio y sea un numero
-    if(letra == "" || letra2 == ""){
-        parrafo1.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo1.innerHTML = ("Introduzca una letra en ambos campos");
-        validar = false;
-    }
-// Si la validacion es correcta, se agrega el numero al array y se muestra el resultado
-    if(validar){
-        parrafo1.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        letras.push(letra);//Se agrega al array
-        letras.push(letra2);
+// Funciones
 
-        parrafo1.innerHTML = "Letras: ";
-        letras.forEach(re =>{
-            parrafo1.innerHTML += re + ", ";// Se muestran
-        })
-    }
+function agLetra(e) {
+  e.preventDefault();
+
+  let letra = document.getElementById("letra").value.trim();
+  let letra2 = document.getElementById("letra2").value.trim();
+
+  parrafo1.textContent = ""; // limpio mensaje
+
+  if (letra === "" || letra2 === "") {
+    parrafo1.textContent = "Introduzca una letra en ambos campos";
+    parrafo1.className = "text-sm text-center text-red-400";
+    return;
+  }
+
+  letras.push(letra, letra2);
+
+  parrafo1.textContent = "Letras: " + letras.join(", ");
+  parrafo1.className = "text-sm text-center text-green-400";
 }
 
-function elLetras(e){
-    e.preventDefault();
+function elLetras(e) {
+  e.preventDefault();
 
-    let validar = true;
+  if (letras.length <= 1) {
+    parrafo1.textContent = "No hay letras por eliminar.";
+    parrafo1.className = "text-sm text-center text-red-400";
+    return;
+  }
 
-    if(validar){
-        letras.splice(1,2);//elimino una seccion
-        parrafo1.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-yellow-100 border border-yellow-400 text-yellow-700";
-        
-        parrafo1.innerHTML = "Dos elementos eliminados desde pos 1: ";
-        letras.forEach(re =>{
-            parrafo1.innerHTML += re + ", ";
-        })
-    }
+  letras.splice(1, 2);
 
-    if(letras.length <= 1){
-        parrafo1.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo1.innerHTML = ("No hay letras por eliminar.");
-        validar = false;
-    }
+  parrafo1.textContent = "Dos elementos eliminados desde pos 1: " + letras.join(", ");
+  parrafo1.className = "text-sm text-center text-yellow-400";
 }
 
+function agNombre(e) {
+  e.preventDefault();
 
-function agNombre (e){
-    e.preventDefault();
+  let nombre = document.getElementById("nombre").value.trim();
+  let nombre2 = document.getElementById("nombre2").value.trim();
 
-    let validar = true;
-    let nombre = document.getElementById("nombre").value;
-    let nombre2 = document.getElementById("nombre2").value;
-    
-    
-    if(nombre == "" || nombre2 == ""){
-        parrafo2.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo2.innerHTML = ("Introduzca ambos campos");
-        validar = false;
-    }
+  parrafo2.textContent = "";
 
-    if(validar){
-        parrafo2.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        nombres.push(nombre);
-        nombres.push(nombre2);
+  if (nombre === "" || nombre2 === "") {
+    parrafo2.textContent = "Introduzca ambos campos";
+    parrafo2.className = "text-sm text-center text-red-400";
+    return;
+  }
 
-        parrafo2.innerHTML = "Nombres: ";
-        nombres.forEach(re =>{
-            parrafo2.innerHTML += re + ", ";
-        })
-    }
+  nombres.push(nombre, nombre2);
+
+  parrafo2.textContent = "Nombres: " + nombres.join(", ");
+  parrafo2.className = "text-sm text-center text-green-400";
 }
 
-function remNombres(e){
-    e.preventDefault();
-    
-    let nombre3 = document.getElementById("nombre3").value;
-    
-    let validar = true;
+function remNombres(e) {
+  e.preventDefault();
 
-    if(validar){
-        nombres.splice(1,0,nombre3);//inserto una seccion del array
-        parrafo2.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        
-        parrafo2.innerHTML = "Array modificado exitosamente: ";
-        nombres.forEach(re =>{
-            parrafo2.innerHTML += re + ", ";
-        })
-    }
+  let nombre3 = document.getElementById("nombre3").value.trim();
 
-    if(nombres.length <= 1){
-        parrafo2.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo2.innerHTML = ("Rellene aun que sea un campo.");
-        validar = false;
-    }
+  if (nombre3 === "") {
+    parrafo2.textContent = "Rellene aun que sea un campo.";
+    parrafo2.className = "text-sm text-center text-red-400";
+    return;
+  }
+
+  nombres.splice(1, 0, nombre3);
+
+  parrafo2.textContent = "Array modificado exitosamente: " + nombres.join(", ");
+  parrafo2.className = "text-sm text-center text-green-400";
 }
 
-function agElemento (e){
-    e.preventDefault();
+function agElemento(e) {
+  e.preventDefault();
 
-    let validar = true;
-    let elemento = document.getElementById("elemento").value;
-    let elemento2 = document.getElementById("elemento2").value;
-    
-    
-    if(elemento == "" || elemento2 == ""){
-        parrafo3.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo3.innerHTML = ("Introduzca ambos campos");
-        validar = false;
-    }
+  let elemento = document.getElementById("elemento").value.trim();
+  let elemento2 = document.getElementById("elemento2").value.trim();
 
-    if(validar){
-        parrafo3.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        elementos.push(elemento);
-        elementos.push(elemento2);
+  parrafo3.textContent = "";
 
-        parrafo3.innerHTML = "Elementos: ";
-        elementos.forEach(re =>{
-            parrafo3.innerHTML += re + ", ";
-        })
-    }
+  if (elemento === "" || elemento2 === "") {
+    parrafo3.textContent = "Introduzca ambos campos";
+    parrafo3.className = "text-sm text-center text-red-400";
+    return;
+  }
+
+  elementos.push(elemento, elemento2);
+
+  parrafo3.textContent = "Elementos: " + elementos.join(", ");
+  parrafo3.className = "text-sm text-center text-green-400";
 }
 
-function remElementos(e){
-    e.preventDefault();
-    
-    let elemento3 = document.getElementById("elemento3").value;
-    let elemento4 = document.getElementById("elemento4").value;
-    
-    let validar = true;
-    
-    if(elemento3 == "" || elemento4 == ""){
-        parrafo3.className="mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo3.innerHTML = ("Rellene aun que sea un campo.");
-        validar = false;
-    }
-    if(validar){
-        elementos.splice(1,2,elemento3,elemento4);//remplazo dos elementos del array
-        parrafo3.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        
-        parrafo3.innerHTML = "Array modificado exitosamente: ";
-        elementos.forEach(re =>{
-            parrafo3.innerHTML += re + ", ";
-        })
-    }
+function remElementos(e) {
+  e.preventDefault();
+
+  let elemento3 = document.getElementById("elemento3").value.trim();
+  let elemento4 = document.getElementById("elemento4").value.trim();
+
+  if (elemento3 === "" || elemento4 === "") {
+    parrafo3.textContent = "Rellene aun que sea un campo.";
+    parrafo3.className = "text-sm text-center text-red-400";
+    return;
+  }
+
+  elementos.splice(1, 2, elemento3, elemento4);
+
+  parrafo3.textContent = "Array modificado exitosamente: " + elementos.join(", ");
+  parrafo3.className = "text-sm text-center text-green-400";
 }
-
-

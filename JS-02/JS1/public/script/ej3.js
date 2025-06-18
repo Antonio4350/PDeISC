@@ -8,95 +8,77 @@ let colores = [];
 let tareas = [];
 let usuarios = [];
 
-// Inicializacion de los elementos HTML donde se mostraran los mensajes de advertencia
-let parrafo1 = document.getElementById("warning1");
-let parrafo2 = document.getElementById("warning2");
-let parrafo3 = document.getElementById("warning3");
+// Referencias a los mensajes en la derecha
+let mensajeColores = document.getElementById("mensajeColores");
+let mensajeTareas = document.getElementById("mensajeTareas");
+let mensajeUsuario = document.getElementById("mensajeUsuario");
+
+// Función para mostrar mensajes alineados a la derecha en los contenedores de resultados
+function mostrarMensaje(elemento, texto, tipo) {
+  if (tipo === "error") {
+    elemento.className = " px-4 py-2 rounded-lg text-sm bg-red-900 border border-red-700 text-red-400 mb-2";
+  } else if (tipo === "exito") {
+    elemento.className = " px-4 py-2 rounded-lg text-sm bg-green-900 border border-green-700 text-green-400 mb-2";
+  } else {
+    elemento.className = "";
+  }
+  elemento.innerHTML = texto;
+}
 
 // Funcion para manejar el formulario de colores
 function color(e) {
-    e.preventDefault(); // Evitar la recarga de la pagina
+  e.preventDefault();
 
-    // Obtener los valores de los colores ingresados
-    let color1 = document.getElementById("color1").value;
-    let color2 = document.getElementById("color2").value;
-    let color3 = document.getElementById("color3").value;
+  let color1 = document.getElementById("color1").value.trim();
+  let color2 = document.getElementById("color2").value.trim();
+  let color3 = document.getElementById("color3").value.trim();
 
-    let validar = true; // Variable para controlar si la validacion fue exitosa
+  if (!color1 || !color2 || !color3) {
+    mostrarMensaje(mensajeColores, "Introduzca todos los colores.", "error");
+    return;
+  }
 
-    // Verificar que los tres campos de colores esten llenos
-    if (color1 == "" || color2 == "" || color3 == "") {
-        parrafo1.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo1.innerHTML = ("Introduzca todo los colores:");
-        validar = false; // Marcar como no valido
-    }
+  colores.unshift(color1, color2, color3);
+  mostrarMensaje(mensajeColores, "Colores: " + colores.join(", "), "exito");
 
-    // Si la validacion es exitosa, agregar los colores al array y mostrar la lista
-    if (validar) {
-        parrafo1.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        colores.unshift(color1); // Agregar color al principio del array
-        colores.unshift(color2);
-        colores.unshift(color3);
-
-        parrafo1.innerHTML = "Colores: ";
-        colores.forEach(re => {
-            parrafo1.innerHTML += re + " "; // Mostrar todos los colores
-        });
-    }
+  // Mostrar los colores en la lista
+  document.getElementById("listaColores").textContent = colores.join(", ");
 }
 
 // Funcion para manejar el formulario de tareas
 function tarea(e) {
-    e.preventDefault(); // Evitar la recarga de la pagina
+  e.preventDefault();
 
-    // Obtener los valores de las tareas ingresadas
-    let tarea = document.getElementById("tareaComun").value;
-    let tareaUrgente = document.getElementById("tareaUrgente").value;
-    let validar = true;
+  let tareaComun = document.getElementById("tareaComun").value.trim();
+  let tareaUrgente = document.getElementById("tareaUrgente").value.trim();
 
-    // Verificar que ambos campos de tareas esten llenos
-    if (tarea == "" || tareaUrgente == "") {
-        parrafo2.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo2.innerHTML = ("Introduzca ambas Tareas:");
-        validar = false; // Marcar como no valido
-    }
+  if (!tareaComun || !tareaUrgente) {
+    mostrarMensaje(mensajeTareas, "Introduzca ambas tareas.", "error");
+    return;
+  }
 
-    // Si la validacion es exitosa, agregar las tareas al array y mostrar la lista
-    if (validar) {
-        parrafo2.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        tareas.push(tarea); // Agregar tarea al final del array
-        tareas.unshift(tareaUrgente); // Agregar tarea urgente al principio
+  tareas.unshift(tareaUrgente);
+  tareas.push(tareaComun);
+  mostrarMensaje(mensajeTareas, "Tareas: " + tareas.join(", "), "exito");
 
-        parrafo2.innerHTML = "Tareas: ";
-        tareas.forEach(re => {
-            parrafo2.innerHTML += re + ", "; // Mostrar todas las tareas
-        });
-    }
+  // Mostrar las tareas en la lista
+  document.getElementById("listaTareas").textContent = tareas.join(", ");
 }
 
 // Funcion para manejar el formulario de usuarios
 function usuario(e) {
-    e.preventDefault(); // Evitar la recarga de la pagina
+  e.preventDefault();
 
-    // Obtener el valor del usuario ingresado
-    let usuari = document.getElementById("usuario").value;
-    let validar = true;
+  let usuari = document.getElementById("usuario").value.trim();
 
-    // Verificar que el campo de usuario no este vacio
-    if (usuari == "") {
-        parrafo3.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-red-100 border border-red-400 text-red-700";
-        parrafo3.innerHTML = ("Introduzca un Usuario:");
-        validar = false; // Marcar como no valido
-    }
+  if (!usuari) {
+    mostrarMensaje(mensajeUsuario, "Introduzca un usuario.", "error");
+    return;
+  }
 
-    // Si la validacion es exitosa, agregar el usuario al array y mostrar la lista
-    if (validar) {
-        parrafo3.className = "mt-2 px-4 py-2 rounded-lg text-sm text-center bg-green-100 border border-green-400 text-green-700";
-        usuarios.unshift(usuari); // Agregar usuario al principio del array
+  usuarios.unshift(usuari);
+  mostrarMensaje(mensajeUsuario, "Usuarios: " + usuarios.join(", "), "exito");
 
-        parrafo3.innerHTML = "Usuarios: ";
-        usuarios.forEach(re => {
-            parrafo3.innerHTML += re + ", "; // Mostrar todos los usuarios
-        });
-    }
+  // Mostrar el usuario en la lista
+  document.getElementById("listaUsuario").textContent = usuarios.join(", ");
 }
