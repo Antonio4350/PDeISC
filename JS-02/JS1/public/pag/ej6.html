@@ -3,58 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Document</title>
+  <title>Ejercicio 6</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-6">
-  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">Gestor de Datos</h1>
+  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">slice()</h1>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
-    <!-- FORMULARIO 1 -->
+    <!-- form 1 -->
     <form id="form1" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 flex flex-col justify-center min-h-[250px]">
-      <h2 class="text-2xl font-bold text-red-400 text-center">Números</h2>
-      <input id="numero" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="number" placeholder="Agregue un número" />
-      <input id="numero2" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="number" placeholder="Agregue otro número" />
-      <input id="numero3" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="number" placeholder="Agregue otro número" />
+      <h2 class="text-2xl font-bold text-red-400 text-center">Numeros</h2>
+      <input id="numero" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="number" placeholder="Agregue un numero" />
+      <input id="numero2" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="number" placeholder="Agregue otro numero" />
+      <input id="numero3" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="number" placeholder="Agregue otro numero" />
       <button type="submit" class="w-full bg-red-600 text-white py-2 rounded-xl hover:bg-red-700 transition">Agregar</button>
-      <button type="button" id="copNumeros" class="w-full bg-red-600 text-white py-2 rounded-xl hover:bg-red-700 transition">Copiar Números</button>
+      <button type="button" id="copNumeros" class="w-full bg-red-600 text-white py-2 rounded-xl hover:bg-red-700 transition">Copiar Numeros</button>
     </form>
 
-    <!-- RESULTADOS 1 -->
+    <!-- res form 1 -->
     <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[250px] flex flex-col justify-center">
-      <h2 class="text-2xl font-bold text-red-400 text-center mb-3">Números Ingresados</h2>
+      <h2 class="text-2xl font-bold text-red-400 text-center mb-3">Numeros Ingresados</h2>
       <p id="listaNumeros" class="text-center text-base font-mono text-gray-300 min-h-[4rem] whitespace-pre-wrap"></p>
       <p id="warning1" class="text-sm text-center mt-2"></p>
     </div>
 
-    <!-- FORMULARIO 2 -->
+    <!-- form 2-->
     <form id="form2" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 flex flex-col justify-center min-h-[250px]">
-      <h2 class="text-2xl font-bold text-red-400 text-center">Películas</h2>
-      <input id="pelicula" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="text" placeholder="Agregue una película" />
-      <input id="pelicula2" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="text" placeholder="Agregue otra película" />
-      <input id="pelicula3" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="text" placeholder="Agregue otra película" />
+      <h2 class="text-2xl font-bold text-red-400 text-center">Peliculas</h2>
+      <input id="pelicula" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="text" placeholder="Agregue una pelicula" />
+      <input id="pelicula2" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="text" placeholder="Agregue otra pelicula" />
+      <input id="pelicula3" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="text" placeholder="Agregue otra pelicula" />
       <button type="submit" class="w-full bg-red-600 text-white py-2 rounded-xl hover:bg-red-700 transition">Agregar</button>
-      <button type="button" id="copPeliculas" class="w-full bg-red-600 text-white py-2 rounded-xl hover:bg-red-700 transition">Copiar Películas</button>
+      <button type="button" id="copPeliculas" class="w-full bg-red-600 text-white py-2 rounded-xl hover:bg-red-700 transition">Copiar Peliculas</button>
     </form>
 
-    <!-- RESULTADOS 2 -->
+    <!-- res form 2 -->
     <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[250px] flex flex-col justify-center">
-      <h2 class="text-2xl font-bold text-red-400 text-center mb-3">Películas Ingresadas</h2>
+      <h2 class="text-2xl font-bold text-red-400 text-center mb-3">Peliculas Ingresadas</h2>
       <p id="listaPeliculas" class="text-center text-base font-mono text-gray-300 min-h-[4rem] whitespace-pre-wrap"></p>
       <p id="warning2" class="text-sm text-center mt-2"></p>
     </div>
 
-    <!-- FORMULARIO 3 -->
+    <!-- form 3 -->
     <form id="form3" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 flex flex-col justify-center min-h-[300px] ">
       <h2 class="text-2xl font-bold text-red-400 text-center">Textos</h2>
       <input id="array" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="text" placeholder="Agregue cualquier texto" />
       <input id="array2" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="text" placeholder="Agregue cualquier texto" />
       <input id="array3" class="w-full p-2 rounded-xl bg-gray-700 text-white text-center" type="text" placeholder="Agregue cualquier texto" />
       <button type="submit" class="w-full bg-red-600 text-white py-2 rounded-xl hover:bg-red-700 transition">Agregar</button>
-      <button type="button" id="copArray" class="w-full bg-red-600 text-white py-2 rounded-xl hover:bg-red-700 transition">Copiar últimos 3 del Array</button>
+      <button type="button" id="copArray" class="w-full bg-red-600 text-white py-2 rounded-xl hover:bg-red-700 transition">Copiar ultimos 3 del Array</button>
     </form>
 
-    <!-- RESULTADOS 3 -->
+    <!-- res form 3 -->
     <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[300px] flex flex-col justify-center ">
       <h2 class="text-2xl font-bold text-red-400 text-center mb-3">Textos Ingresados</h2>
       <p id="listaArray" class="text-center text-base font-mono text-gray-300 min-h-[4rem] whitespace-pre-wrap"></p>

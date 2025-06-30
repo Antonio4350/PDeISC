@@ -3,20 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Formularios Estilizados</title>
+  <title>Ejercicio 3</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-6">
 
-  <!-- TÍTULO GENERAL -->
-  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">Ejercicio 3</h1>
+  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">unshift()</h1>
 
-  <!-- Contenedor principal con espacio entre cada fila -->
   <div class="max-w-6xl mx-auto space-y-10">
 
-    <!-- FILA 1: Formulario Colores + Resultados -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-      <!-- Formulario -->
+      <!-- form 1 -->
       <form id="form1" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 flex flex-col justify-center">
         <h2 class="text-xl font-semibold text-red-300 text-center">Colores</h2>
         <input id="color1" class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-red-400" type="text" placeholder="Agregue un Color" />
@@ -24,7 +21,7 @@
         <input id="color3" class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-red-400" type="text" placeholder="Agregue un Color" />
         <button type="submit" class="w-full py-2 rounded-xl bg-red-600 hover:bg-red-700 transition font-semibold text-white">Enviar Colores</button>
       </form>
-      <!-- Resultados -->
+      <!-- res form 1 -->
       <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
         <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Colores Ingresados</h2>
         <p id="mensajeColores" class="text-right text-sm mb-2"></p> <!-- Mensajes aquí -->
@@ -33,16 +30,15 @@
       </div>
     </div>
 
-    <!-- FILA 2: Formulario Tareas + Resultados -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-      <!-- Formulario -->
+      <!-- form 2 -->
       <form id="form2" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 flex flex-col justify-center">
         <h2 class="text-xl font-semibold text-red-300 text-center">Tareas</h2>
         <input id="tareaComun" class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-red-400" type="text" placeholder="Agregue una Tarea" />
         <input id="tareaUrgente" class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-red-400" type="text" placeholder="Agregue una Tarea Urgente" />
         <button type="submit" class="w-full py-2 rounded-xl bg-red-600 hover:bg-red-700 transition font-semibold text-white">Enviar Tareas</button>
       </form>
-      <!-- Resultados -->
+      <!-- res form 2 -->
       <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
         <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Tareas Ingresadas</h2>
         <p id="mensajeTareas" class="text-right text-sm mb-2"></p> <!-- Mensajes aquí -->
@@ -50,25 +46,23 @@
       </div>
     </div>
 
-    <!-- FILA 3: Formulario Usuario + Resultados -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-      <!-- Formulario -->
+      <!-- form 3 -->
       <form id="form3" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 flex flex-col justify-center">
         <h2 class="text-xl font-semibold text-red-300 text-center">Usuario</h2>
         <input id="usuario" class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-red-400" type="text" placeholder="Agregue un usuario" />
         <button type="submit" class="w-full py-2 rounded-xl bg-red-600 hover:bg-red-700 transition font-semibold text-white">Enviar Usuario</button>
       </form>
-      <!-- Resultados -->
+      <!-- res form 3 -->
       <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
         <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Usuario Ingresado</h2>
-        <p id="mensajeUsuario" class="text-right text-sm mb-2"></p> <!-- Mensajes aquí -->
+        <p id="mensajeUsuario" class="text-right text-sm mb-2"></p>
         <p id="listaUsuario" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
       </div>
     </div>
 
   </div>
 
-  <!-- BOTÓN VOLVER -->
   <div class="mt-10 flex justify-center">
     <a href="/" class="bg-red-600 text-white px-6 py-2 rounded-xl hover:bg-red-700 transition">Volver</a>
   </div>

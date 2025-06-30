@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gestor de Datos - Letras, Nombres y Elementos</title>
+  <title>Ejercicio 5</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-6">
-  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">Ejercicio Letras, Nombres y Elementos</h1>
+  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">splice()</h1>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
     
-    <!-- FORMULARIO LETRAS -->
+    <!-- form 1 -->
     <form id="form1" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[220px] flex flex-col justify-center">
       <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Letras</h2>
       <input id="letra" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Agregue una letra" />
@@ -20,13 +20,13 @@
       <button type="button" id="elLetras" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Eliminar letras</button>
     </form>
     
-    <!-- RESULTADOS LETRAS -->
+    <!-- res form 1 -->
     <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[220px] flex flex-col justify-center">
       <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Letras Ingresadas</h2>
       <p id="warning1" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
     </div>
     
-    <!-- FORMULARIO NOMBRES -->
+    <!-- form 2 -->
     <form id="form2" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[260px] flex flex-col justify-center">
       <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Nombres</h2>
       <input id="nombre" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Agregue un nombre" />
@@ -36,13 +36,13 @@
       <button type="button" id="remNombres" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar nombre entre medio</button>
     </form>
 
-    <!-- RESULTADOS NOMBRES -->
+    <!-- res form 2-->
     <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[260px] flex flex-col justify-center">
       <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Nombres Ingresados</h2>
       <p id="warning2" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
     </div>
 
-    <!-- FORMULARIO ELEMENTOS -->
+    <!-- form 3 -->
     <form id="form3" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[300px] flex flex-col justify-center">
       <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Elementos</h2>
       <input id="elemento" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Agregue un elemento" />
@@ -53,7 +53,7 @@
       <button type="button" id="remElementos" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar elementos entre medio</button>
     </form>
 
-    <!-- RESULTADOS ELEMENTOS -->
+    <!-- res form 3 -->
     <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[300px] flex flex-col justify-center">
       <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Elementos Ingresados</h2>
       <p id="warning3" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>

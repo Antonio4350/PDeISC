@@ -3,17 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gestor de Animales y Supermercado</title>
+  <title>Ejercicio 2</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-6">
-  <!-- TÍTULO GENERAL -->
-  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">Ejercicio 2</h1>
+  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">pop()</h1>
 
-  <!-- GRID PRINCIPAL -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
     
-    <!-- FORMULARIO ANIMALES -->
+    <!-- form 1 -->
     <form id="formularioAnimales" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center">
       <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Animales</h2>
       <input id="inAnimal" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Ingrese un Animal" />
@@ -23,14 +21,14 @@
       </div>
     </form>
 
-    <!-- RESULTADOS ANIMALES -->
+    <!-- res form 1 -->
     <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
       <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Animales Ingresados</h2>
       <p id="listaAnimales" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
       <p id="warningAnimales" class="text-sm text-center mt-1"></p>
     </div>
 
-    <!-- FORMULARIO SUPERMERCADO -->
+    <!--form 2 -->
     <form id="formularioSupermercado" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center">
       <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Supermercado</h2>
       <input id="inProducto" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Ingrese un Producto" />
@@ -41,7 +39,7 @@
       </div>
     </form>
 
-    <!-- RESULTADOS SUPERMERCADO -->
+    <!-- res form 2 -->
     <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
       <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Productos Ingresados</h2>
       <p id="listaProductos" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
@@ -50,7 +48,6 @@
 
   </div>
 
-  <!-- BOTÓN VOLVER -->
   <div class="mt-10 flex justify-center">
     <a href="/" class="bg-red-600 text-white px-6 py-2 rounded-xl hover:bg-red-700 transition">Volver</a>
   </div>

@@ -16,9 +16,11 @@ let mensajeUsuario = document.getElementById("mensajeUsuario");
 // Función para mostrar mensajes alineados a la derecha en los contenedores de resultados
 function mostrarMensaje(elemento, texto, tipo) {
   if (tipo === "error") {
-    elemento.className = " px-4 py-2 rounded-lg text-sm bg-red-900 border border-red-700 text-red-400 mb-2";
+    elemento.className =
+      " px-4 py-2 rounded-lg text-sm bg-red-900 border border-red-700 text-red-400 mb-2";
   } else if (tipo === "exito") {
-    elemento.className = " px-4 py-2 rounded-lg text-sm bg-green-900 border border-green-700 text-green-400 mb-2";
+    elemento.className =
+      " px-4 py-2 rounded-lg text-sm bg-green-900 border border-green-700 text-green-400 mb-2";
   } else {
     elemento.className = "";
   }

@@ -8,82 +8,52 @@
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-6">
 
-  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">Ejercicio 7</h1>
+  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">indexOf()</h1>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
 
-    <!-- FORMULARIO PERRO -->
+    <!-- form 1 -->
     <form id="form1" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center">
       <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Textos con "Perro"</h2>
-      <input
-        id="id1"
-        class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center"
-        type="text"
-        placeholder="Escriba textos que contengan la palabra 'perro'"
-      />
-      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">
-        Agregar Texto
-      </button>
-      <button type="button" id="event" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">
-        Buscar en texto
-      </button>
+      <input id="id1" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center" type="text" placeholder="Escriba textos que contengan la palabra 'perro'"/>
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar Texto</button>
+      <button type="button" id="event" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Buscar en texto</button>
       <p id="warning1" class="text-sm text-center mt-2"></p>
     </form>
 
-    <!-- RESULTADOS PERRO -->
+    <!-- res form 1 -->
     <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
       <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Textos Ingresados</h2>
       <p id="listaTextos" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
       <p id="warningResult1" class="text-sm text-center mt-1"></p>
     </div>
 
-    <!-- FORMULARIO NÚMEROS -->
+    <!-- form 2 -->
     <form id="form2" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center">
-      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Números</h2>
-      <input
-        id="id2"
-        class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center"
-        type="number"
-        placeholder="Agregue algunos números"
-      />
-      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">
-        Agregar Números
-      </button>
-      <button type="button" id="event2" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">
-        Encontrar el número 50 en el array
-      </button>
+      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Numeros</h2>
+      <input id="id2" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center" type="number" placeholder="Agregue algunos números"/>
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar Números</button>
+      <button type="button" id="event2" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Encontrar el número 50 en el array</button>
       <p id="warning2" class="text-sm text-center mt-2"></p>
     </form>
 
-    <!-- RESULTADOS NÚMEROS -->
+    <!-- res form 2 -->
     <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
-      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Números Ingresados</h2>
+      <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Numeros Ingresados</h2>
       <p id="listaNumeros" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
       <p id="warningResult2" class="text-sm text-center mt-1"></p>
     </div>
 
-    <!-- FORMULARIO CIUDADES -->
-    <form
-      id="form3"
-      class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center "
-    >
+    <!-- form 3 -->
+    <form id="form3" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center ">
       <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Ciudades</h2>
-      <input
-        id="id3"
-        class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center"
-        type="text"
-        placeholder="Agregue algunas ciudades"
-      />
-      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">
-        Agregar Ciudades
-      </button>
-      <button type="button" id="event3" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">
-        Encontrar la ciudad Madrid
-      </button>
+      <input id="id3" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white text-center" type="text" placeholder="Agregue algunas ciudades"/>
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Agregar Ciudades</button>
+      <button type="button" id="event3" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Encontrar la ciudad Madrid</button>
       <p id="warning3" class="text-sm text-center mt-2"></p>
     </form>
 
-    <!-- RESULTADOS CIUDADES -->
+    <!-- res form 3 -->
     <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center ">
       <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Ciudades Ingresadas</h2>
       <p id="listaCiudades" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
@@ -92,7 +62,6 @@
 
   </div>
 
-  <!-- BOTÓN VOLVER -->
   <div class="mt-10 flex justify-center">
     <a href="/" class="bg-red-600 text-white px-6 py-2 rounded-xl hover:bg-red-700 transition">Volver</a>
   </div>

@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gestor de Datos</title>
+  <title>Ejercicio 1 </title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-6">
-  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">Ejercicio 1</h1>
+  <h1 class="text-3xl font-bold text-center text-red-400 mb-10">push()</h1>
 
+  <!-- form1 -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
-    <!-- FORMULARIO FRUTAS -->
     <form id="formulario1" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center">
       <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Frutas</h2>
       <input id="frutaInput" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Ingrese una Fruta" />
       <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Enviar Fruta</button>
     </form>
 
-    <!-- RESULTADOS FRUTAS -->
+    <!-- res form1 -->
     <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
       <div>
         <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Frutas Ingresadas</h2>
@@ -26,14 +26,14 @@
       <p id="warning" class="text-sm text-center mt-1"></p>
     </div>
 
-    <!-- FORMULARIO AMIGOS -->
+    <!-- form2 -->
     <form id="formulario2" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center">
       <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Amigos</h2>
       <input id="amigoInput" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" placeholder="Ingrese un Amigo" />
       <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Enviar Amigo</button>
     </form>
 
-    <!-- RESULTADOS AMIGOS -->
+    <!-- res form2 -->
     <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
       <div>
         <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Amigos Ingresados</h2>
@@ -42,24 +42,23 @@
       <p id="warningAmigo" class="text-sm text-center mt-1"></p>
     </div>
 
-    <!-- FORMULARIO NÚMEROS -->
+    <!-- form3 -->
     <form id="formulario3" class="bg-gray-800 p-6 rounded-2xl shadow space-y-4 min-h-[180px] flex flex-col justify-center">
-      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Números</h2>
-      <input id="number" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="number" placeholder="Ingrese un Número" />
-      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Enviar Número</button>
+      <h2 class="text-xl font-semibold text-red-300 text-center">Formulario de Numeros</h2>
+      <input id="number" class="w-full p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="number" placeholder="Ingrese un Numero" />
+      <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition text-white py-2 rounded-xl">Enviar Numero</button>
     </form>
 
-    <!-- RESULTADOS NÚMEROS -->
+    <!-- res form3 -->
     <div class="bg-gray-800 p-6 rounded-2xl shadow min-h-[180px] flex flex-col justify-center">
       <div>
-        <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Números Ingresados</h2>
+        <h2 class="text-xl font-semibold text-red-300 text-center mb-2">Numeros Ingresados</h2>
         <p id="listaNumeros" class="text-center text-base font-mono text-gray-200 min-h-[2rem]"></p>
       </div>
       <p id="warningNumeros" class="text-sm text-center mt-1"></p>
     </div>
   </div>
 
-  <!-- BOTÓN VOLVER -->
   <div class="mt-10 flex justify-center">
     <a href="/" class="bg-red-600 text-white px-6 py-2 rounded-xl hover:bg-red-700 transition">Volver</a>
   </div>
