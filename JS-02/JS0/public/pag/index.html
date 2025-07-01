@@ -1,62 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Registro</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="min-h-screen bg-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+<body class="bg-gray-900 text-white min-h-screen p-8" oncontextmenu="return false;">
 
-  <form id="form" class="bg-white shadow-lg rounded-2xl p-6 space-y-4">
-    <h1 class="text-2xl font-bold text-violet-700 text-center">Registro</h1>
+  <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
 
-    <input class="w-full p-2 border border-gray-300 rounded-xl" type="text" id="nombre" placeholder="Nombre">
-    <input class="w-full p-2 border border-gray-300 rounded-xl" type="text" id="apellido" placeholder="Apellido">
-    <input class="w-full p-2 border border-gray-300 rounded-xl" type="number" id="edad" placeholder="Edad">
-    <input class="w-full p-2 border border-gray-300 rounded-xl" type="date" id="fechaNacimiento">
+    <!-- form -->
+    <form id="form" class="bg-gray-800 rounded-2xl shadow-xl p-6 space-y-4">
+      <h1 class="text-3xl font-bold text-violet-400 text-center mb-4">Registro</h1>
 
-    <div class="flex items-center space-x-4">
-      <label class="flex items-center space-x-2">
-        <input type="radio" id="masculino" name="genero" class="accent-violet-500">
-        <span>Masculino</span>
-      </label>
-      <label class="flex items-center space-x-2">
-        <input type="radio" id="femenino" name="genero" class="accent-violet-500">
-        <span>Femenino</span>
-      </label>
+      <input class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" id="nombre" placeholder="Nombre">
+      <input class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" id="apellido" placeholder="Apellido">
+      <input class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white" type="number" id="edad" placeholder="Edad">
+      <input class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white" type="date" id="fechaNacimiento">
+
+      <div class="flex items-center justify-around">
+        <label class="flex items-center gap-2">
+          <input type="radio" id="masculino" name="genero" class="accent-violet-500">
+          <span>Masculino</span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="radio" id="femenino" name="genero" class="accent-violet-500">
+          <span>Femenino</span>
+        </label>
+      </div>
+
+      <input class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white" type="number" id="dni" placeholder="DNI">
+
+      <select id="estadoCivil" class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white">
+        <option value="">Seleccionar estado civil</option>
+        <option value="soltero">Solter@</option>
+        <option value="casado">Casad@</option>
+        <option value="divorciado">Divorciad@</option>
+        <option value="viudo">Viud@</option>
+      </select>
+
+      <input class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white" type="text" id="nacionalidad" placeholder="Nacionalidad">
+      <input class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white" type="number" id="tel" placeholder="Teléfono">
+      <input class="w-full p-3 rounded-xl border border-gray-600 bg-gray-700 text-white" type="email" id="mail" placeholder="Correo electrónico">
+
+      <div class="flex items-center gap-4">
+        <label class="flex items-center gap-2">
+          <span>¿Tiene hijos?</span>
+          <input type="checkbox" id="chHijos" class="accent-violet-500">
+        </label>
+        <input class="hidden w-24 p-2 rounded-xl border border-gray-600 bg-gray-700 text-white" type="number" id="hijos" placeholder="Cantidad">
+      </div>
+
+      <button class="w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded-xl transition">Registrar</button>
+
+      <p id="warning" class="text-sm text-center mt-2 text-white-200"></p>
+    </form>
+
+    <!-- res -->
+    <div class="bg-white-800 rounded-2xl shadow-xl p-6 text-white-200">
+      <h2 class="text-2xl font-semibold text-violet-400 mb-4 text-center">Personas ingresadas</h2>
+      <ul id="listaPersonas" class="list-disc pl-6 space-y-2 text-white-200 text-sm"></ul>
     </div>
 
-    <input class="w-full p-2 border border-gray-300 rounded-xl" type="number" id="dni" placeholder="DNI">
-
-    <select id="estadoCivil" class="w-full p-2 border border-gray-300 rounded-xl">
-      <option value="">Seleccionar estado civil</option>
-      <option value="soltero">Solter@</option>
-      <option value="casado">Casad@</option>
-      <option value="divorciado">Divorciad@</option>
-      <option value="viudo">Viud@</option>
-    </select>
-
-    <input class="w-full p-2 border border-gray-300 rounded-xl" type="text" id="nacionalidad" placeholder="Nacionalidad">
-    <input class="w-full p-2 border border-gray-300 rounded-xl" type="number" id="tel" placeholder="Telefono">
-    <input class="w-full p-2 border border-gray-300 rounded-xl" type="email" id="mail" placeholder="Correo electronico">
-
-    <div class="flex items-center space-x-4">
-      <label class="flex items-center space-x-2">
-        <span>¿Tiene hijos?</span>
-        <input type="checkbox" id="chHijos" class="accent-violet-500">
-      </label>
-      <input class="hidden w-20 p-1 border border-gray-300 rounded-xl" type="number" id="hijos" placeholder="Cantidad">
-    </div>
-
-    <button class="w-full bg-violet-600 text-white py-2 rounded-xl hover:bg-violet-700 transition">Registrar</button>
-
-    <p id="warning" class="text-green-500 text-sm text-center"></p>
-</form>
-
-  <div class="bg-white shadow-lg rounded-2xl p-6">
-    <h2 class="text-xl font-semibold text-violet-700 mb-4">Personas ingresadas</h2>
-    <ul id="listaPersonas" class="list-disc pl-5 space-y-1 text-gray-700"></ul>
   </div>
 
   <script src="../scripts/script.js"></script>
