@@ -1,196 +1,56 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pagina PDeISC</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diario</title>
+  <link rel="stylesheet" href="css.css" />
 </head>
 <body>
-    <header>
-        <h1>Pagina PDeISC</h1>
+  <header>
+    <h1>Noticias</h1>
     </header>
-    <div class="contenedor">
-        <div class="col-left">
-            <div class="col col1">
-                <h2>Titulo</h2>
-                <br>
-                <div>
-                    <p class="text-image">Lorem ipsum dolor sit amet consectetur adipisicing elit. Eveniet velit dolorum illo esse delectus, dolores excepturi debitis culpa voluptates tempore ipsam illum, et neque dignissimos molestias, rerum nisi ipsum odio!</p>
-                </div>
-                <div>
-                    <img src="blanco.png" alt="">
-                </div>
-            </div>
-            <div class="col col2">
-                <h2>Titulo</h2>
-                <br>
-                <div>
-                    <p class="text-image">Lorem ipsum dolor sit amet consectetur adipisicing elit. Eveniet velit dolorum illo esse delectus, dolores excepturi debitis culpa voluptates tempore ipsam illum, et neque dignissimos molestias, rerum nisi ipsum odio!</p>
-                </div>
-                <div>
-                    <img src="blanco.png" alt="">
-                </div>
-            </div>
 
-            <div class="col col3">
-                <div class="col-col left">
-                    <h2>Titulo</h2>
-                    <br>
-                    <div>
-                        <p class="text-image">Lorem ipsum dolor sit amet consectetur adipisicing elit. Eveniet velit dolorum illo esse delectus, dolores excepturi debitis culpa voluptates tempore ipsam illum, et neque dignissimos molestias, rerum nisi ipsum odio!</p>
-                    </div>
-                    <div>
-                        <img src="blanco.png" alt="">
-                    </div>
-                </div>
-                <div class="col-col right">
-                    <h2>Titulo</h2>
-                    <br>
-                    <div>
-                        <p class="text-image">Lorem ipsum dolor sit amet consectetur adipisicing elit. Eveniet velit dolorum illo esse delectus, dolores excepturi debitis culpa voluptates tempore ipsam illum, et neque dignissimos molestias, rerum nisi ipsum odio!</p>
-                    </div>
-                    <div>
-                        <img src="blanco.png" alt="">
-                    </div>
-                </div>
-            </div>
-        </div>
-    <footer>
-        <p>Materia PDeISC</p>
-        <p>Docente: Estanga</p>
-        <p>Alumno: Valletto Antonio</p>
-    </footer>
+  <nav>
+    <ul>
+      <li><a href="#">Inicio</a></li>
+      <li><a href="#">Politica</a></li>
+      <li><a href="#">Economia</a></li>
+      <li><a href="#">Deportes</a></li>
+      <li><a href="#">Cultura</a></li>
+      <li><a href="#">Contacto</a></li>
+    </ul>
+  </nav>
 
+  <main>
+    <section class="destacada">
+      <h2>Noticia Principal</h2>
+      <article>
+        <h3>Titulo</h3>
+        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Cum minima quis nesciunt provident illo dolorem iusto modi praesentium alias necessitatibus animi expedita excepturi tempora ipsam itaque, ut quam a. Tenetur!</p>
+      </article>
+    </section>
+
+    <section class="noticias">
+      <article>
+        <h3>Titulo</h3>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Unde eaque nulla tempore ex laborum dolore ducimus sapiente facilis expedita, possimus nam quibusdam inventore accusantium. Quod neque assumenda delectus facere velit!</p>
+      </article>
+
+      <article>
+        <h3>Titulo</h3>
+        <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Similique autem vero, voluptates distinctio ratione dolor eligendi laudantium praesentium. Ut cumque reiciendis iure obcaecati adipisci fuga, ipsam veniam nam quos aliquam.</p>
+      </article>
+
+      <article>
+        <h3>Titulo</h3>
+        <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Similique autem vero, voluptates distinctio ratione dolor eligendi laudantium praesentium. Ut cumque reiciendis iure obcaecati adipisci fuga, ipsam veniam nam quos aliquam.</p>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Diario - Todos los derechos reservados.</p>
+  </footer>
 </body>
 </html>
-<style>
-    * {
-    margin: 0;
-    padding: 0;
-    font-family: "Montserrat", sans-serif;
-}
-
-header{
-    background-color:rgba(28, 28, 28, 0.7);
-    align-items: center;
-    justify-content: space-between;
-    height: 8vh;
-    padding: 15px;
-    width: 100%;
-    color: white;
-}
-h1{
-    text-align: center;
-}
-
-body {
-    background-color: #141414;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-body::-webkit-scrollbar{
-    display: none;
-}
-
-.contenedor{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: space-between;
-    flex-grow: 1;
-}
-
-.text-image {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-}
-
-.text-image{
-    width: 150px;
-    height: auto;
-    
-}
-.contenedor img {
-    float: none;
-    margin: 0;
-}
-
-.col-left{
-    flex: 2;
-    gap: 1em;
-    border-radius: 2em;
-    display: flex;
-    flex-direction: column;
-}
-
-
-.col-right{
-    flex: 1;
-    border-radius: 2em;
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-}
-
-.col{
-    flex: 1;
-    border-radius: 2em;
-}
-.col h2{
-    width: 90%;
-    justify-self: center;
-    align-self: center;
-    text-align: center;
-    text-decoration: underline;
-}
-.col p{
-    width: 90%;
-    justify-self: center;
-    align-self: center;
-    text-align: center;
-}
-.col3{
-    display: flex;
-    border: none;
-    gap: 1em;
-}
-.col-col{
-    flex: 1;
-    
-    border-radius: 2em;
-}
-
-.col1{
-    background-color: #ff1f62;
-}
-
-
-.col2{
-    background-color: #3df29d;
-}
-
-
-.left{
-    background-color: #ff3b3b;
-}
-
-.right{
-    background-color: #6232fc;
-}
-
-footer{
-    background-color: rgba(28, 28, 28, 0.7);
-    text-align: center;
-    padding: 15px;
-    color: white;
-    width: 100%;
-    position: relative;
-    bottom: 0;
-}
-
-
-</style>
