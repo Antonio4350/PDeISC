@@ -1,22 +1,28 @@
-import logo from './logo.svg';
-import './App.css';
+import Saludo from "./componentes/holaMundo";
+import Tarjeta from "./componentes/tarjeta";
+import Contador from "./componentes/contador";
+import ListaTareas from "./componentes/tareas";
+import FormularioSimple from "./componentes/formulario";
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+      <header className="App-header"> 
+        <Saludo />
+        <br />
+        <Tarjeta
+        img = '/logo192.png'
+        name = 'Juan'
+        surname = 'no se'
+        profesions = 'Cartonero'
+        />
+        <br />
+        <Contador />
+        <br />
+        <ListaTareas />
+        <br />
+        <FormularioSimple />
+        <br />
       </header>
     </div>
   );
