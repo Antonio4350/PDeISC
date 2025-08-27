@@ -36,19 +36,19 @@ function Formulario({ usuario = {}, onSubmit }) {
     const fecha = new Date(data.fecha_nacimiento);
 
     if (!data.nombre || data.nombre.length < 2 || !soloLetras.test(data.nombre)) {
-      errores.push("El nombre debe tener al menos 2 letras y no contener números.");
+      errores.push("El nombre debe tener al menos 2 letras y no contener numeros.");
     }
     if (!data.apellido || data.apellido.length < 2 || !soloLetras.test(data.apellido)) {
-      errores.push("El apellido debe tener al menos 2 letras y no contener números.");
+      errores.push("El apellido debe tener al menos 2 letras y no contener numeros.");
     }
     if (!soloNumeros.test(data.telefono) || data.telefono.length < 7 || data.telefono.length > 15) {
-      errores.push("El teléfono debe tener entre 7 y 15 dígitos numéricos.");
+      errores.push("El telefono debe tener entre 7 y 15 digitos numericos.");
     }
     if (!soloNumeros.test(data.celular) || data.celular.length < 7 || data.celular.length > 15) {
-      errores.push("El celular debe tener entre 7 y 15 dígitos numéricos.");
+      errores.push("El celular debe tener entre 7 y 15 digitos numericos.");
     }
     if (isNaN(fecha.getTime())) {
-      errores.push("La fecha de nacimiento no es válida.");
+      errores.push("La fecha de nacimiento no es valida.");
     } else {
       if (fecha < limiteMin) errores.push("La fecha de nacimiento no puede ser menor al año 1900.");
       if (fecha > hoy) errores.push("La fecha de nacimiento no puede ser mayor a hoy.");
@@ -98,11 +98,11 @@ function Formulario({ usuario = {}, onSubmit }) {
       </label>
 
       <label className="block">
-        <span className="text-gray-700 font-semibold">Teléfono:</span>
+        <span className="text-gray-700 font-semibold">Telefono:</span>
         <input
           name="telefono"
           defaultValue={usuario.telefono || ""}
-          placeholder="Teléfono"
+          placeholder="Telefono"
           className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1"
         />
       </label>
@@ -147,7 +147,6 @@ function Formulario({ usuario = {}, onSubmit }) {
         Guardar
       </button>
 
-      {/* Lista de errores debajo del botón */}
       {errores.length > 0 && (
         <ul className="mt-4 space-y-2 text-red-600 font-medium">
           {errores.map((err, i) => (

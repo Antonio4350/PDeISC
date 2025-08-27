@@ -13,18 +13,6 @@ export async function main() {
   }
 }
 
-// Consulta de un usuario por ID
-export async function consultarUsuario(id) {
-  try {
-    const conn = await connectDB();
-    const [rows] = await conn.query("SELECT * FROM usr WHERE id = ?", [id]);
-    await conn.end();
-    return rows.length > 0 ? rows[0] : null;
-  } catch (err) {
-    console.error("Error al consultar usuario:", err);
-    return null;
-  }
-}
 
 // Alta de usuario
 export async function agregarUsuario(data) {

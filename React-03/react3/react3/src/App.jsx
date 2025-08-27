@@ -9,10 +9,7 @@ import "./App.css";
 function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
-      {/* Header */}
       <Header />
-
-      {/* Contenido principal */}
       <main className="container mx-auto py-8">
         <Routes>
           <Route path="/" element={<Lista />} />

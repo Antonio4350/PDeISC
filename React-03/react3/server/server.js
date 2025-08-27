@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Servir index.html
+// index.html
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
@@ -24,17 +24,6 @@ app.get("/users", async (req, res) => {
     res.json(usuarios);
   } catch (err) {
     res.status(500).json({ error: "Error al obtener usuarios" });
-  }
-});
-
-// Consulta por ID
-app.get("/users/:id", async (req, res) => {
-  try {
-    const usuario = await consultarUsuario(req.params.id);
-    if (!usuario) return res.status(404).json({ error: "Usuario no encontrado" });
-    res.json(usuario);
-  } catch (err) {
-    res.status(500).json({ error: "Error al consultar usuario" });
   }
 });
 

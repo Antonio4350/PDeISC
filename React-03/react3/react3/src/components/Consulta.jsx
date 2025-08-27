@@ -5,7 +5,7 @@ function Consulta() {
   const [usuarios, setUsuarios] = useState([]);
   const [error, setError] = useState("");
   const [filtro, setFiltro] = useState("");
-  const [campo, setCampo] = useState("nombre"); // por defecto buscar por nombre
+  const [campo, setCampo] = useState("nombre");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,7 +27,6 @@ function Consulta() {
       .catch((err) => setError(err.message));
   }
 
-  // Filtrado dinámico
   const usuariosFiltrados = usuarios.filter((u) => {
     if (!filtro) return true;
     const valor = (u[campo] || "").toString().toLowerCase();
@@ -35,11 +34,10 @@ function Consulta() {
   });
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-12 py-8 space-y-6">
       <h2 className="text-2xl font-bold text-blue-700">Consulta de Usuarios</h2>
 
-      {/* Barra de búsqueda */}
-      <div className="flex gap-2">
+      <div className="flex flex-col md:flex-row gap-2 md:items-center">
         <select
           value={campo}
           onChange={(e) => setCampo(e.target.value)}
@@ -58,7 +56,7 @@ function Consulta() {
           placeholder={`Buscar por ${campo}...`}
           value={filtro}
           onChange={(e) => setFiltro(e.target.value)}
-          className="flex-grow border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-grow border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2 md:mt-0"
         />
       </div>
 
@@ -71,11 +69,11 @@ function Consulta() {
       {usuariosFiltrados.length === 0 ? (
         <p className="text-gray-600">No hay usuarios que coincidan.</p>
       ) : (
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {usuariosFiltrados.map((u) => (
             <div
               key={u.id}
-              className="bg-white p-6 shadow rounded-xl space-y-2 border"
+              className="bg-white p-6 shadow rounded-xl space-y-2 border hover:shadow-2xl hover:scale-105 transition-transform"
             >
               <p>
                 <span className="font-semibold text-blue-700">Nombre:</span>{" "}
