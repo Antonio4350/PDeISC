@@ -1,25 +1,29 @@
 import { Routes, Route, Link } from 'react-router-dom';
-import Lista from './components/lista.jsx';
-import Creacion from './components/agregar.jsx';
-import Detalle from './components/edicion.jsx';
+import Lista from './components/Lista.jsx';
+import Agregar from './components/Agregar.jsx';
+import Editar from './components/Editar.jsx';
+import Consulta from './components/Consulta.jsx';
 import './App.css';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-blue-600 shadow-md">
-        <nav className="container mx-auto flex items-center justify-between p-4">
-          <div className="flex gap-6">
-            <Link to="/" className="text-white hover:text-blue-200 transition-colors duration-200 font-medium">Inicio</Link>
-            <Link to="/creacion" className="text-white hover:text-blue-200 transition-colors duration-200 font-medium">Agregar Usuario</Link>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
+      <header className="bg-blue-700 shadow-lg">
+        <nav className="container mx-auto flex items-center justify-between p-6">
+          <div className="flex gap-8">
+            <Link to="/" className="text-white hover:text-blue-200 font-semibold text-lg transition-colors">Lista</Link>
+            <Link to="/agregar" className="text-white hover:text-blue-200 font-semibold text-lg transition-colors">Agregar</Link>
           </div>
         </nav>
       </header>
-      <Routes>
-        <Route path="/" element={<Lista />} />
-        <Route path="/creacion" element={<Creacion />} />
-        <Route path="/detalle/:id" element={<Detalle />} />
-      </Routes>
+      <main className="container mx-auto py-8">
+        <Routes>
+          <Route path="/" element={<Lista />} />
+          <Route path="/agregar" element={<Agregar />} />
+          <Route path="/editar/:id" element={<Editar />} />
+          <Route path="/consulta/:id" element={<Consulta />} />
+        </Routes>
+      </main>
     </div>
   );
 }

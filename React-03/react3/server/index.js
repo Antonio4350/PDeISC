@@ -33,12 +33,12 @@ export async function agregarUsuario(data) {
     const conn = await connectDB();
     const [result] = await conn.query(
       `INSERT INTO usr 
-      (nombre, apellido, direccion, telefono, celular, fechaNacimiento, email) 
+      (nombre, apellido, direccion, telefono, celular, fecha_nacimiento, email) 
       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [nombre, apellido, direccion, telefono, celular, fechaNacimiento, email]
     );
     await conn.end();
-    return { id: result.insertId, ...data };
+    return { id: result.insertId, ...data, fecha_nacimiento: fechaNacimiento };
   } catch (err) {
     console.error("Error al agregar usuario:", err);
     return null;
@@ -52,12 +52,12 @@ export async function modificarUsuario(id, data) {
     const conn = await connectDB();
     const [result] = await conn.query(
       `UPDATE usr SET 
-        nombre = ?, apellido = ?, direccion = ?, telefono = ?, celular = ?, fechaNacimiento = ?, email = ? 
+        nombre = ?, apellido = ?, direccion = ?, telefono = ?, celular = ?, fecha_nacimiento = ?, email = ? 
       WHERE id = ?`,
       [nombre, apellido, direccion, telefono, celular, fechaNacimiento, email, id]
     );
     await conn.end();
-    return result.affectedRows > 0 ? { id, ...data } : null;
+    return result.affectedRows > 0 ? { id, ...data, fecha_nacimiento: fechaNacimiento } : null;
   } catch (err) {
     console.error("Error al modificar usuario:", err);
     return null;

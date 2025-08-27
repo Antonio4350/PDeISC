@@ -42,6 +42,7 @@ app.get("/users/:id", async (req, res) => {
 app.post("/users", async (req, res) => {
   try {
     const nuevoUsuario = await agregarUsuario(req.body);
+    if (!nuevoUsuario) return res.status(400).json({ error: "No se pudo agregar el usuario" });
     res.status(201).json(nuevoUsuario);
   } catch (err) {
     res.status(500).json({ error: "Error al agregar usuario" });

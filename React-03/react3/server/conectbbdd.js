@@ -12,5 +12,6 @@ export async function connectDB(){
     }
     catch(err){
         console.log('Error de conexion:', err);
+        throw err;  
     }
 }
