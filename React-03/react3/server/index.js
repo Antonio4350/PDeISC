@@ -13,21 +13,43 @@ export async function main() {
   }
 }
 
+// Consulta de un usuario por ID
+export async function consultarUsuario(id) {
+  try {
+    const conn = await connectDB();
+    const [rows] = await conn.query("SELECT * FROM usr WHERE id = ?", [id]);
+    await conn.end();
+    return rows.length > 0 ? rows[0] : null;
+  } catch (err) {
+    console.error("Error al consultar usuario:", err);
+    return null;
+  }
+}
 
-// Alta de usuario
+// Alta de usuario con validación de email duplicado
 export async function agregarUsuario(data) {
   const { nombre, apellido, direccion, telefono, celular, fechaNacimiento, email } = data;
   try {
     const conn = await connectDB();
+
+    // Verificar si el email ya existe
+    const [existe] = await conn.query("SELECT * FROM usr WHERE email = ?", [email]);
+    if (existe.length > 0) {
+      await conn.end();
+      throw new Error("EMAIL_DUPLICADO");
+    }
+
     const [result] = await conn.query(
       `INSERT INTO usr 
       (nombre, apellido, direccion, telefono, celular, fecha_nacimiento, email) 
       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [nombre, apellido, direccion, telefono, celular, fechaNacimiento, email]
     );
+
     await conn.end();
     return { id: result.insertId, ...data, fecha_nacimiento: fechaNacimiento };
   } catch (err) {
+    if (err.message === "EMAIL_DUPLICADO") throw err;
     console.error("Error al agregar usuario:", err);
     return null;
   }

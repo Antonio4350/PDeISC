@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// index.html
+// Servir index.html
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
@@ -27,14 +27,27 @@ app.get("/users", async (req, res) => {
   }
 });
 
-// Alta de usuario
+// Alta de usuario con validación de email duplicado
 app.post("/users", async (req, res) => {
   try {
     const nuevoUsuario = await agregarUsuario(req.body);
-    if (!nuevoUsuario) return res.status(400).json({ error: "No se pudo agregar el usuario" });
     res.status(201).json(nuevoUsuario);
   } catch (err) {
+    if (err.message === "EMAIL_DUPLICADO") {
+      return res.status(400).json({ error: "El email ya está registrado" });
+    }
     res.status(500).json({ error: "Error al agregar usuario" });
+  }
+});
+
+// Consulta por ID
+app.get("/users/:id", async (req, res) => {
+  try {
+    const usuario = await consultarUsuario(req.params.id);
+    if (!usuario) return res.status(404).json({ error: "Usuario no encontrado" });
+    res.json(usuario);
+  } catch (err) {
+    res.status(500).json({ error: "Error al consultar usuario" });
   }
 });
 
@@ -62,5 +75,5 @@ app.delete("/users/:id", async (req, res) => {
 
 // Iniciar servidor
 app.listen(3000, () => {
-  console.log("Puerto http://localhost:3000");
+  console.log("Servidor corriendo en http://localhost:3000");
 });
