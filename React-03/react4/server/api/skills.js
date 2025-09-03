@@ -1,21 +1,22 @@
-import { getSkills, saveSkills } from "../portfolioModel.js";
+import { db } from "./db";
 
 export default async function handler(req, res) {
-  try {
-    if (req.method === "GET") {
-      const skills = await getSkills();
-      res.status(200).json(skills);
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    return res.status(200).end();
+  }
 
-    } else if (req.method === "PUT") {
-      if (!Array.isArray(req.body)) return res.status(400).json({ error: "Formato inválido" });
-      await saveSkills(req.body);
-      res.status(200).json({ success: true });
-
-    } else {
-      res.status(405).json({ error: "Método no permitido" });
+  if (req.method === "GET") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    try {
+      const result = await db.query("SELECT * FROM skills");
+      return res.status(200).json(result.rows);
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
     }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error en skills" });
+  } else {
+    return res.status(405).json({ error: "Método no permitido" });
   }
 }

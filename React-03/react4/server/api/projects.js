@@ -1,32 +1,22 @@
-import { getProjects, addProject, updateProject, deleteProject } from "../portfolioModel.js";
+import { db } from "./db";
 
 export default async function handler(req, res) {
-  const id = req.query.id; // opcional, para PUT o DELETE
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    return res.status(200).end();
+  }
 
-  try {
-    if (req.method === "GET") {
-      const projects = await getProjects();
-      res.status(200).json(projects);
-
-    } else if (req.method === "POST") {
-      const project = await addProject(req.body);
-      res.status(201).json(project);
-
-    } else if (req.method === "PUT") {
-      if (!id) return res.status(400).json({ error: "Falta ID para actualizar" });
-      await updateProject(id, req.body);
-      res.status(200).json({ success: true });
-
-    } else if (req.method === "DELETE") {
-      if (!id) return res.status(400).json({ error: "Falta ID para eliminar" });
-      const ok = await deleteProject(id);
-      res.status(ok ? 200 : 404).json(ok ? { success: true } : { error: "No encontrado" });
-
-    } else {
-      res.status(405).json({ error: "Método no permitido" });
+  if (req.method === "GET") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    try {
+      const result = await db.query("SELECT * FROM projects");
+      return res.status(200).json(result.rows);
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
     }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error en proyecto" });
+  } else {
+    return res.status(405).json({ error: "Método no permitido" });
   }
 }

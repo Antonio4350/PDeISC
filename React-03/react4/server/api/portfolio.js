@@ -1,25 +1,23 @@
-import { getPortfolio, upsertPortfolio, getSkills, getProjects } from "../portfolioModel.js";
+import { db } from "./db";
 
 export default async function handler(req, res) {
+  // CORS preflight
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    return res.status(200).end();
+  }
+
   if (req.method === "GET") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
     try {
-      const portfolio = await getPortfolio();
-      const skills = await getSkills();
-      const projects = await getProjects();
-      res.status(200).json({ portfolio, skills, projects });
+      const result = await db.query("SELECT * FROM portfolio");
+      return res.status(200).json(result.rows);
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Error al obtener datos del portfolio" });
-    }
-  } else if (req.method === "PUT") {
-    try {
-      const updated = await upsertPortfolio(req.body);
-      res.status(200).json(updated);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Error al actualizar portfolio" });
+      return res.status(500).json({ error: err.message });
     }
   } else {
-    res.status(405).json({ error: "Método no permitido" });
+    return res.status(405).json({ error: "Método no permitido" });
   }
 }
