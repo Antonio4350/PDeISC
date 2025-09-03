@@ -2,10 +2,11 @@ import pkg from "pg";
 const { Pool } = pkg;
 
 const pool = new Pool({
-  connectionString: 'postgresql://neondb_owner:npg_CbKaJT7yWmX5@ep-delicate-resonance-agvk4f1o-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
+  connectionString: process.env.DATABASE_URL || 'postgresql://usuario:pass@localhost:5432/mi_portfolio',
   ssl: { rejectUnauthorized: false },
 });
 
+// Portfolio
 export async function getPortfolio() {
   const heroRes = await pool.query("SELECT texto FROM hero LIMIT 1");
   const aboutRes = await pool.query("SELECT texto FROM about LIMIT 1");
@@ -33,6 +34,7 @@ export async function upsertPortfolio({ hero, about }) {
   return { hero, about };
 }
 
+// Skills
 export async function getSkills() {
   const res = await pool.query("SELECT * FROM skills ORDER BY id ASC");
   return res.rows;
@@ -48,6 +50,7 @@ export async function saveSkills(skills) {
   }
 }
 
+// Projects
 export async function getProjects() {
   const res = await pool.query("SELECT * FROM projects ORDER BY created_at DESC");
   return res.rows;
@@ -76,7 +79,8 @@ export async function deleteProject(id) {
   return res.rowCount > 0;
 }
 
+// Users (sin hash)
 export async function getUser(username) {
   const res = await pool.query("SELECT * FROM users WHERE username=$1", [username]);
-  return res.rows[0];
+  return res.rows[0]; // password en texto plano
 }

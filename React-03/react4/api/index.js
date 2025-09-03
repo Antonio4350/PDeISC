@@ -20,6 +20,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Portfolio
 app.get("/api/portfolio", async (req, res) => {
   try {
     const portfolio = await getPortfolio();
@@ -42,6 +43,7 @@ app.put("/api/portfolio", async (req, res) => {
   }
 });
 
+// Skills
 app.put("/api/skills", async (req, res) => {
   try {
     await saveSkills(req.body);
@@ -52,6 +54,17 @@ app.put("/api/skills", async (req, res) => {
   }
 });
 
+app.get("/api/skills", async (req, res) => {
+  try {
+    const skills = await getSkills();
+    res.json(skills);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener skills" });
+  }
+});
+
+// Projects
 app.get("/api/projects", async (req, res) => {
   try {
     const projects = await getProjects();
@@ -93,6 +106,7 @@ app.delete("/api/projects/:id", async (req, res) => {
   }
 });
 
+// Auth
 app.use("/api", authRoutes);
 
 const PORT = process.env.PORT || 3000;
