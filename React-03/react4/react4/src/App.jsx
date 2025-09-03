@@ -18,7 +18,6 @@ export default function App() {
   const [skills, setSkills] = useState([]);
   const [proyectos, setProyectos] = useState([]);
 
-  // 🔹 Función para cargar datos desde la BBDD
   async function loadRemote() {
     try {
       const res = await fetch("http://localhost:3000/api/portfolio");
@@ -33,37 +32,28 @@ export default function App() {
     }
   }
 
-  // 🔹 Cargar datos al montar el componente si ya está logueado
   useEffect(() => {
-    if (isLogged) loadRemote();
-  }, [isLogged]);
+    loadRemote();
+  }, []);
 
-  // 🔹 Scroll suave
   useEffect(() => {
     const links = document.querySelectorAll('a[href^="#"]');
     links.forEach(link => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
         const target = document.querySelector(link.getAttribute("href"));
-        if (target) target.scrollIntoView({ behavior: "smooth" });
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
   }, []);
 
-  // 🔹 Guardar cambios en la BBDD
   async function saveSectionToAPI(sectionName, payload) {
     try {
-      if (sectionName === "hero") {
+      if (sectionName === "hero" || sectionName === "about") {
         await fetch("http://localhost:3000/api/portfolio", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ hero: payload }),
-        });
-      } else if (sectionName === "about") {
-        await fetch("http://localhost:3000/api/portfolio", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ about: payload }),
+          body: JSON.stringify({ hero, about }),
         });
       } else if (sectionName === "skills") {
         await fetch("http://localhost:3000/api/skills", {
@@ -88,10 +78,6 @@ export default function App() {
           }
         }
       }
-
-      // 🔹 Recargar los datos para mantener consistencia
-      await loadRemote();
-
     } catch (err) {
       console.warn("No se pudo guardar:", err.message);
     }
@@ -101,41 +87,61 @@ export default function App() {
     <div className="bg-gray-900 text-gray-100 min-h-screen">
       <Navbar setShowLogin={setShowLogin} isLogged={isLogged} setIsLogged={setIsLogged} />
 
-      <div className="px-4 sm:px-6 md:px-12 max-w-7xl mx-auto space-y-12">
-        <section id="inicio" className="min-h-screen flex flex-col items-center justify-center relative">
-          <Hero heroText={hero} />
+      <div className="px-4 sm:px-6 pt-20 pb-10 md:px-12 max-w-7xl  mx-auto space-y-12">
+        {/* Inicio */}
+        <section
+          id="inicio"
+          className="py-16 flex flex-col items-center h-75  justify-center text-center bg-gray-800 rounded-lg p-6 relative"
+        >
+          {hero ? (
+            <Hero heroText={hero} />
+          ) : (
+            <p className="text-gray-400 italic text-xl">
+              Aún no hay información cargada en la sección de inicio.
+            </p>
+          )}
           {isLogged && <EditButton onClick={() => setEditSection("hero")} />}
         </section>
 
-        <section id="sobre-mi" className="min-h-screen flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 relative">
+        {/* Sobre mí */}
+        <section
+          id="sobre-mi"
+          className="py-28 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 relative"
+        >
           <About about={about} />
           {isLogged && <EditButton onClick={() => setEditSection("about")} />}
         </section>
 
-        <section id="habilidades" className="min-h-screen flex flex-col items-center justify-center relative">
+        {/* Habilidades */}
+        <section
+          id="habilidades"
+          className="py-28 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 relative"
+        >
           <Skills skills={skills} />
           {isLogged && <EditButton onClick={() => setEditSection("skills")} />}
         </section>
 
-        <section id="proyectos" className="min-h-screen flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 relative">
+        {/* Proyectos */}
+        <section
+          id="proyectos"
+          className="py-28 flex flex-col  items-center justify-center bg-gray-800 rounded-lg p-6 relative"
+        >
           <Projects proyectos={proyectos} />
           {isLogged && <EditButton onClick={() => setEditSection("projects")} />}
         </section>
       </div>
 
-      {/* Login solo si no está logueado */}
       {!isLogged && showLogin && (
         <LoginModal
           setShowLogin={setShowLogin}
           setIsLogged={async (val) => {
             setIsLogged(val);
             setShowLogin(false);
-            if (val) await loadRemote(); // 🔹 recargar datos al loguear
+            if (val) await loadRemote();
           }}
         />
       )}
 
-      {/* Editar sección */}
       {editSection && (
         <EditModal
           section={editSection}
