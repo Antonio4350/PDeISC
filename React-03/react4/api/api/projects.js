@@ -1,4 +1,5 @@
 import { db } from "./db";
+import bcrypt from "bcryptjs";
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
