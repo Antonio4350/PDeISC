@@ -1,88 +1,76 @@
-import { connectDB } from "./conectddbb.js";
+import pool from "./db.js";
 
 // 🔹 Hero + About
 export async function getPortfolio() {
-  const conn = await connectDB();
-  const [heroRows] = await conn.query("SELECT * FROM hero LIMIT 1");
-  const [aboutRows] = await conn.query("SELECT * FROM about LIMIT 1");
-  await conn.end();
+  const heroRes = await pool.query("SELECT * FROM hero LIMIT 1");
+  const aboutRes = await pool.query("SELECT * FROM about LIMIT 1");
 
   return {
-    hero: heroRows.length > 0 ? heroRows[0].texto : "",
-    about: aboutRows.length > 0 ? aboutRows[0].texto : ""
+    hero: heroRes.rows.length > 0 ? heroRes.rows[0].texto : "",
+    about: aboutRes.rows.length > 0 ? aboutRes.rows[0].texto : "",
   };
 }
 
 export async function upsertPortfolio({ hero, about }) {
-  const conn = await connectDB();
-
   if (hero !== undefined) {
-    await conn.query(
-      "INSERT INTO hero (id, texto) VALUES (1, ?) ON DUPLICATE KEY UPDATE texto = VALUES(texto)",
+    await pool.query(
+      `INSERT INTO hero (id, texto) VALUES (1, $1)
+       ON CONFLICT (id) DO UPDATE SET texto = EXCLUDED.texto`,
       [hero]
     );
   }
 
   if (about !== undefined) {
-    await conn.query(
-      "INSERT INTO about (id, texto) VALUES (1, ?) ON DUPLICATE KEY UPDATE texto = VALUES(texto)",
+    await pool.query(
+      `INSERT INTO about (id, texto) VALUES (1, $1)
+       ON CONFLICT (id) DO UPDATE SET texto = EXCLUDED.texto`,
       [about]
     );
   }
 
-  await conn.end();
   return { hero, about };
 }
 
 // 🔹 Skills
 export async function getSkills() {
-  const conn = await connectDB();
-  const [rows] = await conn.query("SELECT * FROM skills ORDER BY id ASC");
-  await conn.end();
-  return rows;
+  const res = await pool.query("SELECT * FROM skills ORDER BY id ASC");
+  return res.rows;
 }
 
 export async function saveSkills(skills) {
-  const conn = await connectDB();
-  await conn.query("DELETE FROM skills");
+  await pool.query("TRUNCATE TABLE skills RESTART IDENTITY");
   for (const s of skills) {
-    await conn.query("INSERT INTO skills (nombre, nivel) VALUES (?, ?)", [s.nombre, s.nivel]);
+    await pool.query("INSERT INTO skills (nombre, nivel) VALUES ($1, $2)", [
+      s.nombre,
+      s.nivel,
+    ]);
   }
-  await conn.end();
 }
 
 // 🔹 Projects
 export async function getProjects() {
-  const conn = await connectDB();
-  const [rows] = await conn.query("SELECT * FROM projects ORDER BY created_at DESC");
-  await conn.end();
-  return rows;
+  const res = await pool.query("SELECT * FROM projects ORDER BY created_at DESC");
+  return res.rows;
 }
 
 export async function addProject(project) {
   const { titulo, descripcion, imagen, link, finalizado } = project;
-  const conn = await connectDB();
-  const [result] = await conn.query(
-    "INSERT INTO projects (titulo, descripcion, imagen, link, finalizado) VALUES (?, ?, ?, ?, ?)",
+  const res = await pool.query(
+    "INSERT INTO projects (titulo, descripcion, imagen, link, finalizado) VALUES ($1,$2,$3,$4,$5) RETURNING *",
     [titulo, descripcion, imagen || null, link || null, finalizado || false]
   );
-  await conn.end();
-  return { id: result.insertId, ...project };
+  return res.rows[0];
 }
 
 export async function updateProject(id, project) {
   const { titulo, descripcion, imagen, link, finalizado } = project;
-  const conn = await connectDB();
-  await conn.query(
-    "UPDATE projects SET titulo=?, descripcion=?, imagen=?, link=?, finalizado=? WHERE id=?",
+  await pool.query(
+    "UPDATE projects SET titulo=$1, descripcion=$2, imagen=$3, link=$4, finalizado=$5 WHERE id=$6",
     [titulo, descripcion, imagen || null, link || null, finalizado || false, id]
   );
-  await conn.end();
 }
 
 export async function deleteProject(id) {
-  const conn = await connectDB();
-  const [result] = await conn.query("DELETE FROM projects WHERE id=?", [id]);
-  await conn.end();
-  return result.affectedRows > 0;
+  const res = await pool.query("DELETE FROM projects WHERE id=$1", [id]);
+  return res.rowCount > 0;
 }
