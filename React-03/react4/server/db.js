@@ -14,7 +14,6 @@ if (!global.pgPool) {
   pool = global.pgPool;
 }
 
-// 🔹 Test de conexión con log
 (async () => {
   try {
     const client = await pool.connect();

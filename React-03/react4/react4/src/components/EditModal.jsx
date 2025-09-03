@@ -35,7 +35,6 @@ export default function EditModal({
     setShowConfirm(false);
   };
 
-  // 🔹 Nuevo proyecto con id < 0 → para que el backend lo detecte como "nuevo"
   const handleAddProject = () => {
     setTempProyectos([
       ...tempProyectos,
@@ -52,7 +51,6 @@ export default function EditModal({
       <div className="bg-gray-800 p-6 rounded shadow max-w-3xl w-full overflow-y-auto max-h-[90vh] space-y-4">
         <h2 className="text-2xl font-bold text-purple-400 mb-4">Editar página completa</h2>
 
-        {/* Hero */}
         <div className="space-y-2">
           <label className="font-bold text-gray-200">Hero (Texto de bienvenida)</label>
           <textarea
@@ -62,7 +60,6 @@ export default function EditModal({
           />
         </div>
 
-        {/* About */}
         <div className="space-y-2">
           <label className="font-bold text-gray-200">Sobre mí</label>
           <textarea
@@ -72,7 +69,6 @@ export default function EditModal({
           />
         </div>
 
-        {/* Skills */}
         <div className="space-y-2">
           <label className="font-bold text-gray-200">Habilidades</label>
           {tempSkills.map((s, i) => (
@@ -109,7 +105,6 @@ export default function EditModal({
           ))}
         </div>
 
-        {/* Projects */}
         <div className="space-y-2">
           <label className="font-bold text-gray-200">Proyectos</label>
           <button
@@ -154,7 +149,6 @@ export default function EditModal({
           ))}
         </div>
 
-        {/* Botones */}
         <div className="flex justify-end gap-2 mt-4">
           <button
             onClick={() => setEditSection(null)}
@@ -170,7 +164,6 @@ export default function EditModal({
           </button>
         </div>
 
-        {/* Confirmación */}
         {showConfirm && (
           <div className="mt-4 p-4 bg-gray-700 rounded space-y-2">
             <p>¿Seguro quiere guardar estos cambios?</p>

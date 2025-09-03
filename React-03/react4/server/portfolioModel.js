@@ -1,6 +1,5 @@
 import pool from "./db.js";
 
-// 🔹 Hero + About
 export async function getPortfolio() {
   const heroRes = await pool.query("SELECT texto FROM hero LIMIT 1");
   const aboutRes = await pool.query("SELECT texto FROM about LIMIT 1");
@@ -29,7 +28,6 @@ export async function upsertPortfolio({ hero, about }) {
   return { hero, about };
 }
 
-// 🔹 Skills
 export async function getSkills() {
   const res = await pool.query("SELECT * FROM skills ORDER BY id ASC");
   return res.rows;
@@ -45,7 +43,6 @@ export async function saveSkills(skills) {
   }
 }
 
-// 🔹 Projects
 export async function getProjects() {
   const res = await pool.query("SELECT * FROM projects ORDER BY created_at DESC");
   return res.rows;
@@ -74,7 +71,6 @@ export async function deleteProject(id) {
   return res.rowCount > 0;
 }
 
-// 🔹 Users
 export async function getUser(username) {
   const res = await pool.query("SELECT * FROM users WHERE username=$1", [username]);
   return res.rows[0];

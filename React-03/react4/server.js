@@ -20,7 +20,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 🔹 Portfolio
 app.get("/api/portfolio", async (req, res) => {
   try {
     const portfolio = await getPortfolio();
@@ -53,7 +52,6 @@ app.put("/api/skills", async (req, res) => {
   }
 });
 
-// 🔹 Projects
 app.get("/api/projects", async (req, res) => {
   try {
     const projects = await getProjects();
@@ -95,10 +93,8 @@ app.delete("/api/projects/:id", async (req, res) => {
   }
 });
 
-// 🔹 Auth
-app.use("/api", authRoutes); // Login y auth ahora van por auth.js
+app.use("/api", authRoutes);
 
-// 🔹 Servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);

@@ -10,7 +10,6 @@ export default function Projects({ proyectos, deleteProject, isLogged }) {
             <h3 className="font-bold text-xl mb-2">{p.titulo}</h3>
             <p>{p.descripcion}</p>
 
-            {/* Botón de eliminar solo si está logueado */}
             {isLogged && (
               <button
                 onClick={() => deleteProject(p.id)}

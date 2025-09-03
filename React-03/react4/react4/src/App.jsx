@@ -20,7 +20,6 @@ export default function App() {
   const [skills, setSkills] = useState([]);
   const [proyectos, setProyectos] = useState([]);
 
-  // 🔹 Cargar datos desde la API
   async function loadRemote() {
     try {
       const res = await fetch(`${API_URL}/api/portfolio`);
@@ -50,7 +49,6 @@ export default function App() {
     });
   }, []);
 
-  // 🔹 Guardar secciones en la API
   async function saveSectionToAPI(sectionName, payload) {
     try {
       if (sectionName === "hero" || sectionName === "about") {
@@ -68,14 +66,12 @@ export default function App() {
       } else if (sectionName === "projects") {
         for (const p of payload) {
           if (!p.id || p.id < 0) {
-            // 🔹 Nuevo proyecto → POST
             await fetch(`${API_URL}/api/projects`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ titulo: p.titulo, descripcion: p.descripcion }),
             });
           } else {
-            // 🔹 Proyecto existente → PUT
             await fetch(`${API_URL}/api/projects/${p.id}`, {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
@@ -89,7 +85,6 @@ export default function App() {
     }
   }
 
-  // 🔹 Eliminar proyecto
   async function deleteProject(id) {
     try {
       await fetch(`${API_URL}/api/projects/${id}`, { method: "DELETE" });
