@@ -18,6 +18,7 @@ export default function App() {
   const [skills, setSkills] = useState([]);
   const [proyectos, setProyectos] = useState([]);
 
+  // 🔹 Cargar datos desde la API
   async function loadRemote() {
     try {
       const res = await fetch("http://localhost:3000/api/portfolio");
@@ -38,7 +39,7 @@ export default function App() {
 
   useEffect(() => {
     const links = document.querySelectorAll('a[href^="#"]');
-    links.forEach(link => {
+    links.forEach((link) => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
         const target = document.querySelector(link.getAttribute("href"));
@@ -47,39 +48,54 @@ export default function App() {
     });
   }, []);
 
-  async function saveSectionToAPI(sectionName, payload) {
-    try {
-      if (sectionName === "hero" || sectionName === "about") {
-        await fetch("http://localhost:3000/api/portfolio", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ hero, about }),
-        });
-      } else if (sectionName === "skills") {
-        await fetch("http://localhost:3000/api/skills", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-      } else if (sectionName === "projects") {
-        for (const p of payload) {
-          if (!p.id || p.id < 0) {
-            await fetch("http://localhost:3000/api/projects", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(p),
-            });
-          } else {
-            await fetch(`http://localhost:3000/api/projects/${p.id}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(p),
-            });
-          }
+// 🔹 Guardar secciones en la API
+async function saveSectionToAPI(sectionName, payload) {
+  try {
+    if (sectionName === "hero" || sectionName === "about") {
+      await fetch("http://localhost:3000/api/portfolio", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hero, about }),
+      });
+    } else if (sectionName === "skills") {
+      await fetch("http://localhost:3000/api/skills", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } else if (sectionName === "projects") {
+      for (const p of payload) {
+        if (!p.id || p.id < 0) {
+          // 🔹 Nuevo proyecto → POST
+          await fetch("http://localhost:3000/api/projects", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ titulo: p.titulo, descripcion: p.descripcion }),
+          });
+        } else {
+          // 🔹 Proyecto existente → PUT
+          await fetch(`http://localhost:3000/api/projects/${p.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(p),
+          });
         }
       }
+    }
+  } catch (err) {
+    console.warn("No se pudo guardar:", err.message);
+  }
+}
+
+
+  // 🔹 Eliminar proyecto
+  async function deleteProject(id) {
+    try {
+      await fetch(`http://localhost:3000/api/projects/${id}`, { method: "DELETE" });
+      setProyectos((prev) => prev.filter((p) => p.id !== id));
+      await loadRemote();
     } catch (err) {
-      console.warn("No se pudo guardar:", err.message);
+      console.error("No se pudo eliminar el proyecto:", err.message);
     }
   }
 
@@ -87,11 +103,11 @@ export default function App() {
     <div className="bg-gray-900 text-gray-100 min-h-screen">
       <Navbar setShowLogin={setShowLogin} isLogged={isLogged} setIsLogged={setIsLogged} />
 
-      <div className="px-4 sm:px-6 pt-20 pb-10 md:px-12 max-w-7xl  mx-auto space-y-12">
+      <div className="px-4 sm:px-6 pt-20 pb-10 md:px-12 max-w-7xl mx-auto space-y-12">
         {/* Inicio */}
         <section
           id="inicio"
-          className="py-16 flex flex-col items-center h-75  justify-center text-center bg-gray-800 rounded-lg p-6 relative"
+          className="py-16 flex flex-col items-center h-75 justify-center text-center bg-gray-800 rounded-lg p-6 relative"
         >
           {hero ? (
             <Hero heroText={hero} />
@@ -124,9 +140,9 @@ export default function App() {
         {/* Proyectos */}
         <section
           id="proyectos"
-          className="py-28 flex flex-col  items-center justify-center bg-gray-800 rounded-lg p-6 relative"
+          className="py-28 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 relative"
         >
-          <Projects proyectos={proyectos} />
+          <Projects proyectos={proyectos} deleteProject={deleteProject} isLogged={isLogged} />
           {isLogged && <EditButton onClick={() => setEditSection("projects")} />}
         </section>
       </div>
@@ -147,13 +163,25 @@ export default function App() {
           section={editSection}
           setEditSection={setEditSection}
           hero={hero}
-          setHero={(v) => { setHero(v); saveSectionToAPI("hero", v); }}
+          setHero={(v) => {
+            setHero(v);
+            saveSectionToAPI("hero", v);
+          }}
           about={about}
-          setAbout={(v) => { setAbout(v); saveSectionToAPI("about", v); }}
+          setAbout={(v) => {
+            setAbout(v);
+            saveSectionToAPI("about", v);
+          }}
           skills={skills}
-          setSkills={(v) => { setSkills(v); saveSectionToAPI("skills", v); }}
+          setSkills={(v) => {
+            setSkills(v);
+            saveSectionToAPI("skills", v);
+          }}
           proyectos={proyectos}
-          setProyectos={(v) => { setProyectos(v); saveSectionToAPI("projects", v); }}
+          setProyectos={(v) => {
+            setProyectos(v);
+            saveSectionToAPI("projects", v);
+          }}
         />
       )}
     </div>

@@ -14,13 +14,12 @@ export default function EditModal({
   const [tempProyectos, setTempProyectos] = useState([...proyectos]);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Animación de barras (opcional)
   useEffect(() => {
     if (section === "skills") {
       tempSkills.forEach((s, i) => {
         setTimeout(() => {
           const copy = [...tempSkills];
-          copy[i].nivel = s.nivel; // fuerza animación si se implementa
+          copy[i].nivel = s.nivel;
           setTempSkills(copy);
         }, i * 200);
       });
@@ -36,12 +35,16 @@ export default function EditModal({
     setShowConfirm(false);
   };
 
+  // 🔹 Nuevo proyecto con id < 0 → para que el backend lo detecte como "nuevo"
   const handleAddProject = () => {
-    setTempProyectos([...tempProyectos, { id: Date.now(), titulo: "", descripcion: "" }]);
+    setTempProyectos([
+      ...tempProyectos,
+      { id: -Date.now(), titulo: "", descripcion: "" },
+    ]);
   };
 
   const handleDeleteProject = (id) => {
-    setTempProyectos(tempProyectos.filter(p => p.id !== id));
+    setTempProyectos(tempProyectos.filter((p) => p.id !== id));
   };
 
   return (
