@@ -14,14 +14,14 @@ if (!global.pgPool) {
   pool = global.pgPool;
 }
 
-// Test de conexión
+// 🔹 Test de conexión con log
 (async () => {
   try {
     const client = await pool.connect();
-    console.log("Conexión a DB exitosa");
+    console.log("✅ Conexión a Neon DB exitosa");
     client.release();
   } catch (err) {
-    console.error("Error al conectar a DB:", err);
+    console.error("❌ Error al conectar a Neon DB:", err);
   }
 })();
 
