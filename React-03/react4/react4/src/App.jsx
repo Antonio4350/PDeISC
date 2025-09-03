@@ -18,37 +18,27 @@ export default function App() {
   const [skills, setSkills] = useState([]);
   const [proyectos, setProyectos] = useState([]);
 
-  // cargar datos desde API
-  useEffect(() => {
-    async function loadRemote() {
-      try {
-        const res = await fetch("/api/portfolio");
-        if (!res.ok) throw new Error("sin api");
-        const data = await res.json();
-        setHero(data.portfolio?.hero || "");
-        setAbout(data.portfolio?.about || "");
-        setSkills(data.skills || []);
-        setProyectos(data.projects || []);
-      } catch (err) {
-        console.warn("Usando estado local:", err.message);
-        setHero("Hola, soy Antonio\nTécnico informático | Desarrollador web | Apasionado por aprender");
-        setAbout("Soy estudiante de informática con experiencia en proyectos web y redes. Me interesa el desarrollo frontend y backend, y siempre busco aprender nuevas tecnologías.");
-        setSkills([
-          { nombre: "React", nivel: 80 },
-          { nombre: "Tailwind", nivel: 70 },
-          { nombre: "Node.js", nivel: 60 },
-          { nombre: "MySQL", nivel: 50 },
-        ]);
-        setProyectos([
-          { id: 1, titulo: "Portfolio en React", descripcion: "Mi sitio personal con Tailwind." },
-          { id: 2, titulo: "API con Node", descripcion: "Backend con Express." },
-        ]);
-      }
+  // 🔹 Función para cargar datos desde la BBDD
+  async function loadRemote() {
+    try {
+      const res = await fetch("http://localhost:3000/api/portfolio");
+      if (!res.ok) throw new Error("Error al cargar datos de la API");
+      const data = await res.json();
+      setHero(data.portfolio?.hero || "");
+      setAbout(data.portfolio?.about || "");
+      setSkills(data.skills || []);
+      setProyectos(data.projects || []);
+    } catch (err) {
+      console.error("Error al cargar datos desde BBDD:", err.message);
     }
-    loadRemote();
-  }, []);
+  }
 
-  // scroll suave
+  // 🔹 Cargar datos al montar el componente si ya está logueado
+  useEffect(() => {
+    if (isLogged) loadRemote();
+  }, [isLogged]);
+
+  // 🔹 Scroll suave
   useEffect(() => {
     const links = document.querySelectorAll('a[href^="#"]');
     links.forEach(link => {
@@ -60,31 +50,48 @@ export default function App() {
     });
   }, []);
 
+  // 🔹 Guardar cambios en la BBDD
   async function saveSectionToAPI(sectionName, payload) {
     try {
-      if (sectionName === "hero" || sectionName === "about") {
-        await fetch("/api/portfolio", {
+      if (sectionName === "hero") {
+        await fetch("http://localhost:3000/api/portfolio", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ hero, about }),
+          body: JSON.stringify({ hero: payload }),
         });
-      }
-      if (sectionName === "skills") {
-        await fetch("/api/skills", {
+      } else if (sectionName === "about") {
+        await fetch("http://localhost:3000/api/portfolio", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ about: payload }),
+        });
+      } else if (sectionName === "skills") {
+        await fetch("http://localhost:3000/api/skills", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-      }
-      if (sectionName === "projects") {
+      } else if (sectionName === "projects") {
         for (const p of payload) {
           if (!p.id || p.id < 0) {
-            await fetch("/api/projects", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(p) });
+            await fetch("http://localhost:3000/api/projects", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(p),
+            });
           } else {
-            await fetch(`/api/projects/${p.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(p) });
+            await fetch(`http://localhost:3000/api/projects/${p.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(p),
+            });
           }
         }
       }
+
+      // 🔹 Recargar los datos para mantener consistencia
+      await loadRemote();
+
     } catch (err) {
       console.warn("No se pudo guardar:", err.message);
     }
@@ -116,7 +123,19 @@ export default function App() {
         </section>
       </div>
 
-      {showLogin && <LoginModal setShowLogin={setShowLogin} setIsLogged={setIsLogged} />}
+      {/* Login solo si no está logueado */}
+      {!isLogged && showLogin && (
+        <LoginModal
+          setShowLogin={setShowLogin}
+          setIsLogged={async (val) => {
+            setIsLogged(val);
+            setShowLogin(false);
+            if (val) await loadRemote(); // 🔹 recargar datos al loguear
+          }}
+        />
+      )}
+
+      {/* Editar sección */}
       {editSection && (
         <EditModal
           section={editSection}
