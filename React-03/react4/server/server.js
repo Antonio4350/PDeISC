@@ -3,7 +3,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
 
-// Importamos funciones de la DB
 import {
   getPortfolio,
   upsertPortfolio,
@@ -15,20 +14,19 @@ import {
   deleteProject,
 } from "./portfolioModel.js";
 
-// Importamos rutas de login
 import authRoutes from "./auth.js";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 🔹 Rutas para portfolio (hero + about + skills + projects)
+// 🔹 Portfolio
 app.get("/api/portfolio", async (req, res) => {
   try {
-    const p = await getPortfolio();
+    const portfolio = await getPortfolio();
     const skills = await getSkills();
     const projects = await getProjects();
-    res.json({ portfolio: p, skills, projects });
+    res.json({ portfolio, skills, projects });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error al obtener datos del portfolio" });
@@ -37,8 +35,7 @@ app.get("/api/portfolio", async (req, res) => {
 
 app.put("/api/portfolio", async (req, res) => {
   try {
-    const data = req.body; // { hero, about }
-    const updated = await upsertPortfolio(data);
+    const updated = await upsertPortfolio(req.body);
     res.json(updated);
   } catch (err) {
     console.error(err);
@@ -48,8 +45,7 @@ app.put("/api/portfolio", async (req, res) => {
 
 app.put("/api/skills", async (req, res) => {
   try {
-    const skills = req.body; // array
-    await saveSkills(skills);
+    await saveSkills(req.body);
     res.json({ success: true });
   } catch (err) {
     console.error(err);
@@ -57,11 +53,11 @@ app.put("/api/skills", async (req, res) => {
   }
 });
 
-// 🔹 Rutas para proyectos
+// 🔹 Projects
 app.get("/api/projects", async (req, res) => {
   try {
-    const projs = await getProjects();
-    res.json(projs);
+    const projects = await getProjects();
+    res.json(projects);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error al obtener proyectos" });
@@ -70,8 +66,8 @@ app.get("/api/projects", async (req, res) => {
 
 app.post("/api/projects", async (req, res) => {
   try {
-    const nuevo = await addProject(req.body);
-    res.status(201).json(nuevo);
+    const project = await addProject(req.body);
+    res.status(201).json(project);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error al crear proyecto" });
@@ -99,11 +95,7 @@ app.delete("/api/projects/:id", async (req, res) => {
   }
 });
 
-// 🔹 Rutas de login
+// 🔹 Auth
 app.use("/api", authRoutes);
 
-// 🔹 Iniciar servidor
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+export default app;

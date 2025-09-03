@@ -2,12 +2,12 @@ import pool from "./db.js";
 
 // 🔹 Hero + About
 export async function getPortfolio() {
-  const heroRes = await pool.query("SELECT * FROM hero LIMIT 1");
-  const aboutRes = await pool.query("SELECT * FROM about LIMIT 1");
+  const heroRes = await pool.query("SELECT texto FROM hero LIMIT 1");
+  const aboutRes = await pool.query("SELECT texto FROM about LIMIT 1");
 
   return {
-    hero: heroRes.rows.length > 0 ? heroRes.rows[0].texto : "",
-    about: aboutRes.rows.length > 0 ? aboutRes.rows[0].texto : "",
+    hero: heroRes.rows[0]?.texto || "",
+    about: aboutRes.rows[0]?.texto || "",
   };
 }
 
@@ -19,7 +19,6 @@ export async function upsertPortfolio({ hero, about }) {
       [hero]
     );
   }
-
   if (about !== undefined) {
     await pool.query(
       `INSERT INTO about (id, texto) VALUES (1, $1)
@@ -27,7 +26,6 @@ export async function upsertPortfolio({ hero, about }) {
       [about]
     );
   }
-
   return { hero, about };
 }
 
@@ -40,10 +38,10 @@ export async function getSkills() {
 export async function saveSkills(skills) {
   await pool.query("TRUNCATE TABLE skills RESTART IDENTITY");
   for (const s of skills) {
-    await pool.query("INSERT INTO skills (nombre, nivel) VALUES ($1, $2)", [
-      s.nombre,
-      s.nivel,
-    ]);
+    await pool.query(
+      "INSERT INTO skills (nombre, nivel) VALUES ($1, $2)",
+      [s.nombre, s.nivel]
+    );
   }
 }
 
@@ -56,7 +54,8 @@ export async function getProjects() {
 export async function addProject(project) {
   const { titulo, descripcion, imagen, link, finalizado } = project;
   const res = await pool.query(
-    "INSERT INTO projects (titulo, descripcion, imagen, link, finalizado) VALUES ($1,$2,$3,$4,$5) RETURNING *",
+    `INSERT INTO projects (titulo, descripcion, imagen, link, finalizado)
+     VALUES ($1,$2,$3,$4,$5) RETURNING *`,
     [titulo, descripcion, imagen || null, link || null, finalizado || false]
   );
   return res.rows[0];
@@ -65,7 +64,7 @@ export async function addProject(project) {
 export async function updateProject(id, project) {
   const { titulo, descripcion, imagen, link, finalizado } = project;
   await pool.query(
-    "UPDATE projects SET titulo=$1, descripcion=$2, imagen=$3, link=$4, finalizado=$5 WHERE id=$6",
+    `UPDATE projects SET titulo=$1, descripcion=$2, imagen=$3, link=$4, finalizado=$5 WHERE id=$6`,
     [titulo, descripcion, imagen || null, link || null, finalizado || false, id]
   );
 }
@@ -73,4 +72,10 @@ export async function updateProject(id, project) {
 export async function deleteProject(id) {
   const res = await pool.query("DELETE FROM projects WHERE id=$1", [id]);
   return res.rowCount > 0;
+}
+
+// 🔹 Users
+export async function getUser(username) {
+  const res = await pool.query("SELECT * FROM users WHERE username=$1", [username]);
+  return res.rows[0];
 }
