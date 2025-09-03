@@ -1,7 +1,7 @@
 import { db } from "./db";
 
 export default async function handler(req, res) {
-  // CORS preflight
+  // Manejar preflight de CORS
   if (req.method === "OPTIONS") {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
@@ -9,6 +9,7 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  // Para GET
   if (req.method === "GET") {
     res.setHeader("Access-Control-Allow-Origin", "*");
     try {
@@ -17,7 +18,9 @@ export default async function handler(req, res) {
     } catch (err) {
       return res.status(500).json({ error: err.message });
     }
-  } else {
-    return res.status(405).json({ error: "Método no permitido" });
   }
+
+  // Métodos no permitidos
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  return res.status(405).json({ error: "Método no permitido" });
 }
