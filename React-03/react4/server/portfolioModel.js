@@ -1,9 +1,14 @@
-import pool from "./db.js";
+import pkg from "pg";
+const { Pool } = pkg;
+
+const pool = new Pool({
+  connectionString: 'postgresql://neondb_owner:npg_CbKaJT7yWmX5@ep-delicate-resonance-agvk4f1o-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
+  ssl: { rejectUnauthorized: false },
+});
 
 export async function getPortfolio() {
   const heroRes = await pool.query("SELECT texto FROM hero LIMIT 1");
   const aboutRes = await pool.query("SELECT texto FROM about LIMIT 1");
-
   return {
     hero: heroRes.rows[0]?.texto || "",
     about: aboutRes.rows[0]?.texto || "",

@@ -12,9 +12,9 @@ import {
   addProject,
   updateProject,
   deleteProject,
-} from "./portfolioModel.js";
+} from "./server/portfolioModel.js";
 
-import authRoutes from "./auth.js";
+import authRoutes from "./server/auth.js";
 
 const app = express();
 app.use(cors());
