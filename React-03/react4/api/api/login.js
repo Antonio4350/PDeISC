@@ -1,33 +1,23 @@
-import bcrypt from "bcryptjs";
-import { db } from "./db";
+import { db } from "./db"; // tu conexión a la DB
+import { json } from "micro"; // o lo que uses para parsear el body
 
 export default async function handler(req, res) {
-  // CORS preflight
-  if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    return res.status(200).end();
-  }
-
   if (req.method === "POST") {
-    const { email, password } = await req.json();
+    const { email, password } = await json(req);
 
-    try {
-      const user = await db.query("SELECT * FROM users WHERE email = $1", [email]);
-      if (!user.rows.length) {
-        return res.status(401).json({ error: "Usuario no encontrado" });
-      }
-
-      const valid = bcrypt.compareSync(password, user.rows[0].password);
-      if (!valid) {
-        return res.status(401).json({ error: "Contraseña incorrecta" });
-      }
-
-      return res.status(200).json({ message: "Login exitoso", user: user.rows[0] });
-    } catch (err) {
-      return res.status(500).json({ error: err.message });
+    // Buscar usuario en la DB
+    const user = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+    if (!user.rows.length) {
+      return res.status(401).json({ error: "Usuario no encontrado" });
     }
+
+    // Comparar la contraseña directamente
+    if (password !== user.rows[0].password) {
+      return res.status(401).json({ error: "Contraseña incorrecta" });
+    }
+
+    // Login exitoso
+    return res.status(200).json({ message: "Login exitoso", user: user.rows[0] });
   } else {
     return res.status(405).json({ error: "Método no permitido" });
   }
