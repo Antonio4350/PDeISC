@@ -1,4 +1,4 @@
-import { getSkills, saveSkills } from "../portfolioModel.js";
+import { getSkills, saveSkills } from "..portfolioModel.js";
 
 export async function getSkillsHandler(req, res) {
   try {

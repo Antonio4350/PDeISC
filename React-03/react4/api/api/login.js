@@ -1,4 +1,3 @@
-import { db } from "./db";
 import { json } from "micro";
 
 export default async function handler(req, res) {
