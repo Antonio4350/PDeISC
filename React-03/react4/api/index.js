@@ -17,6 +17,16 @@ import {
 import authRoutes from "./auth.js";
 
 const app = express();
+
+// Middleware CORS y manejo OPTIONS para Vercel
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") return res.status(200).end();
+  next();
+});
+
 app.use(cors());
 app.use(express.json());
 
@@ -44,16 +54,6 @@ app.put("/api/portfolio", async (req, res) => {
 });
 
 // Skills
-app.put("/api/skills", async (req, res) => {
-  try {
-    await saveSkills(req.body);
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error al guardar skills" });
-  }
-});
-
 app.get("/api/skills", async (req, res) => {
   try {
     const skills = await getSkills();
@@ -61,6 +61,16 @@ app.get("/api/skills", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error al obtener skills" });
+  }
+});
+
+app.put("/api/skills", async (req, res) => {
+  try {
+    await saveSkills(req.body);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al guardar skills" });
   }
 });
 
@@ -106,9 +116,10 @@ app.delete("/api/projects/:id", async (req, res) => {
   }
 });
 
-// Auth
+// Auth (login)
 app.use("/api", authRoutes);
 
+// Puerto
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);

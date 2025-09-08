@@ -2,7 +2,8 @@ import pkg from "pg";
 const { Pool } = pkg;
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://usuario:pass@localhost:5432/mi_portfolio',
+  connectionString:
+    process.env.DATABASE_URL || "postgresql://usuario:pass@localhost:5432/mi_portfolio",
   ssl: { rejectUnauthorized: false },
 });
 
@@ -79,8 +80,8 @@ export async function deleteProject(id) {
   return res.rowCount > 0;
 }
 
-// Users (sin hash)
+// Users sin hash, contraseña en texto plano
 export async function getUser(username) {
   const res = await pool.query("SELECT * FROM users WHERE username=$1", [username]);
-  return res.rows[0]; // password en texto plano
+  return res.rows[0];
 }
