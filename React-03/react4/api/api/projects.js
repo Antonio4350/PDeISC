@@ -1,23 +1,42 @@
-import { db } from "./db";
+import { getProjects, addProject, updateProject, deleteProject } from "../portfolioModel.js";
 
-export default async function handler(req, res) {
-  // --- Manejo de OPTIONS (preflight CORS) ---
-  if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    return res.status(200).end();
+export async function getProjectsHandler(req, res) {
+  try {
+    const projects = await getProjects();
+    res.json(projects);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener proyectos" });
   }
+}
 
-  if (req.method === "GET") {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    try {
-      const result = await db.query("SELECT * FROM projects ORDER BY created_at DESC");
-      return res.status(200).json(result.rows);
-    } catch (err) {
-      return res.status(500).json({ error: err.message });
-    }
+export async function addProjectHandler(req, res) {
+  try {
+    const project = await addProject(req.body);
+    res.status(201).json(project);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al crear proyecto" });
   }
+}
 
-  return res.status(405).json({ error: "Método no permitido" });
+export async function updateProjectHandler(req, res) {
+  try {
+    await updateProject(req.params.id, req.body);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al modificar proyecto" });
+  }
+}
+
+export async function deleteProjectHandler(req, res) {
+  try {
+    const ok = await deleteProject(req.params.id);
+    if (!ok) return res.status(404).json({ error: "Proyecto no encontrado" });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al eliminar proyecto" });
+  }
 }
