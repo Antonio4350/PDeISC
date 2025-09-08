@@ -11,7 +11,7 @@ async function handler(req, res) {
     }
   }
 
-  if (req.method === "POST") {
+  if (req.method === "POST" || req.method === "PUT") {
     try {
       const updated = await upsertPortfolio(req.body);
       return res.status(200).json(updated);
