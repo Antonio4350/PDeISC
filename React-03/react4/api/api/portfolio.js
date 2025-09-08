@@ -1,5 +1,5 @@
-import withCors from "./cors.js";
 import { getPortfolio, upsertPortfolio } from "../portfolioModel.js";
+import withCors from "./cors.js";
 
 async function handler(req, res) {
   if (req.method === "GET") {
