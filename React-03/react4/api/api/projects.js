@@ -1,4 +1,4 @@
-import { getProjects, addProject, updateProject, deleteProject } from "../portfolioModel.js";
+import { getProjects, addProject, updateProject, deleteProject } from "..portfolioModel.js";
 
 export async function getProjectsHandler(req, res) {
   try {

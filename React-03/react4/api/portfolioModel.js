@@ -1,4 +1,4 @@
-import { getPortfolio, upsertPortfolio } from "../portfolioModel.js";
+import { getPortfolio, upsertPortfolio } from "..portfolioModel.js";
 
 export async function getPortfolioHandler(req, res) {
   try {

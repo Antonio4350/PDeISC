@@ -1,4 +1,4 @@
-import { getUser } from "../portfolioModel.js";
+import { getUser } from "..portfolioModel.js";
 import { json } from "micro";
 
 export default async function handler(req, res) {
