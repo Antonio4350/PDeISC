@@ -1,24 +1,21 @@
+import withCors from "./cors.js";
 import { getSkills, saveSkills } from "../portfolioModel.js";
-import withCors from "./cors.js"; // <- IMPORTAR CORS
 
 async function handler(req, res) {
-  if (req.method === "GET") {
-    try {
+  const { method } = req;
+  try {
+    if (method === "GET") {
       const skills = await getSkills();
-      res.json(skills);
-    } catch (err) {
-      res.status(500).json({ error: "Error al obtener skills" });
+      return res.json(skills);
     }
-  }
-
-  if (req.method === "POST") {
-    try {
+    if (method === "POST") {
       await saveSkills(req.body);
-      res.json({ success: true });
-    } catch (err) {
-      res.status(500).json({ error: "Error al guardar skills" });
+      return res.json({ success: true });
     }
+    return res.status(405).json({ error: "Método no permitido" });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
 }
 
-export default withCors(handler); // <- EXPORTAR ENVUELTO EN CORS
+export default withCors(handler);

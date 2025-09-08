@@ -1,5 +1,5 @@
+import withCors from "./cors.js";
 import { getPortfolio, upsertPortfolio } from "../portfolioModel.js";
-import withCors from "./cors.js"; // <- IMPORTAR CORS
 
 async function handler(req, res) {
   if (req.method === "GET") {
@@ -11,7 +11,7 @@ async function handler(req, res) {
     }
   }
 
-  if (req.method === "POST" || req.method === "PUT") {
+  if (req.method === "POST") {
     try {
       const updated = await upsertPortfolio(req.body);
       return res.status(200).json(updated);
@@ -23,4 +23,4 @@ async function handler(req, res) {
   return res.status(405).json({ error: "Método no permitido" });
 }
 
-export default withCors(handler); // <- EXPORTAR ENVUELTO EN CORS
+export default withCors(handler);

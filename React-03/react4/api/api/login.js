@@ -1,11 +1,10 @@
+import withCors from "./cors.js";
 import { getUser } from "../portfolioModel.js";
 import { json } from "micro";
-import withCors from "./cors.js"; // <- IMPORTAR CORS
 
 async function handler(req, res) {
   if (req.method === "POST") {
     const { username, password } = await json(req);
-
     try {
       const user = await getUser(username);
       if (!user) return res.status(401).json({ error: "Usuario no encontrado" });
@@ -15,8 +14,7 @@ async function handler(req, res) {
       return res.status(500).json({ error: err.message });
     }
   }
-
   return res.status(405).json({ error: "Método no permitido" });
 }
 
-export default withCors(handler); // <- EXPORTAR ENVUELTO EN CORS
+export default withCors(handler);
