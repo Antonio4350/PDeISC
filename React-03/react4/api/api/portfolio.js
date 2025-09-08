@@ -1,4 +1,4 @@
-import { db } from "..db.js";
+import { getPortfolio, upsertPortfolio } from "../portfolioModel.js";
 
 export default async function handler(req, res) {
   // --- Manejo de OPTIONS (preflight CORS) ---
@@ -12,13 +12,8 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     res.setHeader("Access-Control-Allow-Origin", "*");
     try {
-      const hero = await db.query("SELECT texto FROM hero LIMIT 1");
-      const about = await db.query("SELECT texto FROM about LIMIT 1");
-
-      return res.status(200).json({
-        hero: hero.rows[0]?.texto || "",
-        about: about.rows[0]?.texto || "",
-      });
+      const data = await getPortfolio();
+      return res.status(200).json(data);
     } catch (err) {
       return res.status(500).json({ error: err.message });
     }
