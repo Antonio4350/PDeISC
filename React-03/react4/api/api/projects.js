@@ -1,42 +1,51 @@
 import { getProjects, addProject, updateProject, deleteProject } from "../portfolioModel.js";
+import { json } from "micro";
 
-export async function getProjectsHandler(req, res) {
-  try {
-    const projects = await getProjects();
-    res.json(projects);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error al obtener proyectos" });
-  }
-}
+export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "https://p-de-isc-peach.vercel.app");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-export async function addProjectHandler(req, res) {
-  try {
-    const project = await addProject(req.body);
-    res.status(201).json(project);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error al crear proyecto" });
-  }
-}
+  if (req.method === "OPTIONS") return res.status(200).end();
 
-export async function updateProjectHandler(req, res) {
-  try {
-    await updateProject(req.params.id, req.body);
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error al modificar proyecto" });
+  if (req.method === "GET") {
+    try {
+      const projects = await getProjects();
+      return res.status(200).json(projects);
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
   }
-}
 
-export async function deleteProjectHandler(req, res) {
-  try {
-    const ok = await deleteProject(req.params.id);
-    if (!ok) return res.status(404).json({ error: "Proyecto no encontrado" });
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error al eliminar proyecto" });
+  if (req.method === "POST") {
+    try {
+      const project = await addProject(await json(req));
+      return res.status(201).json(project);
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
   }
+
+  if (req.method === "PUT") {
+    try {
+      const { id } = req.query; // en Vercel se usa query params
+      await updateProject(id, await json(req));
+      return res.status(200).json({ success: true });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
+  if (req.method === "DELETE") {
+    try {
+      const { id } = req.query;
+      const ok = await deleteProject(id);
+      if (!ok) return res.status(404).json({ error: "Proyecto no encontrado" });
+      return res.status(200).json({ success: true });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
+  return res.status(405).json({ error: "Método no permitido" });
 }
