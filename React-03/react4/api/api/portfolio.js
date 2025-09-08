@@ -1,13 +1,7 @@
 import { getPortfolio, upsertPortfolio } from "../portfolioModel.js";
+import withCors from "./cors.js"; // <- IMPORTAR CORS
 
-export default async function handler(req, res) {
-  // --- CORS headers para permitir tu frontend ---
-  res.setHeader("Access-Control-Allow-Origin", "https://p-de-isc-peach.vercel.app");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") return res.status(200).end();
-
+async function handler(req, res) {
   if (req.method === "GET") {
     try {
       const data = await getPortfolio();
@@ -28,3 +22,5 @@ export default async function handler(req, res) {
 
   return res.status(405).json({ error: "Método no permitido" });
 }
+
+export default withCors(handler); // <- EXPORTAR ENVUELTO EN CORS

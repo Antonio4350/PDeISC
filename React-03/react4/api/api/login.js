@@ -1,16 +1,12 @@
 import { getUser } from "../portfolioModel.js";
 import { json } from "micro";
+import withCors from "./cors.js"; // <- IMPORTAR CORS
 
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "https://p-de-isc-peach.vercel.app");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") return res.status(200).end();
-
+async function handler(req, res) {
   if (req.method === "POST") {
+    const { username, password } = await json(req);
+
     try {
-      const { username, password } = await json(req);
       const user = await getUser(username);
       if (!user) return res.status(401).json({ error: "Usuario no encontrado" });
       if (password !== user.password) return res.status(401).json({ error: "Contraseña incorrecta" });
@@ -22,3 +18,5 @@ export default async function handler(req, res) {
 
   return res.status(405).json({ error: "Método no permitido" });
 }
+
+export default withCors(handler); // <- EXPORTAR ENVUELTO EN CORS
