@@ -19,10 +19,9 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: "Usuario no encontrado" });
       }
 
-      // 🔑 Validación en texto plano (sin bcrypt)
       if (password !== user.rows[0].password_hash) {
-        return res.status(401).json({ error: "Contraseña incorrecta" });
-      }
+  return res.status(401).json({ error: "Contraseña incorrecta" });
+}
 
       return res.status(200).json({ message: "Login exitoso", user: user.rows[0] });
     } catch (err) {
