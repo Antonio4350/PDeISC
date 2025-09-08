@@ -1,4 +1,4 @@
-import { getPortfolio, upsertPortfolio } from "..portfolioModel.js";
+import { getPortfolio, upsertPortfolio } from "../portfolioModel.js";
 
 export default async function handler(req, res) {
   // --- Manejo de OPTIONS (preflight CORS) ---
