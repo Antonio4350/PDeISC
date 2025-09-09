@@ -1,110 +1,98 @@
-import express from 'express';
-import cors from 'cors';
+// server.js
+import express from "express";
+import cors from "cors";
 import {
-  getHero, updateHero,
-  getAbout, updateAbout,
-  getSkills, updateSkills,
-  getProjects, insertProject, updateProject, deleteProject,
+  getHero,
+  updateHero,
+  getAbout,
+  updateAbout,
+  getSkills,
+  updateSkills,
+  getProjects,
+  insertProject,
+  updateProject,
+  deleteProject,
   loginUser
-} from './funcionesbd.js';
+} from "./funcionesbd.js";
 
 const app = express();
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors());
 app.use(express.json());
 
-// ------------------ Hero ------------------
-app.get('/api/hero', async (_req, res) => {
-  const hero = await getHero();
+// Hero
+app.get("/api/hero", async (req, res) => {
+  const hero = await getHero(); // devuelve string
   res.json({ hero });
 });
 
-app.put('/api/hero', async (req, res) => {
+app.put("/api/hero", async (req, res) => {
   const { texto } = req.body;
-  const updated = await updateHero(texto);
-  res.json(updated);
+  const updatedHero = await updateHero(texto); // devuelve objeto {id, texto}
+  res.json({ hero: updatedHero.texto });
 });
 
-// ------------------ About ------------------
-app.get('/api/about', async (_req, res) => {
-  const about = await getAbout();
+// About
+app.get("/api/about", async (req, res) => {
+  const about = await getAbout(); // devuelve string
   res.json({ about });
 });
 
-app.put('/api/about', async (req, res) => {
+app.put("/api/about", async (req, res) => {
   const { texto } = req.body;
-  const updated = await updateAbout(texto);
-  res.json(updated);
+  const updatedAbout = await updateAbout(texto); // devuelve objeto {id, texto}
+  res.json({ about: updatedAbout.texto });
 });
 
-// ------------------ Skills ------------------
-app.get('/api/skills', async (_req, res) => {
+// Skills
+app.get("/api/skills", async (req, res) => {
   const skills = await getSkills();
-  res.json(skills);
+  res.json({ skills });
 });
 
-app.put('/api/skills', async (req, res) => {
-  const skills = req.body;
-  const updated = await updateSkills(skills);
-  res.json(updated);
+app.put("/api/skills", async (req, res) => {
+  const { skills } = req.body;
+  const updatedSkills = await updateSkills(skills);
+  res.json({ skills: updatedSkills });
 });
 
-// ------------------ Projects ------------------
-app.get('/api/projects', async (_req, res) => {
+// Projects
+app.get("/api/projects", async (req, res) => {
   const projects = await getProjects();
-  res.json(projects);
+  res.json({ projects });
 });
 
-app.post('/api/projects', async (req, res) => {
+app.post("/api/projects", async (req, res) => {
   const { titulo, descripcion } = req.body;
-  const project = await insertProject(titulo, descripcion);
-  res.json(project);
+  const newProject = await insertProject(titulo, descripcion);
+  res.json({ project: newProject });
 });
 
-app.put('/api/projects/:id', async (req, res) => {
+app.put("/api/projects/:id", async (req, res) => {
   const { id } = req.params;
   const { titulo, descripcion } = req.body;
-  const updated = await updateProject(id, titulo, descripcion);
-  res.json(updated);
+  const updatedProject = await updateProject(id, titulo, descripcion);
+  res.json({ project: updatedProject });
 });
 
-app.delete('/api/projects/:id', async (req, res) => {
+app.delete("/api/projects/:id", async (req, res) => {
   const { id } = req.params;
-  const deleted = await deleteProject(id);
-  res.json(deleted);
+  const deletedProject = await deleteProject(id);
+  res.json({ project: deletedProject });
 });
 
-// ------------------ Portfolio unificado ------------------
-app.get('/api/portfolio', async (_req, res) => {
-  const hero = await getHero();
-  const about = await getAbout();
-  const skills = await getSkills();
-  const projects = await getProjects();
-  res.json({
-    portfolio: { hero, about },
-    skills,
-    projects
-  });
-});
-
-app.put('/api/portfolio', async (req, res) => {
-  const { hero: heroText, about: aboutText } = req.body;
-  const updatedHero = await updateHero(heroText);
-  const updatedAbout = await updateAbout(aboutText);
-  res.json({
-    portfolio: {
-      hero: updatedHero.texto,
-      about: updatedAbout.texto
-    }
-  });
-});
-
-// ------------------ Login ------------------
-app.post('/api/login', async (req, res) => {
+// Login
+app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
   const ok = await loginUser(username, password);
-  res.json({ ok });
+  if (ok) {
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ success: false, message: "Credenciales inválidas" });
+  }
 });
 
-// ------------------ Server ------------------
-const port = process.env.PORT || 8081;
-app.listen(port, () => console.log(`API escuchando en :${port}`));
+// Arrancar servidor
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
+});
