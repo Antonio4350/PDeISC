@@ -12,7 +12,7 @@ const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
-// Hero
+// ------------------ Hero ------------------
 app.get('/api/hero', async (_req, res) => {
   const hero = await getHero();
   res.json({ hero });
@@ -24,7 +24,7 @@ app.put('/api/hero', async (req, res) => {
   res.json(updated);
 });
 
-// About
+// ------------------ About ------------------
 app.get('/api/about', async (_req, res) => {
   const about = await getAbout();
   res.json({ about });
@@ -36,7 +36,7 @@ app.put('/api/about', async (req, res) => {
   res.json(updated);
 });
 
-// Skills
+// ------------------ Skills ------------------
 app.get('/api/skills', async (_req, res) => {
   const skills = await getSkills();
   res.json(skills);
@@ -48,7 +48,7 @@ app.put('/api/skills', async (req, res) => {
   res.json(updated);
 });
 
-// Projects
+// ------------------ Projects ------------------
 app.get('/api/projects', async (_req, res) => {
   const projects = await getProjects();
   res.json(projects);
@@ -73,12 +73,38 @@ app.delete('/api/projects/:id', async (req, res) => {
   res.json(deleted);
 });
 
-// Login
+// ------------------ Portfolio unificado ------------------
+app.get('/api/portfolio', async (_req, res) => {
+  const hero = await getHero();
+  const about = await getAbout();
+  const skills = await getSkills();
+  const projects = await getProjects();
+  res.json({
+    portfolio: { hero, about },
+    skills,
+    projects
+  });
+});
+
+app.put('/api/portfolio', async (req, res) => {
+  const { hero: heroText, about: aboutText } = req.body;
+  const updatedHero = await updateHero(heroText);
+  const updatedAbout = await updateAbout(aboutText);
+  res.json({
+    portfolio: {
+      hero: updatedHero.texto,
+      about: updatedAbout.texto
+    }
+  });
+});
+
+// ------------------ Login ------------------
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   const ok = await loginUser(username, password);
   res.json({ ok });
 });
 
+// ------------------ Server ------------------
 const port = process.env.PORT || 8081;
 app.listen(port, () => console.log(`API escuchando en :${port}`));
