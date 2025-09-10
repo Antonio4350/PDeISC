@@ -1,8 +1,7 @@
-export default function Navbar({ setShowLogin, isLogged, setIsLogged }) {
+export default function Navbar({ setShowLogin, isLogged, setIsLogged, setEditSection }) {
   return (
     <nav className="fixed top-0 left-0 w-full bg-gray-950 text-gray-100 shadow-md z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-6 md:px-12 h-16">
-
         <a href="#inicio" className="text-purple-400 text-xl font-bold hover:text-purple-300">
           MiPortfolio
         </a>
@@ -14,7 +13,16 @@ export default function Navbar({ setShowLogin, isLogged, setIsLogged }) {
           <a href="#proyectos" className="hover:text-purple-400">Proyectos</a>
         </div>
 
-        <div>
+        <div className="flex items-center gap-2">
+          {isLogged && (
+            <button
+              onClick={() => setEditSection("portfolio")}
+              className="px-3 py-1 rounded bg-purple-600 hover:bg-purple-700 text-sm"
+            >
+              Editar Portafolio
+            </button>
+          )}
+
           {isLogged ? (
             <button
               onClick={() => setIsLogged(false)}
