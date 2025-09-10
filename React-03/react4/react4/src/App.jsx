@@ -51,7 +51,7 @@ export default function App() {
   return (
     <div className="bg-gray-900 text-gray-100 min-h-screen relative">
 
-      {/* Loader pantalla completa */}
+      {/* pantalla de carga */}
       {loading && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
           <div className="text-white text-lg md:text-xl animate-pulse">Cargando datos...</div>

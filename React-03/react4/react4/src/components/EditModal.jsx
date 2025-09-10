@@ -62,19 +62,19 @@ export default function EditModal({
         <div className="bg-gray-800 p-4 md:p-6 rounded shadow max-w-3xl w-full max-h-[90vh] overflow-y-auto space-y-4">
           <h2 className="text-xl md:text-2xl font-bold text-purple-400 mb-4 text-center">Editar Portafolio</h2>
 
-          {/* Hero */}
+          {/* hero */}
           <div className="space-y-2">
             <label className="font-bold text-gray-200">Hero</label>
             <textarea value={tempHero} onChange={e => setTempHero(e.target.value)} className="w-full p-2 bg-gray-700 rounded text-gray-100 h-20 md:h-24 text-sm md:text-base" />
           </div>
 
-          {/* About */}
+          {/* sobre */}
           <div className="space-y-2">
             <label className="font-bold text-gray-200">Sobre mí</label>
             <textarea value={tempAbout} onChange={e => setTempAbout(e.target.value)} className="w-full p-2 bg-gray-700 rounded text-gray-100 h-28 md:h-32 text-sm md:text-base" />
           </div>
 
-          {/* Skills */}
+          {/* habilidades */}
           <div className="space-y-2">
             <label className="font-bold text-gray-200">Habilidades</label>
             <div className="flex gap-2 mb-2 flex-wrap">
@@ -89,7 +89,7 @@ export default function EditModal({
             ))}
           </div>
 
-          {/* Projects */}
+          {/* proyectos */}
           <div className="space-y-2">
             <label className="font-bold text-gray-200">Proyectos</label>
             <button onClick={addProject} className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 md:px-3 md:py-1 rounded mb-2 text-sm md:text-base">+ Agregar Proyecto</button>
@@ -112,7 +112,7 @@ export default function EditModal({
         </div>
       </div>
 
-      {/* Modal confirmación */}
+      {/* confirmar cambios */}
       {confirmOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-60 p-4">
           <div className="bg-gray-800 p-4 md:p-6 rounded shadow max-w-md w-full space-y-4 text-center">
