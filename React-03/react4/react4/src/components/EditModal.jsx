@@ -12,12 +12,64 @@ export default function EditModal({
   const [tempSkills, setTempSkills] = useState([...skills]);
   const [tempProyectos, setTempProyectos] = useState([...proyectos]);
 
-  const handleSave = () => {
-    setHero(tempHero);
-    setAbout(tempAbout);
-    setSkills(tempSkills);
-    setProyectos(tempProyectos);
-    setEditSection(false);
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  const handleSave = async () => {
+    try {
+      // Guardar Hero
+      if (tempHero !== hero) {
+        const resHero = await fetch(`${API_URL}/api/hero`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ texto: tempHero })
+        });
+        const dataHero = await resHero.json();
+        setHero(dataHero.hero);
+      }
+
+      // Guardar About
+      if (tempAbout !== about) {
+        const resAbout = await fetch(`${API_URL}/api/about`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ texto: tempAbout })
+        });
+        const dataAbout = await resAbout.json();
+        setAbout(dataAbout.about);
+      }
+
+      // Guardar Skills
+      const resSkills = await fetch(`${API_URL}/api/skills`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skills: tempSkills })
+      });
+      const dataSkills = await resSkills.json();
+      setSkills(dataSkills.skills);
+
+      // Guardar Proyectos
+      for (const p of tempProyectos) {
+        if (p.id < 0) { // proyectos nuevos
+          const resNew = await fetch(`${API_URL}/api/projects`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ titulo: p.titulo, descripcion: p.descripcion })
+          });
+          const newProj = await resNew.json();
+          p.id = newProj.project.id; // actualizar id
+        } else { // proyectos existentes
+          await fetch(`${API_URL}/api/projects/${p.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ titulo: p.titulo, descripcion: p.descripcion })
+          });
+        }
+      }
+      setProyectos([...tempProyectos]);
+      setEditSection(false);
+    } catch (err) {
+      console.error("Error guardando cambios:", err);
+    }
   };
 
   const addSkill = () => setTempSkills([...tempSkills, { nombre: "", nivel: 0 }]);
