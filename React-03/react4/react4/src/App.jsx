@@ -13,7 +13,7 @@ export default function App() {
   const [isLogged, setIsLogged] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [loading, setLoading] = useState(true); // nuevo
+  const [loading, setLoading] = useState(true);
 
   const [hero, setHero] = useState("");
   const [about, setAbout] = useState("");
@@ -21,7 +21,7 @@ export default function App() {
   const [proyectos, setProyectos] = useState([]);
 
   async function loadRemote() {
-    setLoading(true); // mostrar loader
+    setLoading(true);
     try {
       const [resHero, resAbout, resSkills, resProyectos] = await Promise.all([
         fetch(`${API_URL}/api/hero`),
@@ -42,7 +42,7 @@ export default function App() {
     } catch (err) {
       console.error("Error cargando datos:", err.message);
     } finally {
-      setLoading(false); // ocultar loader
+      setLoading(false);
     }
   }
 
@@ -54,7 +54,7 @@ export default function App() {
       {/* Loader pantalla completa */}
       {loading && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
-          <div className="text-white text-xl animate-pulse">Cargando datos...</div>
+          <div className="text-white text-lg md:text-xl animate-pulse">Cargando datos...</div>
         </div>
       )}
 
@@ -62,19 +62,19 @@ export default function App() {
 
       <div className="px-4 sm:px-6 pt-20 pb-10 md:px-12 max-w-7xl mx-auto space-y-8">
 
-        <section id="inicio" className="py-12 flex flex-col items-center justify-center text-center bg-gray-800 rounded-lg p-4 md:p-6">
-          {hero ? <Hero heroText={hero} /> : <p className="text-gray-400 italic text-lg">Aún no hay información cargada.</p>}
+        <section id="inicio" className="py-8 md:py-12 flex flex-col items-center justify-center text-center bg-gray-800 rounded-lg p-4 md:p-6">
+          {hero ? <Hero heroText={hero} /> : <p className="text-gray-400 italic text-base md:text-lg">Aún no hay información cargada.</p>}
         </section>
 
-        <section id="sobre-mi" className="py-12 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-4 md:p-6">
+        <section id="sobre-mi" className="py-8 md:py-12 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-4 md:p-6">
           <About about={about} />
         </section>
 
-        <section id="habilidades" className="py-12 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-4 md:p-6">
+        <section id="habilidades" className="py-8 md:py-12 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-4 md:p-6">
           <Skills skills={skills} />
         </section>
 
-        <section id="proyectos" className="py-12 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-4 md:p-6">
+        <section id="proyectos" className="py-8 md:py-12 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-4 md:p-6">
           <Projects proyectos={proyectos} isLogged={isLogged} deleteProject={(id) => setProyectos(proyectos.filter(p => p.id !== id))} />
         </section>
       </div>
