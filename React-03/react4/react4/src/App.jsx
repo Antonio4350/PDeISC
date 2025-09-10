@@ -13,6 +13,7 @@ export default function App() {
   const [isLogged, setIsLogged] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [loading, setLoading] = useState(true); // nuevo
 
   const [hero, setHero] = useState("");
   const [about, setAbout] = useState("");
@@ -20,52 +21,70 @@ export default function App() {
   const [proyectos, setProyectos] = useState([]);
 
   async function loadRemote() {
+    setLoading(true); // mostrar loader
     try {
-      const resHero = await fetch(`${API_URL}/api/hero`);
+      const [resHero, resAbout, resSkills, resProyectos] = await Promise.all([
+        fetch(`${API_URL}/api/hero`),
+        fetch(`${API_URL}/api/about`),
+        fetch(`${API_URL}/api/skills`),
+        fetch(`${API_URL}/api/projects`)
+      ]);
+
       const heroData = await resHero.json();
-      setHero(heroData.hero || "");
-
-      const resAbout = await fetch(`${API_URL}/api/about`);
       const aboutData = await resAbout.json();
-      setAbout(aboutData.about || "");
-
-      const resSkills = await fetch(`${API_URL}/api/skills`);
       const skillsData = await resSkills.json();
-      setSkills(skillsData.skills || []);
-
-      const resProyectos = await fetch(`${API_URL}/api/projects`);
       const proyectosData = await resProyectos.json();
+
+      setHero(heroData.hero || "");
+      setAbout(aboutData.about || "");
+      setSkills(skillsData.skills || []);
       setProyectos(proyectosData.projects || []);
     } catch (err) {
       console.error("Error cargando datos:", err.message);
+    } finally {
+      setLoading(false); // ocultar loader
     }
   }
 
   useEffect(() => { loadRemote(); }, []);
 
   return (
-    <div className="bg-gray-900 text-gray-100 min-h-screen">
+    <div className="bg-gray-900 text-gray-100 min-h-screen relative">
+
+      {/* Loader pantalla completa */}
+      {loading && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
+          <div className="text-white text-xl animate-pulse">Cargando datos...</div>
+        </div>
+      )}
+
       <Navbar setShowLogin={setShowLogin} isLogged={isLogged} setIsLogged={setIsLogged} toggleEdit={() => setEditOpen(true)} />
 
-      <div className="px-4 sm:px-6 pt-20 pb-10 md:px-12 max-w-7xl mx-auto space-y-12">
-        <section id="inicio" className="py-16 flex flex-col items-center h-75 justify-center text-center bg-gray-800 rounded-lg p-6 relative">
-          {hero ? <Hero heroText={hero} /> : <p className="text-gray-400 italic text-xl">Aún no hay información cargada.</p>}
+      <div className="px-4 sm:px-6 pt-20 pb-10 md:px-12 max-w-7xl mx-auto space-y-8">
+
+        <section id="inicio" className="py-12 flex flex-col items-center justify-center text-center bg-gray-800 rounded-lg p-4 md:p-6">
+          {hero ? <Hero heroText={hero} /> : <p className="text-gray-400 italic text-lg">Aún no hay información cargada.</p>}
         </section>
 
-        <section id="sobre-mi" className="py-28 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 relative">
+        <section id="sobre-mi" className="py-12 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-4 md:p-6">
           <About about={about} />
         </section>
 
-        <section id="habilidades" className="py-28 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 relative">
+        <section id="habilidades" className="py-12 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-4 md:p-6">
           <Skills skills={skills} />
         </section>
 
-        <section id="proyectos" className="py-28 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 relative">
+        <section id="proyectos" className="py-12 flex flex-col items-center justify-center bg-gray-800 rounded-lg p-4 md:p-6">
           <Projects proyectos={proyectos} isLogged={isLogged} deleteProject={(id) => setProyectos(proyectos.filter(p => p.id !== id))} />
         </section>
       </div>
 
-      {!isLogged && showLogin && <LoginModal setShowLogin={setShowLogin} setIsLogged={val => { setIsLogged(val); setShowLogin(false); if(val) loadRemote(); }} />}
+      {!isLogged && showLogin && (
+        <LoginModal
+          setShowLogin={setShowLogin}
+          setIsLogged={val => { setIsLogged(val); setShowLogin(false); if(val) loadRemote(); }}
+        />
+      )}
 
       {isLogged && editOpen && (
         <EditModal
