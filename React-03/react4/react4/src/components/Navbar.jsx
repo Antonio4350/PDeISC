@@ -1,4 +1,4 @@
-export default function Navbar({ setShowLogin, isLogged, setIsLogged, setEditSection }) {
+export default function Navbar({ setShowLogin, isLogged, setIsLogged, toggleEdit }) {
   return (
     <nav className="fixed top-0 left-0 w-full bg-gray-950 text-gray-100 shadow-md z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-6 md:px-12 h-16">
@@ -16,13 +16,12 @@ export default function Navbar({ setShowLogin, isLogged, setIsLogged, setEditSec
         <div className="flex items-center gap-2">
           {isLogged && (
             <button
-              onClick={() => setEditSection("portfolio")}
+              onClick={toggleEdit}
               className="px-3 py-1 rounded bg-purple-600 hover:bg-purple-700 text-sm"
             >
               Editar Portafolio
             </button>
           )}
-
           {isLogged ? (
             <button
               onClick={() => setIsLogged(false)}
