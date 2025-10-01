@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity, Keyboard } from "react-native";
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Keyboard } from "react-native";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -8,16 +8,18 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(""); // mensaje de éxito
   const [isCreatingUser, setIsCreatingUser] = useState(false);
 
   const handleLogin = async () => {
     if (!username || !password) {
       setError("Todos los campos son obligatorios");
+      setSuccess("");
       return;
     }
 
     try {
-      const res = await fetch("http://localhost:4000/login", {
+      const res = await fetch("http://10.0.7.210:4000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -28,34 +30,40 @@ export default function LoginScreen() {
         Keyboard.dismiss();
         router.push(`/home?user=${username}`);
       } else {
-        setError("Usuario o contraseña inválidos / usuario inexistente");
+        setError(data.error);
+        setSuccess("");
       }
     } catch {
       setError("No se pudo conectar con el servidor");
+      setSuccess("");
     }
   };
 
   const handleCreateUser = async () => {
     if (!username || !password || !password2) {
       setError("Todos los campos son obligatorios");
+      setSuccess("");
       return;
     }
     if (password !== password2) {
       setError("Las contraseñas no coinciden");
+      setSuccess("");
       return;
     }
 
     try {
-      const res = await fetch("http://localhost:4000/usuarios", {
+      const res = await fetch("http://10.0.7.210:4000/usuarios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
       const data = await res.json();
-      if (data.error) setError(data.error);
-      else {
-        Alert.alert("Usuario creado", "Ahora podés ingresar con tus datos");
+      if (data.error) {
+        setError(data.error);
+        setSuccess("");
+      } else {
         setError("");
+        setSuccess("Usuario creado correctamente. Ahora podés ingresar."); // aquí ya no usamos alert
         setUsername("");
         setPassword("");
         setPassword2("");
@@ -63,6 +71,7 @@ export default function LoginScreen() {
       }
     } catch {
       setError("Error al conectar con servidor");
+      setSuccess("");
     }
   };
 
@@ -76,7 +85,7 @@ export default function LoginScreen() {
         placeholderTextColor="#d6b0ff99"
         value={username}
         onChangeText={setUsername}
-        onSubmitEditing={isCreatingUser ? handleCreateUser : handleLogin} // Enter dispara acción correcta
+        onSubmitEditing={isCreatingUser ? handleCreateUser : handleLogin}
         returnKeyType="done"
       />
       <TextInput
@@ -86,7 +95,7 @@ export default function LoginScreen() {
         secureTextEntry
         value={password}
         onChangeText={setPassword}
-        onSubmitEditing={isCreatingUser ? handleCreateUser : handleLogin} // Enter dispara acción correcta
+        onSubmitEditing={isCreatingUser ? handleCreateUser : handleLogin}
         returnKeyType="done"
       />
 
@@ -98,7 +107,7 @@ export default function LoginScreen() {
           secureTextEntry
           value={password2}
           onChangeText={setPassword2}
-          onSubmitEditing={handleCreateUser} // Enter dispara crear usuario
+          onSubmitEditing={handleCreateUser}
           returnKeyType="done"
         />
       )}
@@ -114,6 +123,7 @@ export default function LoginScreen() {
         onPress={() => {
           setIsCreatingUser(!isCreatingUser);
           setError("");
+          setSuccess("");
           setUsername("");
           setPassword("");
           setPassword2("");
@@ -125,23 +135,17 @@ export default function LoginScreen() {
       </TouchableOpacity>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
+      {success ? <Text style={styles.success}>{success}</Text> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1, backgroundColor: "#1b0a2a", justifyContent: "center", alignItems: "center", padding: 20
-  },
+  container: { flex: 1, backgroundColor: "#1b0a2a", justifyContent: "center", alignItems: "center", padding: 20 },
   title: { fontSize: 32, color: "#d6b0ff", marginBottom: 20 },
-  input: {
-    width: "80%", padding: 10, borderRadius: 5, backgroundColor: "#300742",
-    color: "#d6b0ff", marginBottom: 15
-  },
-  smallButton: {
-    marginTop: 10, backgroundColor: "#3c0d66", paddingVertical: 8,
-    paddingHorizontal: 20, borderRadius: 5
-  },
+  input: { width: "80%", padding: 10, borderRadius: 5, backgroundColor: "#300742", color: "#d6b0ff", marginBottom: 15 },
+  smallButton: { marginTop: 10, backgroundColor: "#3c0d66", paddingVertical: 8, paddingHorizontal: 20, borderRadius: 5 },
   smallButtonText: { color: "#d6b0ff", fontSize: 14 },
   error: { color: "#ff6b6b", marginTop: 10 },
+  success: { color: "#6bffb3", marginTop: 10 }, // mensaje de éxito verde
 });

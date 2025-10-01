@@ -7,7 +7,7 @@ export default function HomeScreen() {
   const router = useRouter();
 
   const handleLogout = () => {
-    router.push("/"); // vuelve al login
+    router.push("/");
   };
 
   return (

@@ -1,55 +1,70 @@
 import express from "express";
 import cors from "cors";
 import mysql from "mysql2/promise";
+import bcrypt from "bcryptjs";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Configuración de la conexión a XAMPP/MySQL
-const db = await mysql.createConnection({
+// conexion a la bdd
+const dbConfig = {
   host: "localhost",
-  user: "root",       // usuario XAMPP
-  password: "",       // contraseña XAMPP
-  database: "react_native_auth", // crear esta base si no existe
-});
+  user: "root",
+  password: "",
+  database: "react_native_auth",
+};
 
-// Crear tabla usuarios si no existe
-await db.execute(`
-  CREATE TABLE IF NOT EXISTS usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(100) NOT NULL
-  );
-`);
-
-// Ruta para crear usuario
+// crear usuario con contraseña
 app.post("/usuarios", async (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ error: "Faltan datos" });
+  if (!username || !password) return res.json({ error: "Todos los campos son obligatorios" });
 
   try {
-    await db.execute(
-      "INSERT INTO usuarios (username, password) VALUES (?, ?)",
-      [username, password]
-    );
-    res.json({ message: "Usuario creado" });
+    const conn = await mysql.createConnection(dbConfig);
+
+    // verificar si el usuario ya existe
+    const [rows] = await conn.execute("SELECT * FROM usuarios WHERE username = ?", [username]);
+    if (rows.length > 0) {
+      await conn.end();
+      return res.json({ error: "El usuario ya existe" });
+    }
+
+    // hashear la contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // insertar usuario
+    await conn.execute("INSERT INTO usuarios (username, password) VALUES (?, ?)", [username, hashedPassword]);
+    await conn.end();
+
+    res.json({ success: true });
   } catch (err) {
-    res.status(400).json({ error: "Usuario ya existe" });
+    console.error(err);
+    res.json({ error: "Error del servidor" });
   }
 });
 
-// Ruta para login
+// login: comparar contraseña encriptada
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  const [rows] = await db.execute(
-    "SELECT * FROM usuarios WHERE username=? AND password=?",
-    [username, password]
-  );
+  if (!username || !password) return res.json({ success: false, error: "Todos los campos son obligatorios" });
 
-  if (rows.length > 0) res.json({ success: true, user: username });
-  else res.status(401).json({ success: false, error: "Credenciales inválidas" });
+  try {
+    const conn = await mysql.createConnection(dbConfig);
+    const [rows] = await conn.execute("SELECT * FROM usuarios WHERE username = ?", [username]);
+    await conn.end();
+
+    if (rows.length === 0) return res.json({ success: false, error: "Usuario o contraseña inválidos / usuario inexistente" });
+
+    const user = rows[0];
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (passwordMatch) res.json({ success: true });
+    else res.json({ success: false, error: "Usuario o contraseña inválidos / usuario inexistente" });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, error: "Error del servidor" });
+  }
 });
 
-const PORT = 4000;
-app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
+app.listen(4000, () => console.log("Servidor corriendo en http://10.0.7.210:{PORT}"));
