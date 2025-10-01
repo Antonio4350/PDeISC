@@ -1,12 +1,20 @@
-import { useLocalSearchParams } from "expo-router";
-import { View, Text, StyleSheet } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
 export default function HomeScreen() {
   const params = useLocalSearchParams();
   const username = params.user || "Usuario";
+  const router = useRouter();
+
+  const handleLogout = () => {
+    router.push("/"); // vuelve al login
+  };
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutText}>Cerrar sesión</Text>
+      </TouchableOpacity>
       <Text style={styles.title}>Bienvenido, {username}!</Text>
       <Text style={styles.subtitle}>Has ingresado correctamente.</Text>
     </View>
@@ -14,7 +22,16 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#1b0a2a", justifyContent: "center", alignItems: "center", padding: 20 },
+  container: {
+    flex: 1, backgroundColor: "#1b0a2a", justifyContent: "center",
+    alignItems: "center", padding: 20
+  },
   title: { fontSize: 28, color: "#d6b0ff", marginBottom: 10 },
   subtitle: { fontSize: 18, color: "#a371ff" },
+  logoutButton: {
+    position: "absolute", top: 40, right: 20,
+    backgroundColor: "#3c0d66", paddingVertical: 6, paddingHorizontal: 12,
+    borderRadius: 5
+  },
+  logoutText: { color: "#d6b0ff", fontSize: 14 }
 });
