@@ -67,4 +67,4 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.listen(4000, () => console.log("Servidor corriendo en http://10.0.7.210:{PORT}"));
+app.listen(4000, () => console.log("Servidor corriendo en http://192.168.100.203:{PORT}"));

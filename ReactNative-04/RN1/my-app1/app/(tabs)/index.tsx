@@ -8,7 +8,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(""); // mensaje de éxito
+  const [success, setSuccess] = useState("");
   const [isCreatingUser, setIsCreatingUser] = useState(false);
 
   const handleLogin = async () => {
@@ -19,7 +19,7 @@ export default function LoginScreen() {
     }
 
     try {
-      const res = await fetch("http://10.0.7.210:4000/login", {
+      const res = await fetch("http://192.168.100.203:4000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -28,7 +28,7 @@ export default function LoginScreen() {
       if (data.success) {
         setError("");
         Keyboard.dismiss();
-        router.push(`/home?user=${username}`);
+        router.push(`/home?user=${encodeURIComponent(username)}`);
       } else {
         setError(data.error);
         setSuccess("");
@@ -52,7 +52,7 @@ export default function LoginScreen() {
     }
 
     try {
-      const res = await fetch("http://10.0.7.210:4000/usuarios", {
+      const res = await fetch("http://192.168.100.203:4000/usuarios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -63,7 +63,7 @@ export default function LoginScreen() {
         setSuccess("");
       } else {
         setError("");
-        setSuccess("Usuario creado correctamente. Ahora podés ingresar."); // aquí ya no usamos alert
+        setSuccess("Usuario creado correctamente. Ahora podés ingresar.");
         setUsername("");
         setPassword("");
         setPassword2("");
@@ -77,8 +77,12 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{isCreatingUser ? "Nuevo Usuario" : "Login"}</Text>
+      {/* Título */}
+      <Text style={styles.title}>
+        {isCreatingUser ? "Nuevo Usuario" : "Login"}
+      </Text>
 
+      {/* Inputs */}
       <TextInput
         style={styles.input}
         placeholder="Usuario"
@@ -98,7 +102,6 @@ export default function LoginScreen() {
         onSubmitEditing={isCreatingUser ? handleCreateUser : handleLogin}
         returnKeyType="done"
       />
-
       {isCreatingUser && (
         <TextInput
           style={styles.input}
@@ -112,12 +115,14 @@ export default function LoginScreen() {
         />
       )}
 
+      {/* Botón principal */}
       <Button
         title={isCreatingUser ? "Crear Usuario" : "Ingresar"}
         color="#6b29ff"
         onPress={isCreatingUser ? handleCreateUser : handleLogin}
       />
 
+      {/* Botón alternar Login/Nuevo usuario */}
       <TouchableOpacity
         style={styles.smallButton}
         onPress={() => {
@@ -134,6 +139,7 @@ export default function LoginScreen() {
         </Text>
       </TouchableOpacity>
 
+      {/* Mensajes de error/éxito */}
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {success ? <Text style={styles.success}>{success}</Text> : null}
     </View>
@@ -141,11 +147,39 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#1b0a2a", justifyContent: "center", alignItems: "center", padding: 20 },
-  title: { fontSize: 32, color: "#d6b0ff", marginBottom: 20 },
-  input: { width: "80%", padding: 10, borderRadius: 5, backgroundColor: "#300742", color: "#d6b0ff", marginBottom: 15 },
-  smallButton: { marginTop: 10, backgroundColor: "#3c0d66", paddingVertical: 8, paddingHorizontal: 20, borderRadius: 5 },
-  smallButtonText: { color: "#d6b0ff", fontSize: 14 },
-  error: { color: "#ff6b6b", marginTop: 10 },
-  success: { color: "#6bffb3", marginTop: 10 }, // mensaje de éxito verde
+  container: {
+    flex: 1,
+    backgroundColor: "#1b0a2a",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  title: {
+    fontSize: 32,
+    color: "#d6b0ff",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  input: {
+    width: "80%",
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: "#300742",
+    color: "#d6b0ff",
+    marginBottom: 15,
+  },
+  smallButton: {
+    marginTop: 10,
+    backgroundColor: "#3c0d66",
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  smallButtonText: {
+    color: "#d6b0ff",
+    fontSize: 14,
+    textAlign: "center",
+  },
+  error: { color: "#ff6b6b", marginTop: 10, textAlign: "center" },
+  success: { color: "#6bffb3", marginTop: 10, textAlign: "center" },
 });
