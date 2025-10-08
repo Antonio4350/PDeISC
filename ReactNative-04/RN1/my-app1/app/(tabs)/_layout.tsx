@@ -4,7 +4,7 @@ import { View, StyleSheet } from "react-native";
 export default function RootLayout() {
   return (
     <View style={styles.container}>
-      <Slot /> {/* aquí se renderizan las rutas hijas */}
+      <Slot /> 
     </View>
   );
 }

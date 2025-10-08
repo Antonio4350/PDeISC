@@ -19,7 +19,7 @@ export default function LoginScreen() {
     }
 
     try {
-      const res = await fetch("http://192.168.100.203:4000/login", {
+      const res = await fetch("http://192.168.4.105:4000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -52,7 +52,7 @@ export default function LoginScreen() {
     }
 
     try {
-      const res = await fetch("http://192.168.100.203:4000/usuarios", {
+      const res = await fetch("http://192.168.4.105:4000/usuarios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -115,14 +115,14 @@ export default function LoginScreen() {
         />
       )}
 
-      {/* Botón principal */}
+      {/* Boton principal */}
       <Button
         title={isCreatingUser ? "Crear Usuario" : "Ingresar"}
         color="#6b29ff"
         onPress={isCreatingUser ? handleCreateUser : handleLogin}
       />
 
-      {/* Botón alternar Login/Nuevo usuario */}
+      {/* Boton alternar Login/Nuevo usuario */}
       <TouchableOpacity
         style={styles.smallButton}
         onPress={() => {
@@ -139,7 +139,7 @@ export default function LoginScreen() {
         </Text>
       </TouchableOpacity>
 
-      {/* Mensajes de error/éxito */}
+      {/* Mensajes de error/exito */}
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {success ? <Text style={styles.success}>{success}</Text> : null}
     </View>

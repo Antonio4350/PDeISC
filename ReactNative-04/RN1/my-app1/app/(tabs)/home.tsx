@@ -28,7 +28,6 @@ export default function HomeScreen() {
         <Text style={styles.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
 
-      {/* Interpolación segura para web */}
       <Text style={styles.title}>{`Bienvenido, ${username}`}</Text>
       <Text style={styles.subtitle}>Has ingresado correctamente.</Text>
     </View>
