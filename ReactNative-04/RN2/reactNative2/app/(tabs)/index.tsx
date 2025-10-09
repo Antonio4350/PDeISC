@@ -1,98 +1,210 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useState } from "react";
+import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet, Keyboard, Alert } from "react-native";
+import { useRouter } from "expo-router";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+export default function LoginScreen() {
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
 
-export default function HomeScreen() {
+  // Login tradicional
+  const handleLogin = async () => {
+    if (!username || !password) {
+      setError("Todos los campos son obligatorios");
+      setSuccess("");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://192.168.4.105:4000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setError("");
+        Keyboard.dismiss();
+        router.push(`/perfil?user=${encodeURIComponent(username)}`);
+      } else {
+        setError(data.error);
+        setSuccess("");
+      }
+    } catch {
+      setError("No se pudo conectar con el servidor");
+      setSuccess("");
+    }
+  };
+
+  // Crear usuario
+  const handleCreateUser = async () => {
+    if (!username || !password || !password2) {
+      setError("Todos los campos son obligatorios");
+      setSuccess("");
+      return;
+    }
+    if (password !== password2) {
+      setError("Las contraseñas no coinciden");
+      setSuccess("");
+      return;
+    }
+
+    // Validación de contraseña: 4+ chars, mayúscula, minúscula, número, max 20
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{4,20}$/;
+    if (!regex.test(password)) {
+      setError(
+        "La contraseña debe tener 4-20 caracteres, al menos una mayúscula, una minúscula y un número."
+      );
+      setSuccess("");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://192.168.4.105:4000/usuarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        setError(data.error);
+        setSuccess("");
+      } else {
+        setError("");
+        setSuccess("Usuario creado correctamente. Ahora podés ingresar.");
+        setUsername("");
+        setPassword("");
+        setPassword2("");
+        setIsCreatingUser(false);
+      }
+    } catch {
+      setError("Error al conectar con servidor");
+      setSuccess("");
+    }
+  };
+
+  // Simulación login redes
+  const handleSocialLogin = (red: string) => {
+    Alert.alert("Login simulado", `Has ingresado con ${red}`);
+    router.push(`/perfil?user=${encodeURIComponent(red + "_user")}`);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={styles.container}>
+      <Text style={styles.title}>{isCreatingUser ? "Nuevo Usuario" : "Login"}</Text>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <TextInput
+        style={styles.input}
+        placeholder="Usuario"
+        placeholderTextColor="#d6b0ff99"
+        value={username}
+        onChangeText={setUsername}
+        onSubmitEditing={isCreatingUser ? handleCreateUser : handleLogin}
+        returnKeyType="done"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Contraseña"
+        placeholderTextColor="#d6b0ff99"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+        onSubmitEditing={isCreatingUser ? handleCreateUser : handleLogin}
+        returnKeyType="done"
+      />
+      {isCreatingUser && (
+        <TextInput
+          style={styles.input}
+          placeholder="Repetir Contraseña"
+          placeholderTextColor="#d6b0ff99"
+          secureTextEntry
+          value={password2}
+          onChangeText={setPassword2}
+          onSubmitEditing={handleCreateUser}
+          returnKeyType="done"
+        />
+      )}
+
+      <Button
+        title={isCreatingUser ? "Crear Usuario" : "Ingresar"}
+        color="#6b29ff"
+        onPress={isCreatingUser ? handleCreateUser : handleLogin}
+      />
+
+      <TouchableOpacity
+        style={styles.smallButton}
+        onPress={() => {
+          setIsCreatingUser(!isCreatingUser);
+          setError("");
+          setSuccess("");
+          setUsername("");
+          setPassword("");
+          setPassword2("");
+        }}
+      >
+        <Text style={styles.smallButtonText}>
+          {isCreatingUser ? "Volver al Login" : "Nuevo usuario"}
+        </Text>
+      </TouchableOpacity>
+
+      <Text style={styles.orText}>O ingresar con redes</Text>
+
+      <View style={styles.socialButtons}>
+        <TouchableOpacity
+          style={[styles.socialButton, { backgroundColor: "#db4437" }]}
+          onPress={() => handleSocialLogin("Google")}
+        >
+          <Text style={styles.socialText}>Google</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.socialButton, { backgroundColor: "#3b5998" }]}
+          onPress={() => handleSocialLogin("Facebook")}
+        >
+          <Text style={styles.socialText}>Facebook</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.socialButton, { backgroundColor: "#000000" }]}
+          onPress={() => handleSocialLogin("Apple")}
+        >
+          <Text style={styles.socialText}>Apple</Text>
+        </TouchableOpacity>
+      </View>
+
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {success ? <Text style={styles.success}>{success}</Text> : null}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: "#1b0a2a",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: { fontSize: 32, color: "#d6b0ff", marginBottom: 20, textAlign: "center" },
+  input: {
+    width: "80%",
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: "#300742",
+    color: "#d6b0ff",
+    marginBottom: 15,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  smallButton: { marginTop: 10, backgroundColor: "#3c0d66", paddingVertical: 8, paddingHorizontal: 20, borderRadius: 5 },
+  smallButtonText: { color: "#d6b0ff", fontSize: 14, textAlign: "center" },
+  orText: { color: "#d6b0ff", marginVertical: 10, fontSize: 16 },
+  socialButtons: { flexDirection: "row", justifyContent: "space-between", width: "80%" },
+  socialButton: { flex: 1, marginHorizontal: 5, paddingVertical: 10, borderRadius: 5, alignItems: "center" },
+  socialText: { color: "#fff", fontSize: 14 },
+  error: { color: "#ff6b6b", marginTop: 10, textAlign: "center" },
+  success: { color: "#6bffb3", marginTop: 10, textAlign: "center" },
 });
