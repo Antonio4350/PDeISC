@@ -1,9 +1,16 @@
-import { useState } from "react";
-import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet, Keyboard, Alert } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet, Keyboard, Platform } from "react-native";
 import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+import { makeRedirectUri } from "expo-auth-session";
+import * as SecureStore from "expo-secure-store";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const router = useRouter();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
@@ -11,7 +18,44 @@ export default function LoginScreen() {
   const [success, setSuccess] = useState("");
   const [isCreatingUser, setIsCreatingUser] = useState(false);
 
-  // Login tradicional
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    
+    clientId: "58585220959-2ii0sgs43cp9ja7rtm9gaemo4hqb7vvh.apps.googleusercontent.com",
+    redirectUri: makeRedirectUri({ useProxy: true } as any)
+  });
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      const { id_token, access_token } = response.params;
+      if (id_token || access_token)
+        handleGoogleLogin({ idToken: id_token, accessToken: access_token });
+    }
+  }, [response]);
+
+  const handleGoogleLogin = async (tokens: any) => {
+    try {
+      const res = await fetch("http://192.168.1.36:4000/googleLogin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tokens)
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        if (Platform.OS === "web") localStorage.setItem("oldmail", data.mail);
+        else await SecureStore.setItemAsync("oldmail", data.mail);
+
+        router.push(`/perfil?user=${encodeURIComponent(data.mail)}`);
+      } else {
+        setError(data.error || "Error al iniciar sesión con Google");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Error de conexión con el servidor");
+    }
+  };
+
   const handleLogin = async () => {
     if (!username || !password) {
       setError("Todos los campos son obligatorios");
@@ -20,60 +64,49 @@ export default function LoginScreen() {
     }
 
     try {
-      const res = await fetch("http://192.168.4.105:4000/login", {
+      const res = await fetch("http://192.168.1.36:4000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password })
       });
       const data = await res.json();
       if (data.success) {
         setError("");
         Keyboard.dismiss();
         router.push(`/perfil?user=${encodeURIComponent(username)}`);
-      } else {
-        setError(data.error);
-        setSuccess("");
-      }
+      } else setError(data.error);
     } catch {
       setError("No se pudo conectar con el servidor");
-      setSuccess("");
     }
   };
 
-  // Crear usuario
   const handleCreateUser = async () => {
     if (!username || !password || !password2) {
       setError("Todos los campos son obligatorios");
-      setSuccess("");
       return;
     }
     if (password !== password2) {
       setError("Las contraseñas no coinciden");
-      setSuccess("");
       return;
     }
 
-    // Validación de contraseña: 4+ chars, mayúscula, minúscula, número, max 20
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{4,20}$/;
     if (!regex.test(password)) {
       setError(
-        "La contraseña debe tener 4-20 caracteres, al menos una mayúscula, una minúscula y un número."
+        "La contraseña debe tener entre 4 y 20 caracteres, con al menos una mayúscula, una minúscula y un número."
       );
-      setSuccess("");
       return;
     }
 
     try {
-      const res = await fetch("http://192.168.4.105:4000/usuarios", {
+      const res = await fetch("http://192.168.1.36:4000/usuarios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password })
       });
       const data = await res.json();
-      if (data.error) {
-        setError(data.error);
-        setSuccess("");
-      } else {
+      if (data.error) setError(data.error);
+      else {
         setError("");
         setSuccess("Usuario creado correctamente. Ahora podés ingresar.");
         setUsername("");
@@ -83,14 +116,7 @@ export default function LoginScreen() {
       }
     } catch {
       setError("Error al conectar con servidor");
-      setSuccess("");
     }
-  };
-
-  // Simulación login redes
-  const handleSocialLogin = (red: string) => {
-    Alert.alert("Login simulado", `Has ingresado con ${red}`);
-    router.push(`/perfil?user=${encodeURIComponent(red + "_user")}`);
   };
 
   return (
@@ -103,8 +129,6 @@ export default function LoginScreen() {
         placeholderTextColor="#d6b0ff99"
         value={username}
         onChangeText={setUsername}
-        onSubmitEditing={isCreatingUser ? handleCreateUser : handleLogin}
-        returnKeyType="done"
       />
       <TextInput
         style={styles.input}
@@ -113,9 +137,8 @@ export default function LoginScreen() {
         secureTextEntry
         value={password}
         onChangeText={setPassword}
-        onSubmitEditing={isCreatingUser ? handleCreateUser : handleLogin}
-        returnKeyType="done"
       />
+
       {isCreatingUser && (
         <TextInput
           style={styles.input}
@@ -124,8 +147,6 @@ export default function LoginScreen() {
           secureTextEntry
           value={password2}
           onChangeText={setPassword2}
-          onSubmitEditing={handleCreateUser}
-          returnKeyType="done"
         />
       )}
 
@@ -156,23 +177,10 @@ export default function LoginScreen() {
       <View style={styles.socialButtons}>
         <TouchableOpacity
           style={[styles.socialButton, { backgroundColor: "#db4437" }]}
-          onPress={() => handleSocialLogin("Google")}
+          disabled={!request}
+          onPress={() => promptAsync()}
         >
           <Text style={styles.socialText}>Google</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.socialButton, { backgroundColor: "#3b5998" }]}
-          onPress={() => handleSocialLogin("Facebook")}
-        >
-          <Text style={styles.socialText}>Facebook</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.socialButton, { backgroundColor: "#000000" }]}
-          onPress={() => handleSocialLogin("Apple")}
-        >
-          <Text style={styles.socialText}>Apple</Text>
         </TouchableOpacity>
       </View>
 
@@ -183,22 +191,9 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#1b0a2a",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  title: { fontSize: 32, color: "#d6b0ff", marginBottom: 20, textAlign: "center" },
-  input: {
-    width: "80%",
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: "#300742",
-    color: "#d6b0ff",
-    marginBottom: 15,
-  },
+  container: { flex: 1, backgroundColor: "#1b0a2a", justifyContent: "center", alignItems: "center", padding: 20 },
+  title: { fontSize: 32, color: "#d6b0ff", marginBottom: 20 },
+  input: { width: "80%", padding: 10, borderRadius: 5, backgroundColor: "#300742", color: "#d6b0ff", marginBottom: 15 },
   smallButton: { marginTop: 10, backgroundColor: "#3c0d66", paddingVertical: 8, paddingHorizontal: 20, borderRadius: 5 },
   smallButtonText: { color: "#d6b0ff", fontSize: 14, textAlign: "center" },
   orText: { color: "#d6b0ff", marginVertical: 10, fontSize: 16 },
@@ -206,5 +201,5 @@ const styles = StyleSheet.create({
   socialButton: { flex: 1, marginHorizontal: 5, paddingVertical: 10, borderRadius: 5, alignItems: "center" },
   socialText: { color: "#fff", fontSize: 14 },
   error: { color: "#ff6b6b", marginTop: 10, textAlign: "center" },
-  success: { color: "#6bffb3", marginTop: 10, textAlign: "center" },
+  success: { color: "#6bffb3", marginTop: 10, textAlign: "center" }
 });

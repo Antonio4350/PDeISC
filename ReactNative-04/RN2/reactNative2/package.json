@@ -1,7 +1,8 @@
 {
   "name": "reactnative2",
-  "main": "expo-router/entry",
   "version": "1.0.0",
+  "main": "expo-router/entry",
+  "private": true,
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -29,6 +30,7 @@
     "expo-location": "^19.0.7",
     "expo-random": "^14.0.1",
     "expo-router": "~6.0.10",
+    "expo-secure-store": "^15.0.7",
     "expo-splash-screen": "~31.0.10",
     "expo-status-bar": "~3.0.8",
     "expo-symbols": "~1.0.7",
@@ -46,9 +48,21 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "@types/react-native": "^0.72.8",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "expo": {
+    "name": "reactnative2",
+    "slug": "reactnative2",
+    "scheme": "reactnative2",
+    "owner": "antonio4350",
+    "extra": {
+      "eas": {
+        "projectId": "58585220959-2ii0sgs43cp9ja7rtm9gaemo4hqb7vvh.apps.googleusercontent.com"
+      },
+      "googleClientId": "58585220959-2ii0sgs43cp9ja7rtm9gaemo4hqb7vvh.apps.googleusercontent.com"
+    }
+  }
 }
