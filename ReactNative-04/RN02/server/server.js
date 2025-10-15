@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Google OAuth
+// Google OAuth Client
 const client = new OAuth2Client(
   "58585220959-2ii0sgs43cp9ja7rtm9gaemo4hqb7vvh.apps.googleusercontent.com"
 );
@@ -23,7 +23,9 @@ const pool = new Pool({
 // Regex de contraseña
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{4,20}$/;
 
-// Crear usuario tradicional
+// ==========================================================
+// RUTA 1: Crear usuario tradicional (POST /usuarios)
+// ==========================================================
 app.post("/usuarios", async (req, res) => {
   const { username, password } = req.body;
 
@@ -56,7 +58,9 @@ app.post("/usuarios", async (req, res) => {
   }
 });
 
-// Login tradicional
+// ==========================================================
+// RUTA 2: Login tradicional (POST /login)
+// ==========================================================
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.json({ error: "Todos los campos son obligatorios" });
@@ -78,7 +82,9 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Google Login
+// ==========================================================
+// RUTA 3: Google Login (POST /googleLogin)
+// ==========================================================
 app.post("/googleLogin", async (req, res) => {
   const { idToken, accessToken } = req.body;
 
@@ -124,5 +130,44 @@ app.post("/googleLogin", async (req, res) => {
     res.json({ success: false, error: error.message });
   }
 });
+
+
+// ==========================================================
+// RUTA 4: Guardar/Actualizar Perfil (POST /perfil) 👈 RUTA NUEVA
+// ==========================================================
+app.post("/perfil", async (req, res) => {
+  const { username, nombre, direccion, telefono, documento, foto_perfil } = req.body;
+
+  if (!username) {
+    return res.json({ success: false, error: "Falta el nombre de usuario (username)." });
+  }
+
+  try {
+    const result = await pool.query(
+      `
+      UPDATE usuarios 
+      SET 
+        nombre = $2, 
+        direccion = $3, 
+        telefono = $4, 
+        documento = $5, 
+        foto_perfil = $6
+      WHERE username = $1
+      `,
+      [username, nombre, direccion, telefono, documento, foto_perfil]
+    );
+
+    if (result.rowCount === 0) {
+      return res.json({ success: false, error: "Usuario no encontrado o no se pudo actualizar." });
+    }
+
+    res.json({ success: true, message: "Perfil actualizado correctamente." });
+
+  } catch (err) {
+    console.error("Error al actualizar perfil:", err);
+    res.json({ success: false, error: "Error del servidor al actualizar el perfil." });
+  }
+});
+
 
 app.listen(4000, () => console.log("Servidor andando en puerto 4000"));

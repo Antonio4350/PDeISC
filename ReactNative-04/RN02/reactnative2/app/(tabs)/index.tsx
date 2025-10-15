@@ -12,12 +12,13 @@ import {
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
-import { makeRedirectUri } from "expo-auth-session";
+import { makeRedirectUri, ResponseType } from "expo-auth-session"; // <-- Importamos ResponseType
 import * as SecureStore from "expo-secure-store";
 
 WebBrowser.maybeCompleteAuthSession();
 
-const API_URL = "http://10.0.7.210:4000"; // reemplaza con tu IP/puerto
+// Asegúrate de que esta IP sea la de tu máquina en la red local
+const API_URL = "http://10.0.7.210:4000"; 
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -29,17 +30,29 @@ export default function LoginScreen() {
   const [success, setSuccess] = useState("");
   const [isCreatingUser, setIsCreatingUser] = useState(false);
 
+  // Configuramos el hook de Google
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: "58585220959-2ii0sgs43cp9ja7rtm9gaemo4hqb7vvh.apps.googleusercontent.com",
-    redirectUri: makeRedirectUri(),
+    // makeRedirectUri() sin argumentos usa useProxy: true por defecto en Expo Go/EAS
+    redirectUri: makeRedirectUri(), 
     useProxy: true,
-  });
+    responseType: ResponseType.Token, // Usar token o code, según tu backend
+    scopes: ['profile', 'email'], // Añadir scopes recomendados
+  } as any); // El 'as any' es común debido a la complejidad de los tipos de Expo
 
   useEffect(() => {
-    console.log("Redirect URI generada:", makeRedirectUri({ useProxy: true }));
+    // Elimino el console.log de debug de la URI
     if (response?.type === "success") {
-      const { id_token, access_token } = response.params;
+      // Usamos response.authentication si usamos ResponseType.Token
+      const { id_token, access_token } = response.params; 
+      
+      // La API de Google ha cambiado, a veces solo viene id_token o access_token
       if (id_token || access_token) handleGoogleLogin({ idToken: id_token, accessToken: access_token });
+      
+    } else if (response?.type === "error") {
+        // Muestra un error si la autenticación falla
+        setError("Autenticación con Google cancelada o fallida.");
+        console.error("Error en respuesta de Google:", response);
     }
   }, [response]);
 
@@ -61,12 +74,13 @@ export default function LoginScreen() {
 
         router.push(`/perfil?user=${encodeURIComponent(data.mail)}`);
       } else {
-        setError(data.error || "Error al iniciar sesión con Google");
+        // Esto captura errores del backend (Node/Neon)
+        setError(data.error || "Error al iniciar sesión con Google en el servidor");
         setSuccess("");
       }
     } catch (err) {
       console.error(err);
-      setError("Error de conexión con el servidor");
+      setError("Error de conexión con el servidor (backend).");
       setSuccess("");
     }
   };
