@@ -18,7 +18,7 @@ import * as SecureStore from "expo-secure-store";
 WebBrowser.maybeCompleteAuthSession();
 
 // Asegúrate de que esta IP sea la de tu máquina en la red local
-const API_URL = "http://192.168.100.113:4000"; 
+const API_URL = "http://10.0.7.210:4000"; 
 
 export default function LoginScreen() {
   const router = useRouter();
