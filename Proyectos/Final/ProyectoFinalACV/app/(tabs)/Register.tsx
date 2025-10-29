@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -6,10 +6,15 @@ import {
   TextInput, 
   TouchableOpacity, 
   ScrollView,
-  Alert 
+  Alert,
+  Animated,
+  useWindowDimensions,
+  StatusBar
 } from 'react-native';
 import { router } from 'expo-router';
-import GoogleOAuth from '@/components/GoogleOauth';
+import { useAuth } from '../AuthContext';
+import GoogleOAuth from '../components/GoogleOAuth';
+import apiService from '../services/api';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -21,6 +26,30 @@ export default function Register() {
     telefono: '',
   });
   const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  
+  const { width: screenWidth } = useWindowDimensions();
+  const isTablet = screenWidth >= 768;
+  const isDesktop = screenWidth >= 1024;
+
+  // Animaciones
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      })
+    ]).start();
+  }, []);
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -51,159 +80,243 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // Simulación de registro - luego conectaremos con el backend
-      console.log('Register attempt:', formData);
-      
-      // Aquí irá la llamada al backend
-      // const response = await registerUser(formData);
-      
-      // Simulamos un registro exitoso
-      setTimeout(() => {
-        setLoading(false);
-        Alert.alert(
-          'Éxito', 
-          'Cuenta creada correctamente',
-          [
-            {
-              text: 'OK',
-              onPress: () => router.replace('/(tabs)/Login')
-            }
-          ]
-        );
-      }, 1500);
-      
+      const result = await apiService.register({
+        nombre,
+        apellido,
+        email,
+        password,
+        telefono
+      });
+
+      if (result.success && result.user) {
+        await login(result.user);
+        Alert.alert('🎉 ¡Cuenta Creada!', `¡Bienvenido ${result.user.nombre}!`);
+      } else {
+        Alert.alert('Error', result.error || 'No se pudo crear la cuenta');
+      }
     } catch (error) {
+      Alert.alert('Error', 'Error de conexión con el servidor');
+    } finally {
       setLoading(false);
-      Alert.alert('Error', 'No se pudo crear la cuenta. Intenta nuevamente.');
     }
   };
 
-  const handleGoogleSuccess = (email: string) => {
-    console.log('Usuario registrado con Google:', email);
-    Alert.alert('Éxito', `Cuenta creada para ${email}`);
-    // router.replace('/');
+  const handleGoogleSuccess = async (userData: any) => {
+    try {
+      await login(userData);
+      Alert.alert('🎉 ¡Bienvenido!', `Cuenta creada para ${userData.nombre || userData.email}`);
+    } catch (error) {
+      Alert.alert('Error', 'Error registrando con Google');
+    }
+  };
+
+  const dynamicStyles = {
+    container: {
+      paddingHorizontal: isDesktop ? 100 : isTablet ? 60 : 20,
+    },
+    title: {
+      fontSize: isDesktop ? 42 : isTablet ? 36 : 32,
+    },
+    input: {
+      padding: isDesktop ? 18 : isTablet ? 16 : 14,
+      fontSize: isDesktop ? 18 : 16,
+    },
+    registerButton: {
+      paddingVertical: isDesktop ? 18 : isTablet ? 16 : 14,
+    },
+    row: {
+      gap: isDesktop ? 20 : isTablet ? 16 : 12,
+    }
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <Text style={styles.title}>Crear Cuenta</Text>
-      <Text style={styles.subtitle}>Registrate para empezar a armar tu PC</Text>
-
-      {/* Formulario */}
-      <View style={styles.form}>
-        <View style={styles.row}>
-          <View style={styles.halfInput}>
-            <Text style={styles.label}>Nombre *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Tu nombre"
-              value={formData.nombre}
-              onChangeText={(value) => handleChange('nombre', value)}
-            />
-          </View>
-          <View style={styles.halfInput}>
-            <Text style={styles.label}>Apellido *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Tu apellido"
-              value={formData.apellido}
-              onChangeText={(value) => handleChange('apellido', value)}
-            />
-          </View>
-        </View>
-
-        <Text style={styles.label}>Email *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="tu@email.com"
-          value={formData.email}
-          onChangeText={(value) => handleChange('email', value)}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-
-        <Text style={styles.label}>Teléfono</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="+54 11 1234-5678"
-          value={formData.telefono}
-          onChangeText={(value) => handleChange('telefono', value)}
-          keyboardType="phone-pad"
-        />
-
-        <Text style={styles.label}>Contraseña *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Mínimo 6 caracteres"
-          value={formData.password}
-          onChangeText={(value) => handleChange('password', value)}
-          secureTextEntry
-        />
-
-        <Text style={styles.label}>Confirmar Contraseña *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Repetí tu contraseña"
-          value={formData.confirmPassword}
-          onChangeText={(value) => handleChange('confirmPassword', value)}
-          secureTextEntry
-        />
-
-        <TouchableOpacity 
-          style={[styles.registerButton, loading && styles.registerButtonDisabled]} 
-          onPress={handleRegister}
-          disabled={loading}
+    <>
+      <StatusBar barStyle="light-content" backgroundColor="#0f1117" />
+      <ScrollView 
+        style={styles.container} 
+        contentContainerStyle={[styles.contentContainer, dynamicStyles.container]}
+        showsVerticalScrollIndicator={false}
+      >
+        <Animated.View 
+          style={[
+            styles.formContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }]
+            }
+          ]}
         >
-          <Text style={styles.registerButtonText}>
-            {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={[styles.title, dynamicStyles.title]}>
+              🚀 Crear Cuenta
+            </Text>
+            <Text style={styles.subtitle}>
+              Unite a nuestra comunidad de builders
+            </Text>
+          </View>
 
-      {/* Separador */}
-      <View style={styles.separator}>
-        <View style={styles.separatorLine} />
-        <Text style={styles.separatorText}>o registrate con</Text>
-        <View style={styles.separatorLine} />
-      </View>
+          {/* Formulario */}
+          <View style={styles.form}>
+            {/* Nombre y Apellido en fila */}
+            <View style={[styles.row, dynamicStyles.row]}>
+              <View style={styles.halfInput}>
+                <Text style={styles.label}>👤 Nombre *</Text>
+                <TextInput
+                  style={[styles.input, dynamicStyles.input]}
+                  placeholder="Tu nombre"
+                  placeholderTextColor="#8b9cb3"
+                  value={formData.nombre}
+                  onChangeText={(value) => handleChange('nombre', value)}
+                />
+              </View>
+              <View style={styles.halfInput}>
+                <Text style={styles.label}>👥 Apellido *</Text>
+                <TextInput
+                  style={[styles.input, dynamicStyles.input]}
+                  placeholder="Tu apellido"
+                  placeholderTextColor="#8b9cb3"
+                  value={formData.apellido}
+                  onChangeText={(value) => handleChange('apellido', value)}
+                />
+              </View>
+            </View>
 
-      {/* Registro con Google */}
-      <GoogleOAuth 
-        type="register" 
-        onSuccess={handleGoogleSuccess}
-      />
+            {/* Email */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>📧 Email *</Text>
+              <TextInput
+                style={[styles.input, dynamicStyles.input]}
+                placeholder="tu@email.com"
+                placeholderTextColor="#8b9cb3"
+                value={formData.email}
+                onChangeText={(value) => handleChange('email', value)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
 
-      {/* Link a Login */}
-      <View style={styles.loginLink}>
-        <Text style={styles.loginText}>¿Ya tenés cuenta? </Text>
-        <TouchableOpacity onPress={() => router.push('/(tabs)/Login')}>
-          <Text style={styles.loginLinkText}>Iniciar Sesión</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+            {/* Teléfono */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>📞 Teléfono</Text>
+              <TextInput
+                style={[styles.input, dynamicStyles.input]}
+                placeholder="+54 11 1234-5678"
+                placeholderTextColor="#8b9cb3"
+                value={formData.telefono}
+                onChangeText={(value) => handleChange('telefono', value)}
+                keyboardType="phone-pad"
+              />
+            </View>
+
+            {/* Contraseña */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>🔒 Contraseña *</Text>
+              <TextInput
+                style={[styles.input, dynamicStyles.input]}
+                placeholder="Mínimo 6 caracteres"
+                placeholderTextColor="#8b9cb3"
+                value={formData.password}
+                onChangeText={(value) => handleChange('password', value)}
+                secureTextEntry
+              />
+            </View>
+
+            {/* Confirmar Contraseña */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>✅ Confirmar Contraseña *</Text>
+              <TextInput
+                style={[styles.input, dynamicStyles.input]}
+                placeholder="Repetí tu contraseña"
+                placeholderTextColor="#8b9cb3"
+                value={formData.confirmPassword}
+                onChangeText={(value) => handleChange('confirmPassword', value)}
+                secureTextEntry
+              />
+            </View>
+
+            {/* Botón de Registro */}
+            <TouchableOpacity 
+              style={[styles.registerButton, dynamicStyles.registerButton, loading && styles.registerButtonDisabled]} 
+              onPress={handleRegister}
+              disabled={loading}
+            >
+              <Text style={styles.registerButtonText}>
+                {loading ? '🔄 Creando cuenta...' : '🎯 Crear Cuenta'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Separador */}
+          <View style={styles.separator}>
+            <View style={styles.separatorLine} />
+            <Text style={styles.separatorText}>o registrate con</Text>
+            <View style={styles.separatorLine} />
+          </View>
+
+          {/* Registro con Google */}
+          <GoogleOAuth 
+            type="register" 
+            onSuccess={handleGoogleSuccess}
+          />
+
+          {/* Link a Login */}
+          <View style={styles.loginLink}>
+            <Text style={styles.loginText}>¿Ya tenés cuenta? </Text>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/Login')}>
+              <Text style={styles.loginLinkText}>Ingresar</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Información adicional */}
+          <View style={styles.infoBox}>
+            <Text style={styles.infoIcon}>💡</Text>
+            <Text style={styles.infoText}>
+              Al crear una cuenta aceptás nuestros términos y condiciones de uso.
+            </Text>
+          </View>
+        </Animated.View>
+      </ScrollView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#0f1117',
   },
   contentContainer: {
-    padding: 20,
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  formContainer: {
+    backgroundColor: '#1a1b27',
+    borderRadius: 24,
+    padding: 32,
+    shadowColor: '#667eea',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.3,
+    shadowRadius: 30,
+    elevation: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 40,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '800',
+    color: '#ffffff',
     textAlign: 'center',
-    marginBottom: 8,
-    color: '#1f2937',
+    marginBottom: 12,
   },
   subtitle: {
     fontSize: 16,
+    color: '#8b9cb3',
     textAlign: 'center',
-    marginBottom: 40,
-    color: '#6b7280',
   },
   form: {
     marginBottom: 30,
@@ -211,40 +324,44 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 12,
   },
   halfInput: {
     flex: 1,
+  },
+  inputContainer: {
+    marginBottom: 20,
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
-    color: '#374151',
+    color: '#ffffff',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 20,
-    backgroundColor: '#f9fafb',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    color: '#ffffff',
   },
   registerButton: {
-    backgroundColor: '#2563eb',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: '#667eea',
+    borderRadius: 16,
     alignItems: 'center',
     marginTop: 10,
+    shadowColor: '#667eea',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 8,
   },
   registerButtonDisabled: {
-    backgroundColor: '#9ca3af',
+    backgroundColor: '#8b9cb3',
   },
   registerButtonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   separator: {
     flexDirection: 'row',
@@ -254,26 +371,47 @@ const styles = StyleSheet.create({
   separatorLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   separatorText: {
     marginHorizontal: 15,
-    color: '#6b7280',
+    color: '#8b9cb3',
     fontSize: 14,
+    fontWeight: '600',
   },
   loginLink: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 30,
+    marginBottom: 20,
   },
   loginText: {
-    color: '#6b7280',
+    color: '#8b9cb3',
     fontSize: 14,
   },
   loginLinkText: {
-    color: '#2563eb',
+    color: '#667eea',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  infoBox: {
+    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+    padding: 16,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderLeftWidth: 4,
+    borderLeftColor: '#667eea',
+  },
+  infoIcon: {
+    fontSize: 20,
+    marginRight: 12,
+  },
+  infoText: {
+    color: '#8b9cb3',
+    fontSize: 12,
+    flex: 1,
+    lineHeight: 16,
   },
 });

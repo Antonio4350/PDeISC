@@ -8,8 +8,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Importar autenticación Google
-const { googleLogin } = require('./Components/googleAuth');
+// Importar componentes
+const authController = require('./Components/authController');
+const startupMonitor = require('./Components/startupMonitor');
 
 // Ruta de prueba
 app.get('/', (req, res) => {
@@ -25,61 +26,57 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Ruta de login con Google
-app.post("/googleLogin", async (req, res) => {
-  const { idToken, accessToken } = req.body;
-  
-  try {
-    const result = await googleLogin(idToken, accessToken);
-    res.json(result);
-  } catch (err) {
-    console.error(err);
-    res.json({ success: false, error: err.message });
-  }
-});
-
-// Ruta de login normal (para implementar después)
-app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  
-  // Simulación de login
-  console.log('Login normal:', { email, password });
-  
-  // Aquí irá la lógica real de autenticación
-  res.json({ 
-    success: true, 
-    message: 'Login exitoso',
-    user: { email, name: 'Usuario Demo' }
-  });
-});
-
-// Ruta de registro normal (para implementar después)
-app.post("/register", async (req, res) => {
-  const { nombre, apellido, email, password, telefono } = req.body;
-  
-  // Simulación de registro
-  console.log('Registro normal:', { nombre, apellido, email, telefono });
-  
-  // Aquí irá la lógica real de registro
-  res.json({ 
-    success: true, 
-    message: 'Usuario registrado exitosamente',
-    user: { email, nombre, apellido }
-  });
-});
+// Rutas de Autenticación - USAR LAS FUNCIONES DIRECTAMENTE
+app.post("/googleLogin", (req, res) => authController.googleLogin(req, res));
+app.post("/login", (req, res) => authController.normalLogin(req, res));
+app.post("/register", (req, res) => authController.normalRegister(req, res));
+app.get("/user/:id", (req, res) => authController.getUserProfile(req, res));
 
 // Manejo de errores
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Algo salió mal en el servidor' });
+  console.error('Error no manejado:', err.stack);
+  res.status(500).json({ 
+    success: false,
+    message: 'Algo salió mal en el servidor',
+    error: err.message 
+  });
 });
 
 // Ruta no encontrada
 app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Ruta no encontrada' });
+  res.status(404).json({ 
+    success: false,
+    message: 'Ruta no encontrada',
+    path: req.originalUrl 
+  });
 });
 
+// Iniciar servidor
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`✅ Servidor ProyectoFinalACV en puerto ${PORT}`);
+
+async function startServer() {
+  try {
+    // Mostrar información de inicio
+    const startupInfo = await startupMonitor.displayStartupInfo(PORT);
+    
+    // Iniciar servidor
+    app.listen(PORT, () => {
+      startupMonitor.displayServerReady(startupInfo);
+    });
+    
+  } catch (error) {
+    console.log('\n💥 ERROR AL INICIAR EL SERVIDOR:');
+    console.log(error);
+    process.exit(1);
+  }
+}
+
+// Manejo de errores global
+process.on('unhandledRejection', (err) => {
+  console.log('\n❌ ERROR CRÍTICO:');
+  console.log(err);
+  process.exit(1);
 });
+
+// Iniciar
+startServer();

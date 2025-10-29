@@ -6,7 +6,7 @@ const client = new OAuth2Client(
 
 async function googleLogin(idToken, accessToken) {
   try {
-    let email, name;
+    let email, name, googleId, picture;
     
     if (idToken) {
       const ticket = await client.verifyIdToken({
@@ -16,6 +16,8 @@ async function googleLogin(idToken, accessToken) {
       const payload = ticket.getPayload();
       email = payload.email;
       name = payload.name;
+      googleId = payload.sub;
+      picture = payload.picture;
     } else if (accessToken) {
       const userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -23,18 +25,20 @@ async function googleLogin(idToken, accessToken) {
       const userInfo = await userInfoRes.json();
       email = userInfo.email;
       name = userInfo.name;
+      googleId = userInfo.sub;
+      picture = userInfo.picture;
     } else {
       return { success: false, message: "Token faltante" };
     }
 
-    // Aquí va tu lógica de base de datos
-    // Por ahora simulamos que el usuario existe/se crea
-    console.log(`Usuario Google: ${email}, Nombre: ${name}`);
+    console.log(`Usuario Google autenticado: ${email}, Nombre: ${name}`);
 
     return { 
       success: true, 
       mail: email,
-      name: name
+      name: name,
+      googleId: googleId,
+      picture: picture
     };
     
   } catch (err) {
