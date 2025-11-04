@@ -6,7 +6,6 @@ import {
   TextInput, 
   TouchableOpacity, 
   ScrollView,
-  Alert,
   Animated,
   useWindowDimensions,
   StatusBar
@@ -15,6 +14,7 @@ import { router } from 'expo-router';
 import { useAuth } from '../AuthContext';
 import GoogleOAuth from '../components/GoogleOAuth';
 import apiService from '../services/api';
+import toast from '../utils/toast';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -26,7 +26,6 @@ export default function Login() {
   const isTablet = screenWidth >= 768;
   const isDesktop = screenWidth >= 1024;
 
-  // Animaciones
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
 
@@ -47,7 +46,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Por favor completa todos los campos');
+      toast.error('Por favor completa todos los campos');
       return;
     }
 
@@ -58,12 +57,18 @@ export default function Login() {
       
       if (result.success && result.user) {
         await login(result.user);
-        Alert.alert('Éxito', `¡Bienvenido ${result.user.nombre || result.user.email}!`);
+        toast.success(`¡Bienvenido ${result.user.nombre || result.user.email}!`);
+        
+        // ✅ REDIRECCIÓN AUTOMÁTICA después del login
+        setTimeout(() => {
+          router.replace('/');
+        }, 1000);
+        
       } else {
-        Alert.alert('Error', result.error || 'Credenciales incorrectas');
+        toast.error(result.error || 'Credenciales incorrectas');
       }
     } catch (error) {
-      Alert.alert('Error', 'Error de conexión con el servidor');
+      toast.error('Error de conexión con el servidor');
     } finally {
       setLoading(false);
     }
@@ -72,9 +77,15 @@ export default function Login() {
   const handleGoogleSuccess = async (userData: any) => {
     try {
       await login(userData);
-      Alert.alert('Éxito', `¡Bienvenido ${userData.nombre || userData.email}!`);
+      toast.success(`¡Bienvenido ${userData.nombre || userData.email}!`);
+      
+      // ✅ REDIRECCIÓN AUTOMÁTICA después del Google login
+      setTimeout(() => {
+        router.replace('/');
+      }, 1000);
+      
     } catch (error) {
-      Alert.alert('Error', 'Error iniciando sesión con Google');
+      toast.error('Error iniciando sesión con Google');
     }
   };
 
@@ -111,17 +122,15 @@ export default function Login() {
             }
           ]}
         >
-          {/* Header */}
           <View style={styles.header}>
             <Text style={[styles.title, dynamicStyles.title]}>
               🚀 Iniciar Sesión
             </Text>
             <Text style={styles.subtitle}>
-              Ingresá a tu cuenta para continuar construyendo
+              Ingresá a tu cuenta para comenzar a construir
             </Text>
           </View>
 
-          {/* Formulario */}
           <View style={styles.form}>
             <View style={styles.inputContainer}>
               <Text style={styles.label}>📧 Email</Text>
@@ -133,6 +142,7 @@ export default function Login() {
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoComplete="email"
               />
             </View>
 
@@ -145,9 +155,13 @@ export default function Login() {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
+                autoComplete="password"
               />
             </View>
 
+            <TouchableOpacity style={styles.forgotPassword}>
+              <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity 
               style={[styles.loginButton, dynamicStyles.loginButton, loading && styles.loginButtonDisabled]} 
@@ -155,29 +169,26 @@ export default function Login() {
               disabled={loading}
             >
               <Text style={styles.loginButtonText}>
-                {loading ? '🔄 Iniciando sesión...' : '🎯 Ingresar'}
+                {loading ? '🔄 Iniciando sesión...' : '🎯 Ingresar a Mi Cuenta'}
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Separador */}
           <View style={styles.separator}>
             <View style={styles.separatorLine} />
             <Text style={styles.separatorText}>o continuar con</Text>
             <View style={styles.separatorLine} />
           </View>
 
-          {/* Login con Google */}
           <GoogleOAuth 
             type="login" 
             onSuccess={handleGoogleSuccess}
           />
 
-          {/* Link a Registro */}
           <View style={styles.registerLink}>
             <Text style={styles.registerText}>¿No tenés cuenta? </Text>
             <TouchableOpacity onPress={() => router.push('/(tabs)/Register')}>
-              <Text style={styles.registerLinkText}>Crear cuenta</Text>
+              <Text style={styles.registerLinkText}>Crear cuenta nueva</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>

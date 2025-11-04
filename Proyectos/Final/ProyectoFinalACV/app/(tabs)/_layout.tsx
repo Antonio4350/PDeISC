@@ -34,6 +34,34 @@ export default function TabsLayout() {
             headerBackTitle: 'Volver',
           }} 
         />
+        <Stack.Screen 
+          name="PcBuilder" 
+          options={{ 
+            title: '🛠️ Constructor PC',
+            headerBackTitle: 'Volver',
+          }} 
+        />
+        <Stack.Screen 
+          name="Projects" 
+          options={{ 
+            title: '📂 Mis Proyectos',
+            headerBackTitle: 'Volver',
+          }} 
+        />
+        <Stack.Screen 
+          name="ComponentsCatalog" 
+          options={{ 
+            title: '🔧 Catálogo Componentes',
+            headerBackTitle: 'Volver',
+          }} 
+        />
+        <Stack.Screen 
+          name="AdminPanel" 
+          options={{ 
+            title: '👑 Panel Admin',
+            headerBackTitle: 'Volver',
+          }} 
+        />
       </Stack>
     </>
   );

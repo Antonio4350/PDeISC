@@ -14,9 +14,11 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  isAuthenticated: boolean;
   login: (userData: User) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  isAdmin: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,6 +26,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Guardar usuario en AsyncStorage
   const saveUserToStorage = async (userData: User) => {
@@ -38,6 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const removeUserFromStorage = async () => {
     try {
       await AsyncStorage.removeItem('user');
+      console.log('✅ Usuario removido de AsyncStorage');
     } catch (error) {
       console.error('Error removiendo usuario:', error);
     }
@@ -54,16 +58,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Login
-  const login = async (userData: User) => {
-    setUser(userData);
-    await saveUserToStorage(userData);
+  // Verificar si es admin/moderator
+  const isAdmin = (): boolean => {
+    return user?.rol === 'admin' || user?.rol === 'moderator';
   };
 
-  // Logout
-  const logout = async () => {
-    setUser(null);
-    await removeUserFromStorage();
+  // Login
+  const login = async (userData: User) => {
+    console.log('🔐 Iniciando login...', userData.email);
+    setUser(userData);
+    setIsAuthenticated(true);
+    await saveUserToStorage(userData);
+    console.log(`✅ Usuario ${userData.email} logueado correctamente`);
+  };
+
+  // Logout - VERSIÓN CORREGIDA
+  const logout = async (): Promise<void> => {
+    return new Promise(async (resolve) => {
+      console.log('🚪 Iniciando logout...');
+      
+      try {
+        // 1. Limpiar AsyncStorage primero
+        await removeUserFromStorage();
+        
+        // 2. Resetear estado de React
+        setUser(null);
+        setIsAuthenticated(false);
+        
+        console.log('✅ Logout completado - Estado limpiado');
+        resolve();
+      } catch (error) {
+        console.error('❌ Error en logout:', error);
+        // Forzar reset del estado incluso si hay error
+        setUser(null);
+        setIsAuthenticated(false);
+        resolve();
+      }
+    });
   };
 
   // Verificar autenticación al iniciar la app
@@ -73,9 +104,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedUser = await loadUserFromStorage();
       if (savedUser) {
         setUser(savedUser);
+        setIsAuthenticated(true);
+        console.log(`✅ Sesión recuperada: ${savedUser.email}`);
+      } else {
+        console.log('🔍 No hay sesión guardada');
+        setUser(null);
+        setIsAuthenticated(false);
       }
     } catch (error) {
       console.error('Error verificando autenticación:', error);
+      setUser(null);
+      setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
     }
@@ -86,8 +125,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkAuth();
   }, []);
 
+  const value: AuthContextType = {
+    user,
+    isLoading,
+    isAuthenticated,
+    login,
+    logout,
+    checkAuth,
+    isAdmin
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, checkAuth }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
@@ -101,3 +150,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export default AuthContext;

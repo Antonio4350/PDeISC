@@ -6,20 +6,18 @@ import {
   ScrollView, 
   TouchableOpacity, 
   StatusBar,
-  Alert,
   ActivityIndicator,
-  Dimensions,
-  Animated,
-  useWindowDimensions
+  useWindowDimensions,
+  Animated
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from './AuthContext';
+import toast from './utils/toast';
 
 export default function Index() {
-  const { user, logout, isLoading } = useAuth();
+  const { user, logout, isLoading, isAdmin } = useAuth();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   
-  // Animaciones
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
@@ -28,14 +26,14 @@ export default function Index() {
   const isDesktop = screenWidth >= 1024;
 
   const categories = [
-    { name: 'Procesadores', icon: '', color: '#FF6B6B' },
-    { name: 'Motherboards', icon: '', color: '#4ECDC4' },
-    { name: 'Memorias RAM', icon: '', color: '#45B7D1' },
-    { name: 'Gabinetes', icon: '', color: '#96CEB4' },
-    { name: 'Fuentes', icon: '', color: '#FFEAA7' },
-    { name: 'Periféricos', icon: '', color: '#DDA0DD' },
-    { name: 'Almacenamiento', icon: '', color: '#98D8C8' },
-    { name: 'Tarjetas Gráficas', icon: '', color: '#F7DC6F' }
+    { name: 'Procesadores', icon: '⚡', color: '#FF6B6B' },
+    { name: 'Motherboards', icon: '🔌', color: '#4ECDC4' },
+    { name: 'Memorias RAM', icon: '💾', color: '#45B7D1' },
+    { name: 'Gabinetes', icon: '🖥️', color: '#96CEB4' },
+    { name: 'Fuentes', icon: '🔋', color: '#FFEAA7' },
+    { name: 'Periféricos', icon: '🎮', color: '#DDA0DD' },
+    { name: 'Almacenamiento', icon: '💿', color: '#98D8C8' },
+    { name: 'Tarjetas Gráficas', icon: '🎯', color: '#F7DC6F' }
   ];
 
   useEffect(() => {
@@ -71,36 +69,50 @@ export default function Index() {
     if (!user) {
       router.push('/(tabs)/Login');
     } else {
-      Alert.alert('¡Empecemos!', 'Te llevaremos al constructor de PCs');
+      router.push('/(tabs)/PcBuilder');
     }
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Cerrar Sesión',
-      '¿Listo para desconectarte?',
-      [
-        { text: 'Quedarme', style: 'cancel' },
-        { 
-          text: 'Salir', 
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-          }
-        }
-      ]
-    );
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.replace('/');
+      setTimeout(() => {
+        router.navigate('/');
+      }, 100);
+    } catch (error) {
+      toast.error('No se pudo cerrar sesión');
+    }
+  };
+
+  const handleProjects = () => {
+    if (!user) {
+      router.push('/(tabs)/Login');
+    } else {
+      router.push('/(tabs)/Projects');
+    }
+  };
+
+  const handleComponents = () => {
+    if (!user) {
+      router.push('/(tabs)/Login');
+    } else {
+      router.push('/(tabs)/ComponentsCatalog');
+    }
+  };
+
+  const handleAdminPanel = () => {
+    router.push('/(tabs)/AdminPanel');
   };
 
   const handleCategoryPress = (category: string) => {
     if (!user) {
       router.push('/(tabs)/Login');
     } else {
-      Alert.alert('🔧 ' + category, 'Explorando componentes de ' + category);
+      router.push('/(tabs)/ComponentsCatalog');
     }
   };
 
-  // Estilos dinámicos basados en el tamaño de pantalla
   const dynamicStyles = {
     header: {
       paddingTop: isDesktop ? 60 : isTablet ? 50 : screenHeight * 0.06,
@@ -143,7 +155,6 @@ export default function Index() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1b27" />
       
-      {/* HEADER */}
       <Animated.View 
         style={[
           styles.header,
@@ -178,17 +189,38 @@ export default function Index() {
               </View>
             ) : (
               <View style={[styles.navGroup, dynamicStyles.navGroup]}>
-                <TouchableOpacity style={[styles.navButton, dynamicStyles.navButton]}>
-                  <Text style={styles.navButtonText}>Mis Proyectos</Text>
+                <TouchableOpacity 
+                  style={[styles.navButton, dynamicStyles.navButton]}
+                  onPress={handleComponents}
+                >
+                  <Text style={styles.navButtonText}>Componentes</Text>
                 </TouchableOpacity>
-                <View style={styles.userSection}>
-                  <Text style={styles.userWelcome}> {user.nombre || user.email.split('@')[0]}</Text>
+                <TouchableOpacity 
+                  style={[styles.navButton, dynamicStyles.navButton]}
+                  onPress={handleProjects}
+                >
+                  <Text style={styles.navButtonText}>Proyectos</Text>
+                </TouchableOpacity>
+                
+                {isAdmin() && (
                   <TouchableOpacity 
-                    style={styles.logoutBtn}
-                    onPress={handleLogout}
+                    style={[styles.navButton, styles.adminButton, dynamicStyles.navButton]}
+                    onPress={handleAdminPanel}
                   >
-                    <Text style={styles.logoutText}>Salir</Text>
+                    <Text style={styles.navButtonText}>👑 Admin</Text>
                   </TouchableOpacity>
+                )}
+                
+                <TouchableOpacity 
+                  style={styles.logoutBtn}
+                  onPress={handleLogout}
+                >
+                  <Text style={styles.logoutText}>Salir</Text>
+                </TouchableOpacity>
+                <View style={styles.userInfo}>
+                  <Text style={styles.userWelcome}>
+                    👋 {user.nombre || user.email.split('@')[0]}
+                  </Text>
                 </View>
               </View>
             )}
@@ -196,13 +228,11 @@ export default function Index() {
         </View>
       </Animated.View>
 
-      {/* CONTENIDO PRINCIPAL */}
       <ScrollView 
         style={styles.body}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* HERO SECTION */}
         <Animated.View 
           style={[
             styles.heroSection,
@@ -223,7 +253,6 @@ export default function Index() {
           </Text>
         </Animated.View>
 
-        {/* CATEGORÍAS */}
         <View style={styles.categoriesSection}>
           <Text style={styles.sectionTitle}>Explorar Componentes</Text>
           <ScrollView 
@@ -249,7 +278,6 @@ export default function Index() {
           </ScrollView>
         </View>
 
-        {/* CALL TO ACTION */}
         <Animated.View 
           style={[
             styles.ctaSection,
@@ -277,13 +305,12 @@ export default function Index() {
               activeOpacity={0.9}
             >
               <Text style={styles.ctaButtonText}>
-                {user ? ' Continuar Construyendo' : ' Empezar Ahora'}
+                {user ? '🚀 Continuar Construyendo' : '🎯 Empezar Ahora'}
               </Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
 
-        {/* FEATURES GRID */}
         {user && (
           <Animated.View 
             style={[
@@ -296,19 +323,19 @@ export default function Index() {
             ]}
           >
             <View style={[styles.featureCard, dynamicStyles.featureCard]}>
-              <Text style={styles.featureIcon}></Text>
+              <Text style={styles.featureIcon}>💾</Text>
               <Text style={styles.featureTitle}>Tus Proyectos</Text>
               <Text style={styles.featureDesc}>Accedé a todos tus builds guardados</Text>
             </View>
             
             <View style={[styles.featureCard, dynamicStyles.featureCard]}>
-              <Text style={styles.featureIcon}></Text>
+              <Text style={styles.featureIcon}>🔧</Text>
               <Text style={styles.featureTitle}>Constructor Avanzado</Text>
               <Text style={styles.featureDesc}>Herramientas profesionales de armado</Text>
             </View>
             
             <View style={[styles.featureCard, dynamicStyles.featureCard]}>
-              <Text style={styles.featureIcon}></Text>
+              <Text style={styles.featureIcon}>📊</Text>
               <Text style={styles.featureTitle}>Comparar</Text>
               <Text style={styles.featureDesc}>Analizá diferentes configuraciones</Text>
             </View>
@@ -377,15 +404,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#ff6b6b',
     borderColor: '#ff5252',
   },
+  adminButton: {
+    backgroundColor: 'rgba(255, 215, 0, 0.2)',
+    borderColor: 'rgba(255, 215, 0, 0.5)',
+  },
   navButtonText: {
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '600',
   },
-  userSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  userInfo: {
+    marginLeft: 10,
+    paddingLeft: 10,
+    borderLeftWidth: 1,
+    borderLeftColor: '#d1d5db',
   },
   userWelcome: {
     color: '#ffffff',
@@ -395,7 +427,7 @@ const styles = StyleSheet.create({
   logoutBtn: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 16,
   },
   logoutText: {

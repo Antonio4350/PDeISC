@@ -6,7 +6,6 @@ import {
   TextInput, 
   TouchableOpacity, 
   ScrollView,
-  Alert,
   Animated,
   useWindowDimensions,
   StatusBar
@@ -15,6 +14,7 @@ import { router } from 'expo-router';
 import { useAuth } from '../AuthContext';
 import GoogleOAuth from '../components/GoogleOAuth';
 import apiService from '../services/api';
+import toast from '../utils/toast';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -32,7 +32,6 @@ export default function Register() {
   const isTablet = screenWidth >= 768;
   const isDesktop = screenWidth >= 1024;
 
-  // Animaciones
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
 
@@ -61,19 +60,18 @@ export default function Register() {
   const handleRegister = async () => {
     const { nombre, apellido, email, password, confirmPassword, telefono } = formData;
 
-    // Validaciones
     if (!nombre || !apellido || !email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Por favor completa todos los campos obligatorios');
+      toast.error('Por favor completa todos los campos obligatorios');
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Las contraseñas no coinciden');
+      toast.error('Las contraseñas no coinciden');
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
+      toast.error('La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
@@ -90,12 +88,18 @@ export default function Register() {
 
       if (result.success && result.user) {
         await login(result.user);
-        Alert.alert('🎉 ¡Cuenta Creada!', `¡Bienvenido ${result.user.nombre}!`);
+        toast.success(`¡Cuenta creada para ${result.user.nombre}!`);
+        
+        // ✅ REDIRECCIÓN AUTOMÁTICA después del registro
+        setTimeout(() => {
+          router.replace('/');
+        }, 1000);
+        
       } else {
-        Alert.alert('Error', result.error || 'No se pudo crear la cuenta');
+        toast.error(result.error || 'No se pudo crear la cuenta');
       }
     } catch (error) {
-      Alert.alert('Error', 'Error de conexión con el servidor');
+      toast.error('Error de conexión con el servidor');
     } finally {
       setLoading(false);
     }
@@ -104,9 +108,15 @@ export default function Register() {
   const handleGoogleSuccess = async (userData: any) => {
     try {
       await login(userData);
-      Alert.alert('🎉 ¡Bienvenido!', `Cuenta creada para ${userData.nombre || userData.email}`);
+      toast.success(`¡Bienvenido ${userData.nombre || userData.email}!`);
+      
+      // ✅ REDIRECCIÓN AUTOMÁTICA después del Google registro
+      setTimeout(() => {
+        router.replace('/');
+      }, 1000);
+      
     } catch (error) {
-      Alert.alert('Error', 'Error registrando con Google');
+      toast.error('Error registrando con Google');
     }
   };
 
@@ -146,7 +156,6 @@ export default function Register() {
             }
           ]}
         >
-          {/* Header */}
           <View style={styles.header}>
             <Text style={[styles.title, dynamicStyles.title]}>
               🚀 Crear Cuenta
@@ -156,9 +165,7 @@ export default function Register() {
             </Text>
           </View>
 
-          {/* Formulario */}
           <View style={styles.form}>
-            {/* Nombre y Apellido en fila */}
             <View style={[styles.row, dynamicStyles.row]}>
               <View style={styles.halfInput}>
                 <Text style={styles.label}>👤 Nombre *</Text>
@@ -182,7 +189,6 @@ export default function Register() {
               </View>
             </View>
 
-            {/* Email */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>📧 Email *</Text>
               <TextInput
@@ -196,7 +202,6 @@ export default function Register() {
               />
             </View>
 
-            {/* Teléfono */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>📞 Teléfono</Text>
               <TextInput
@@ -209,7 +214,6 @@ export default function Register() {
               />
             </View>
 
-            {/* Contraseña */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>🔒 Contraseña *</Text>
               <TextInput
@@ -222,7 +226,6 @@ export default function Register() {
               />
             </View>
 
-            {/* Confirmar Contraseña */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>✅ Confirmar Contraseña *</Text>
               <TextInput
@@ -235,7 +238,6 @@ export default function Register() {
               />
             </View>
 
-            {/* Botón de Registro */}
             <TouchableOpacity 
               style={[styles.registerButton, dynamicStyles.registerButton, loading && styles.registerButtonDisabled]} 
               onPress={handleRegister}
@@ -247,20 +249,17 @@ export default function Register() {
             </TouchableOpacity>
           </View>
 
-          {/* Separador */}
           <View style={styles.separator}>
             <View style={styles.separatorLine} />
             <Text style={styles.separatorText}>o registrate con</Text>
             <View style={styles.separatorLine} />
           </View>
 
-          {/* Registro con Google */}
           <GoogleOAuth 
             type="register" 
             onSuccess={handleGoogleSuccess}
           />
 
-          {/* Link a Login */}
           <View style={styles.loginLink}>
             <Text style={styles.loginText}>¿Ya tenés cuenta? </Text>
             <TouchableOpacity onPress={() => router.push('/(tabs)/Login')}>
@@ -268,7 +267,6 @@ export default function Register() {
             </TouchableOpacity>
           </View>
 
-          {/* Información adicional */}
           <View style={styles.infoBox}>
             <Text style={styles.infoIcon}>💡</Text>
             <Text style={styles.infoText}>

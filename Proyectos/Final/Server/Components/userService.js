@@ -1,4 +1,5 @@
 const pool = require('./database');
+const bcrypt = require('bcryptjs');
 
 class UserService {
   // Buscar usuario por email
@@ -43,15 +44,18 @@ class UserService {
     }
   }
 
-  // Crear usuario normal
+  // Crear usuario normal CON ENCRIPCIÓN
   async createUser(userData) {
     const { email, nombre, apellido, telefono, password } = userData;
     
     try {
+      // Encriptar contraseña
+      const hashedPassword = await bcrypt.hash(password, 12);
+      
       const [result] = await pool.execute(
         `INSERT INTO usuarios (email, nombre, apellido, telefono, password) 
          VALUES (?, ?, ?, ?, ?)`,
-        [email, nombre, apellido, telefono, password]
+        [email, nombre, apellido, telefono, hashedPassword]
       );
       
       return { 
@@ -66,6 +70,11 @@ class UserService {
       console.error('Error creando usuario:', error);
       throw error;
     }
+  }
+
+  // Verificar contraseña
+  async verifyPassword(plainPassword, hashedPassword) {
+    return await bcrypt.compare(plainPassword, hashedPassword);
   }
 
   // Crear usuario de Google

@@ -1,5 +1,5 @@
 const userService = require('./userService');
-const { googleLogin } = require('./googleAuth');
+const { googleLogin } = require('./GoogleAuth');
 
 class AuthController {
   // Login con Google

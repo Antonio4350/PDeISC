@@ -99,7 +99,7 @@ class AuthController {
       }
 
       // Verificar contraseña
-      if (user.password !== password) {
+if (!await userService.verifyPassword(password, user.password)) {
         return res.json({ 
           success: false, 
           error: 'Contraseña incorrecta' 
