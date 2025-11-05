@@ -1,10 +1,10 @@
 const componentService = require('./componentService');
+const propertyService = require('./propertyService');
 
 class ComponentController {
   
   // ========== PROCESADORES ==========
   
-  // Obtener todos los procesadores
   async getProcessors(req, res) {
     try {
       console.log('Obteniendo lista de procesadores...');
@@ -24,7 +24,6 @@ class ComponentController {
     }
   }
 
-  // Obtener procesador por ID
   async getProcessorById(req, res) {
     try {
       const { id } = req.params;
@@ -52,13 +51,11 @@ class ComponentController {
     }
   }
 
-  // Crear nuevo procesador (solo admin)
   async createProcessor(req, res) {
     try {
       const processorData = req.body;
       console.log('Creando nuevo procesador:', processorData.marca, processorData.modelo);
       
-      // Validación básica
       if (!processorData.marca || !processorData.modelo || !processorData.socket) {
         return res.json({
           success: false,
@@ -82,9 +79,64 @@ class ComponentController {
     }
   }
 
+  async updateProcessor(req, res) {
+    try {
+      const { id } = req.params;
+      const processorData = req.body;
+      console.log(`Actualizando procesador ID: ${id}`);
+      
+      const updatedProcessor = await componentService.updateProcessor(id, processorData);
+      
+      if (!updatedProcessor) {
+        return res.json({
+          success: false,
+          error: 'Procesador no encontrado'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Procesador actualizado exitosamente',
+        data: updatedProcessor
+      });
+    } catch (error) {
+      console.error('Error actualizando procesador:', error);
+      res.json({
+        success: false,
+        error: 'Error al actualizar procesador'
+      });
+    }
+  }
+
+  async deleteProcessor(req, res) {
+    try {
+      const { id } = req.params;
+      console.log(`Eliminando procesador ID: ${id}`);
+      
+      const result = await componentService.deleteProcessor(id);
+      
+      if (!result) {
+        return res.json({
+          success: false,
+          error: 'Procesador no encontrado'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Procesador eliminado exitosamente'
+      });
+    } catch (error) {
+      console.error('Error eliminando procesador:', error);
+      res.json({
+        success: false,
+        error: 'Error al eliminar procesador'
+      });
+    }
+  }
+
   // ========== MOTHERBOARDS ==========
   
-  // Obtener todas las motherboards
   async getMotherboards(req, res) {
     try {
       console.log('Obteniendo lista de motherboards...');
@@ -104,13 +156,11 @@ class ComponentController {
     }
   }
 
-  // Crear nueva motherboard (solo admin)
   async createMotherboard(req, res) {
     try {
       const motherboardData = req.body;
       console.log('Creando nueva motherboard:', motherboardData.marca, motherboardData.modelo);
       
-      // Validación básica
       if (!motherboardData.marca || !motherboardData.modelo || !motherboardData.socket) {
         return res.json({
           success: false,
@@ -134,9 +184,64 @@ class ComponentController {
     }
   }
 
+  async updateMotherboard(req, res) {
+    try {
+      const { id } = req.params;
+      const motherboardData = req.body;
+      console.log(`Actualizando motherboard ID: ${id}`);
+      
+      const updatedMotherboard = await componentService.updateMotherboard(id, motherboardData);
+      
+      if (!updatedMotherboard) {
+        return res.json({
+          success: false,
+          error: 'Motherboard no encontrada'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Motherboard actualizada exitosamente',
+        data: updatedMotherboard
+      });
+    } catch (error) {
+      console.error('Error actualizando motherboard:', error);
+      res.json({
+        success: false,
+        error: 'Error al actualizar motherboard'
+      });
+    }
+  }
+
+  async deleteMotherboard(req, res) {
+    try {
+      const { id } = req.params;
+      console.log(`Eliminando motherboard ID: ${id}`);
+      
+      const result = await componentService.deleteMotherboard(id);
+      
+      if (!result) {
+        return res.json({
+          success: false,
+          error: 'Motherboard no encontrada'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Motherboard eliminada exitosamente'
+      });
+    } catch (error) {
+      console.error('Error eliminando motherboard:', error);
+      res.json({
+        success: false,
+        error: 'Error al eliminar motherboard'
+      });
+    }
+  }
+
   // ========== MEMORIAS RAM ==========
   
-  // Obtener todas las memorias RAM
   async getRAM(req, res) {
     try {
       console.log('Obteniendo lista de memorias RAM...');
@@ -156,13 +261,11 @@ class ComponentController {
     }
   }
 
-  // Crear nueva memoria RAM (solo admin)
   async createRAM(req, res) {
     try {
       const ramData = req.body;
       console.log('Creando nueva memoria RAM:', ramData.marca, ramData.modelo);
       
-      // Validación básica
       if (!ramData.marca || !ramData.modelo || !ramData.tipo || !ramData.capacidad) {
         return res.json({
           success: false,
@@ -186,9 +289,64 @@ class ComponentController {
     }
   }
 
+  async updateRAM(req, res) {
+    try {
+      const { id } = req.params;
+      const ramData = req.body;
+      console.log(`Actualizando RAM ID: ${id}`);
+      
+      const updatedRAM = await componentService.updateRAM(id, ramData);
+      
+      if (!updatedRAM) {
+        return res.json({
+          success: false,
+          error: 'Memoria RAM no encontrada'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Memoria RAM actualizada exitosamente',
+        data: updatedRAM
+      });
+    } catch (error) {
+      console.error('Error actualizando RAM:', error);
+      res.json({
+        success: false,
+        error: 'Error al actualizar memoria RAM'
+      });
+    }
+  }
+
+  async deleteRAM(req, res) {
+    try {
+      const { id } = req.params;
+      console.log(`Eliminando RAM ID: ${id}`);
+      
+      const result = await componentService.deleteRAM(id);
+      
+      if (!result) {
+        return res.json({
+          success: false,
+          error: 'Memoria RAM no encontrada'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Memoria RAM eliminada exitosamente'
+      });
+    } catch (error) {
+      console.error('Error eliminando RAM:', error);
+      res.json({
+        success: false,
+        error: 'Error al eliminar memoria RAM'
+      });
+    }
+  }
+
   // ========== COMPONENTES POR TIPO ==========
   
-  // Obtener componentes por tipo
   async getComponentsByType(req, res) {
     try {
       const { type } = req.params;
@@ -211,9 +369,90 @@ class ComponentController {
     }
   }
 
+  // ========== DELETE METHODS ==========
+
+async deleteProcessor(req, res) {
+  try {
+    const { id } = req.params;
+    console.log(`Eliminando procesador ID: ${id}`);
+    
+    const result = await componentService.deleteProcessor(id);
+    
+    if (!result) {
+      return res.json({
+        success: false,
+        error: 'Procesador no encontrado'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Procesador eliminado exitosamente'
+    });
+  } catch (error) {
+    console.error('Error eliminando procesador:', error);
+    res.json({
+      success: false,
+      error: 'Error al eliminar procesador'
+    });
+  }
+}
+
+async deleteMotherboard(req, res) {
+  try {
+    const { id } = req.params;
+    console.log(`Eliminando motherboard ID: ${id}`);
+    
+    const result = await componentService.deleteMotherboard(id);
+    
+    if (!result) {
+      return res.json({
+        success: false,
+        error: 'Motherboard no encontrada'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Motherboard eliminada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error eliminando motherboard:', error);
+    res.json({
+      success: false,
+      error: 'Error al eliminar motherboard'
+    });
+  }
+}
+
+async deleteRAM(req, res) {
+  try {
+    const { id } = req.params;
+    console.log(`Eliminando RAM ID: ${id}`);
+    
+    const result = await componentService.deleteRAM(id);
+    
+    if (!result) {
+      return res.json({
+        success: false,
+        error: 'Memoria RAM no encontrada'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Memoria RAM eliminada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error eliminando RAM:', error);
+    res.json({
+      success: false,
+      error: 'Error al eliminar memoria RAM'
+    });
+  }
+}
   // ========== COMPATIBILIDAD ==========
   
-  // Verificar compatibilidad CPU - Motherboard
   async checkCompatibility(req, res) {
     try {
       const { cpuId, motherboardId } = req.body;
@@ -243,7 +482,6 @@ class ComponentController {
 
   // ========== ESTADÍSTICAS ==========
   
-  // Obtener estadísticas de componentes
   async getComponentStats(req, res) {
     try {
       console.log('Obteniendo estadísticas de componentes...');
@@ -262,6 +500,27 @@ class ComponentController {
       });
     }
   }
+
+  // ========== OPCIONES DE FORMULARIOS ==========
+  
+async getFormOptions(req, res) {
+    try {
+        console.log('Obteniendo opciones para formularios...');
+        
+        const properties = await propertyService.getFormProperties();
+        
+        res.json({
+            success: true,
+            data: properties
+        });
+    } catch (error) {
+        console.error('Error obteniendo opciones:', error);
+        res.json({
+            success: false,
+            error: 'Error al obtener opciones'
+        });
+    }
+}
 }
 
 module.exports = new ComponentController();

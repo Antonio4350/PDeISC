@@ -1,7 +1,7 @@
 const { OAuth2Client } = require('google-auth-library');
 
 const client = new OAuth2Client(
-  "58585220959-2ii0sgs43cp9ja7rtm9gaemo4hqb7vvh.apps.googleusercontent.com"
+  "58585220959-8capru7gmaertcnsvoervkm3vsef6q3l.apps.googleusercontent.com"
 );
 
 async function googleLogin(idToken, accessToken) {
@@ -11,7 +11,7 @@ async function googleLogin(idToken, accessToken) {
     if (idToken) {
       const ticket = await client.verifyIdToken({
         idToken,
-        audience: "58585220959-2ii0sgs43cp9ja7rtm9gaemo4hqb7vvh.apps.googleusercontent.com",
+        audience: "58585220959-8capru7gmaertcnsvoervkm3vsef6q3l.apps.googleusercontent.com",
       });
       const payload = ticket.getPayload();
       email = payload.email;

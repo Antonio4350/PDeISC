@@ -9,7 +9,8 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { useAuth } from '../AuthContext';
-import componentService from '../services/components';
+import componentService, { ApiResponse } from '../services/components';
+import toast from '../utils/toast';
 
 interface Component {
   id: number;
@@ -17,6 +18,7 @@ interface Component {
   modelo: string;
   tipo: string;
   especificaciones: string;
+  [key: string]: any;
 }
 
 export default function ComponentsCatalog() {
@@ -40,66 +42,103 @@ export default function ComponentsCatalog() {
 
   useEffect(() => {
     loadComponents();
-  }, []);
+  }, [selectedCategory]);
 
   useEffect(() => {
     filterComponents();
-  }, [searchQuery, selectedCategory, components]);
+  }, [searchQuery, components]);
 
   const loadComponents = async () => {
     try {
-      // Simular carga de componentes
-      setTimeout(() => {
-        const mockComponents: Component[] = [
-          {
-            id: 1,
-            marca: 'Intel',
-            modelo: 'Core i9-13900K',
-            tipo: 'procesadores',
-            especificaciones: '24 núcleos, 5.8GHz, LGA 1700'
-          },
-          {
-            id: 2,
-            marca: 'AMD',
-            modelo: 'Ryzen 9 7950X',
-            tipo: 'procesadores', 
-            especificaciones: '16 núcleos, 5.7GHz, AM5'
-          },
-          {
-            id: 3,
-            marca: 'ASUS',
-            modelo: 'ROG STRIX Z790-E',
-            tipo: 'motherboards',
-            especificaciones: 'LGA 1700, DDR5, WiFi 6E'
-          },
-          {
-            id: 4,
-            marca: 'Corsair',
-            modelo: 'Vengeance RGB',
-            tipo: 'memorias_ram',
-            especificaciones: '32GB DDR5 6000MHz CL30'
-          },
+      setLoading(true);
+      
+      let result: ApiResponse<any[]>;
+      
+      if (selectedCategory === 'all') {
+        // Cargar todos los tipos de componentes
+        const [
+          processorsRes, 
+          mothersRes, 
+          ramRes
+        ] = await Promise.all([
+          componentService.getProcessors(),
+          componentService.getMotherboards(),
+          componentService.getRAM()
+        ]);
+        
+        const allComponents = [
+          ...(processorsRes.data || []).map((comp: any) => ({ ...comp, tipo: 'procesadores' })),
+          ...(mothersRes.data || []).map((comp: any) => ({ ...comp, tipo: 'motherboards' })),
+          ...(ramRes.data || []).map((comp: any) => ({ ...comp, tipo: 'memorias_ram' }))
         ];
-        setComponents(mockComponents);
-        setLoading(false);
-      }, 1500);
+        
+        setComponents(allComponents);
+        setFilteredComponents(allComponents);
+        return;
+      } else {
+        result = await componentService.getComponents(selectedCategory);
+      }
+      
+      if (result.success && result.data) {
+        const mappedComponents = result.data.map((comp: any) => ({
+          id: comp.id,
+          marca: comp.marca,
+          modelo: comp.modelo,
+          tipo: selectedCategory,
+          especificaciones: generateSpecifications(comp, selectedCategory),
+          // Agregar todos los datos originales para el detalle
+          ...comp
+        }));
+        
+        setComponents(mappedComponents);
+        setFilteredComponents(mappedComponents);
+      } else {
+        toast.error(result.error || 'Error cargando componentes');
+        setComponents([]);
+        setFilteredComponents([]);
+      }
     } catch (error) {
       console.error('Error cargando componentes:', error);
+      toast.error('Error de conexión');
+      setComponents([]);
+      setFilteredComponents([]);
+    } finally {
       setLoading(false);
     }
   };
 
-  const filterComponents = () => {
-    let filtered = components;
+  const generateSpecifications = (component: any, category: string): string => {
+    switch (category) {
+      case 'procesadores':
+        return `${component.nucleos || 'N/A'} núcleos, ${component.socket || 'N/A'}, ${component.tipo_memoria || 'N/A'}`;
+      case 'motherboards':
+        return `${component.socket || 'N/A'}, ${component.tipo_memoria || 'N/A'}, ${component.formato || 'N/A'}`;
+      case 'memorias_ram':
+        return `${component.capacidad || 'N/A'}GB, ${component.velocidad_mhz || 'N/A'}MHz, ${component.tipo || 'N/A'}`;
+      case 'tarjetas_graficas':
+        return `${component.memoria || 'N/A'}GB ${component.tipo_memoria || 'N/A'}, ${component.tdp || 'N/A'}W`;
+      case 'almacenamiento':
+        return `${component.capacidad || 'N/A'}GB, ${component.tipo || 'N/A'}, ${component.interfaz || 'N/A'}`;
+      case 'fuentes_poder':
+        return `${component.potencia || 'N/A'}W, ${component.certificacion || 'N/A'}, ${component.modular || 'N/A'}`;
+      case 'gabinetes':
+        return `${component.formato || 'N/A'}, GPU: ${component.longitud_max_gpu || 'N/A'}mm`;
+      default:
+        return 'Especificaciones técnicas disponibles';
+    }
+  };
 
-    // Filtrar por categoría
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(comp => comp.tipo === selectedCategory);
+  const filterComponents = () => {
+    if (!components.length) {
+      setFilteredComponents([]);
+      return;
     }
 
+    let filtered = [...components];
+
     // Filtrar por búsqueda
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(comp =>
         comp.marca.toLowerCase().includes(query) ||
         comp.modelo.toLowerCase().includes(query) ||
@@ -111,8 +150,24 @@ export default function ComponentsCatalog() {
   };
 
   const handleComponentPress = (component: Component) => {
-    // Navegar a detalle del componente
-    console.log('Abrir detalle:', component);
+    // Mostrar todos los detalles del componente
+    const detalles = `
+Marca: ${component.marca}
+Modelo: ${component.modelo}
+Tipo: ${component.tipo}
+
+${Object.entries(component)
+  .filter(([key, value]) => 
+    !['id', 'marca', 'modelo', 'tipo', 'especificaciones', 'estado', 'fecha_creacion'].includes(key) && 
+    value !== null && 
+    value !== '' &&
+    value !== undefined
+  )
+  .map(([key, value]) => `${key.replace(/_/g, ' ').toUpperCase()}: ${value}`)
+  .join('\n')}
+    `.trim();
+
+    toast.info(`Detalles de ${component.marca} ${component.modelo}\n\n${detalles}`);
   };
 
   if (loading) {
@@ -210,7 +265,7 @@ export default function ComponentsCatalog() {
                 <TouchableOpacity style={styles.addButton}>
                   <Text style={styles.addButtonText}>+ Agregar a Build</Text>
                 </TouchableOpacity>
-                <Text style={styles.viewDetails}>Ver detalles →</Text>
+                <Text style={styles.viewDetails}>Tocar para detalles →</Text>
               </View>
             </TouchableOpacity>
           ))

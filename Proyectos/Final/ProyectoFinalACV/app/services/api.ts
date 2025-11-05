@@ -1,4 +1,4 @@
-const API_URL = "http://192.168.100.156:5000"; // Cambiar por tu IP si es necesario
+const API_URL = "http://192.168.1.35:5000"; // Cambiar por tu IP si es necesario
 
 export interface User {
   id: number;

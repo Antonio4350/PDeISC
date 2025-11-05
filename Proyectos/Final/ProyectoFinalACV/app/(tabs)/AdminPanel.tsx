@@ -5,8 +5,7 @@ import {
   StyleSheet, 
   ScrollView, 
   TouchableOpacity,
-  ActivityIndicator,
-  useWindowDimensions
+  ActivityIndicator
 } from 'react-native';
 import { useAuth } from '../AuthContext';
 import { router } from 'expo-router';
@@ -17,14 +16,10 @@ export default function AdminPanel() {
   const { user, isAdmin } = useAuth();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { width: screenWidth } = useWindowDimensions();
-  const isTablet = screenWidth >= 768;
-  const isDesktop = screenWidth >= 1024;
 
   useEffect(() => {
     if (!isAdmin()) {
       toast.error('No tenés permisos para acceder a esta sección');
-      // ✅ REDIRECCIÓN si no es admin
       setTimeout(() => {
         router.back();
       }, 1500);
@@ -48,144 +43,203 @@ export default function AdminPanel() {
     }
   };
 
-  const handleAddComponent = (type: string, name: string) => {
-    toast.info(`Formulario para ${name} en desarrollo`);
-    // ✅ En el futuro aquí navegarías al formulario correspondiente
-    // router.push(`/(tabs)/Add${name}`);
+  const handleAddComponent = (type: string) => {
+    router.push({
+      pathname: '/(tabs)/AddComponent',
+      params: { type: type }
+    } as any);
   };
 
   const handleViewComponents = (type: string, name: string) => {
-    toast.info(`Lista de ${name} en desarrollo`);
-    // ✅ En el futuro aquí navegarías a la lista de componentes
-    // router.push(`/(tabs)/ComponentsList?type=${type}`);
+    router.push({
+      pathname: '/(tabs)/ComponentsList',
+      params: { type: type, name: name }
+    } as any);
   };
 
-  const componentTypes = [
+  const allComponents = [
     { 
-      type: 'processor', 
-      name: 'Procesador', 
+      type: 'procesadores', 
+      name: 'Procesadores', 
       icon: '⚡', 
       color: '#FF6B6B',
-      count: stats?.procesadores || 0
+      count: stats?.procesadores || 0,
+      description: 'CPU Intel/AMD'
     },
     { 
-      type: 'motherboard', 
-      name: 'Motherboard', 
+      type: 'motherboards', 
+      name: 'Motherboards', 
       icon: '🔌', 
       color: '#4ECDC4',
-      count: stats?.motherboards || 0
+      count: stats?.motherboards || 0,
+      description: 'Placas base'
     },
     { 
-      type: 'ram', 
-      name: 'Memoria RAM', 
+      type: 'memorias_ram', 
+      name: 'Memorias RAM', 
       icon: '💾', 
       color: '#45B7D1',
-      count: stats?.memorias_ram || 0
+      count: stats?.memorias_ram || 0,
+      description: 'DDR3/DDR4/DDR5'
     },
     { 
-      type: 'gpu', 
-      name: 'Tarjeta Gráfica', 
-      icon: '🎯', 
+      type: 'tarjetas_graficas', 
+      name: 'Tarjetas Gráficas', 
+      icon: '🎮', 
       color: '#F7DC6F',
-      count: stats?.tarjetas_graficas || 0
+      count: stats?.tarjetas_graficas || 0,
+      description: 'GPUs'
     },
     { 
-      type: 'storage', 
+      type: 'almacenamiento', 
       name: 'Almacenamiento', 
       icon: '💿', 
       color: '#98D8C8',
-      count: stats?.almacenamiento || 0
+      count: stats?.almacenamiento || 0,
+      description: 'SSD/HDD'
     },
     { 
-      type: 'psu', 
-      name: 'Fuente', 
+      type: 'fuentes_poder', 
+      name: 'Fuentes', 
       icon: '🔋', 
-      color: '#FFEAA7',
-      count: stats?.fuentes_poder || 0
+      color: '#FFA726',
+      count: stats?.fuentes_poder || 0,
+      description: 'Fuentes poder'
     },
     { 
-      type: 'case', 
-      name: 'Gabinete', 
+      type: 'gabinetes', 
+      name: 'Gabinetes', 
       icon: '🖥️', 
-      color: '#96CEB4',
-      count: stats?.gabinetes || 0
+      color: '#AB47BC',
+      count: stats?.gabinetes || 0,
+      description: 'Torres PC'
     },
+    { 
+      type: 'coolers', 
+      name: 'Coolers', 
+      icon: '❄️', 
+      color: '#26C6DA',
+      count: stats?.coolers || 0,
+      description: 'Refrigeración'
+    },
+  ];
+
+  const quickActions = [
+    {
+      title: 'Gestionar Propiedades',
+      description: 'Marcas, sockets, chipsets',
+      icon: '🏷️',
+      route: '/(tabs)/ManageProperties',
+      color: '#667eea'
+    },
+    {
+      title: 'Ver Catálogo Completo',
+      description: 'Todos los componentes',
+      icon: '📋',
+      route: '/(tabs)/ComponentsCatalog',
+      color: '#4ECDC4'
+    },
+    {
+      title: 'Armar PC',
+      description: 'Constructor de computadoras',
+      icon: '🔧',
+      route: '/(tabs)/PcBuilder',
+      color: '#FFA726'
+    },
+    {
+      title: 'Mis Proyectos',
+      description: 'PCs guardadas',
+      icon: '💾',
+      route: '/(tabs)/Projects',
+      color: '#98D8C8'
+    }
   ];
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#667eea" />
-        <Text style={styles.loadingText}>🔄 Cargando panel admin...</Text>
+        <Text style={styles.loadingText}>Cargando dashboard...</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>👑 Panel de Administración</Text>
-        <Text style={styles.subtitle}>
-          Hola {user?.nombre}, gestioná los componentes del sistema
-        </Text>
-      </View>
+      <ScrollView 
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Título Principal */}
+        <View style={styles.titleSection}>
+          <Text style={styles.mainTitle}>Panel de Administración</Text>
+          <Text style={styles.mainSubtitle}>Gestioná todos los componentes del sistema</Text>
+        </View>
 
-      <View style={styles.statsCard}>
-        <Text style={styles.statsTitle}>📊 Resumen del Sistema</Text>
-        <View style={styles.statsGrid}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{stats?.total || 0}</Text>
-            <Text style={styles.statLabel}>Total Componentes</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{stats?.procesadores || 0}</Text>
-            <Text style={styles.statLabel}>Procesadores</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{stats?.motherboards || 0}</Text>
-            <Text style={styles.statLabel}>Mothers</Text>
+        {/* All Components List */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Componentes del Sistema</Text>
+          <Text style={styles.sectionSubtitle}>Administrá y agregá nuevos componentes</Text>
+          
+          <View style={styles.componentsList}>
+            {allComponents.map((component, index) => (
+              <View key={index} style={styles.componentCard}>
+                <View style={styles.componentInfo}>
+                  <View style={[styles.componentIcon, { backgroundColor: component.color }]}>
+                    <Text style={styles.componentIconText}>{component.icon}</Text>
+                  </View>
+                  <View style={styles.componentDetails}>
+                    <Text style={styles.componentName}>{component.name}</Text>
+                    <Text style={styles.componentDescription}>{component.description}</Text>
+                    <Text style={styles.componentCount}>{component.count} en sistema</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.componentActions}>
+                  <TouchableOpacity
+                    style={styles.viewButton}
+                    onPress={() => handleViewComponents(component.type, component.name)}
+                  >
+                    <Text style={styles.viewButtonText}>👁️ Ver</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={() => handleAddComponent(component.type)}
+                  >
+                    <Text style={styles.addButtonText}>➕ Agregar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
           </View>
         </View>
-      </View>
 
-      <ScrollView style={styles.componentsList}>
-        <Text style={styles.sectionTitle}>🛠️ Gestión de Componentes</Text>
-        <Text style={styles.sectionSubtitle}>
-          Agregá nuevos componentes al catálogo
-        </Text>
-
-        {componentTypes.map((component, index) => (
-          <View key={index} style={styles.componentRow}>
-            <TouchableOpacity
-              style={[styles.componentCard, { borderLeftColor: component.color }]}
-              onPress={() => handleAddComponent(component.type, component.name)}
-            >
-              <View style={styles.componentHeader}>
-                <Text style={styles.componentIcon}>{component.icon}</Text>
-                <View style={styles.componentInfo}>
-                  <Text style={styles.componentName}>{component.name}</Text>
-                  <Text style={styles.componentCount}>
-                    {component.count} componentes en sistema
-                  </Text>
+        {/* Quick Actions */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
+          <Text style={styles.sectionSubtitle}>Accesos directos a funciones principales</Text>
+          
+          <View style={styles.actionsGrid}>
+            {quickActions.map((action, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.actionCard}
+                onPress={() => router.push(action.route as any)}
+              >
+                <View style={[styles.actionIcon, { backgroundColor: action.color }]}>
+                  <Text style={styles.actionIconText}>{action.icon}</Text>
                 </View>
-                <Text style={styles.componentAction}>➕ Agregar</Text>
-              </View>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.viewButton}
-              onPress={() => handleViewComponents(component.type, component.name)}
-            >
-              <Text style={styles.viewButtonText}>👁️ Ver</Text>
-            </TouchableOpacity>
+                <View style={styles.actionText}>
+                  <Text style={styles.actionTitle}>{action.title}</Text>
+                  <Text style={styles.actionDescription}>{action.description}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
           </View>
-        ))}
+        </View>
       </ScrollView>
-
-      <View style={styles.adminInfo}>
-        <Text style={styles.adminRole}>Rol: {user?.rol?.toUpperCase()}</Text>
-        <Text style={styles.adminEmail}>{user?.email}</Text>
-      </View>
     </View>
   );
 }
@@ -194,7 +248,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0f1117',
-    padding: 20,
   },
   loadingContainer: {
     flex: 1,
@@ -205,141 +258,155 @@ const styles = StyleSheet.create({
   loadingText: {
     color: '#8b9cb3',
     fontSize: 16,
+    marginTop: 10,
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#ffffff',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#8b9cb3',
-    textAlign: 'center',
-  },
-  statsCard: {
-    backgroundColor: '#1a1b27',
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 25,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  statsTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#ffffff',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#667eea',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#8b9cb3',
-    textAlign: 'center',
-  },
-  componentsList: {
+  scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  titleSection: {
+    marginBottom: 24,
+    paddingHorizontal: 8,
+  },
+  mainTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#ffffff',
+    marginBottom: 6,
+  },
+  mainSubtitle: {
+    fontSize: 16,
+    color: '#8b9cb3',
+  },
+  section: {
+    marginBottom: 30,
+  },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
     color: '#ffffff',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   sectionSubtitle: {
     fontSize: 14,
     color: '#8b9cb3',
-    marginBottom: 20,
+    marginBottom: 16,
   },
-  componentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+  componentsList: {
+    gap: 12,
   },
   componentCard: {
     backgroundColor: '#1a1b27',
-    padding: 18,
+    padding: 16,
     borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#667eea',
-    flex: 1,
-    marginRight: 10,
-  },
-  componentHeader: {
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  componentIcon: {
-    fontSize: 24,
-    marginRight: 15,
-  },
   componentInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  componentIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  componentIconText: {
+    fontSize: 20,
+  },
+  componentDetails: {
     flex: 1,
   },
   componentName: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
+    marginBottom: 3,
+  },
+  componentDescription: {
+    color: '#8b9cb3',
+    fontSize: 13,
     marginBottom: 4,
   },
   componentCount: {
-    color: '#8b9cb3',
-    fontSize: 12,
-  },
-  componentAction: {
     color: '#667eea',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  componentActions: {
+    flexDirection: 'row',
+    gap: 8,
   },
   viewButton: {
-    backgroundColor: 'rgba(102, 126, 234, 0.2)',
-    paddingHorizontal: 16,
-    paddingVertical: 18,
-    borderRadius: 12,
+    backgroundColor: 'rgba(139, 156, 179, 0.1)',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(102, 126, 234, 0.3)',
+    borderColor: 'rgba(139, 156, 179, 0.2)',
   },
   viewButtonText: {
-    color: '#667eea',
-    fontSize: 12,
+    color: '#8b9cb3',
+    fontSize: 13,
     fontWeight: '600',
   },
-  adminInfo: {
-    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-    padding: 15,
-    borderRadius: 12,
-    marginTop: 20,
-    alignItems: 'center',
+  addButton: {
+    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: 'rgba(102, 126, 234, 0.3)',
   },
-  adminRole: {
+  addButtonText: {
     color: '#667eea',
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 4,
+    fontSize: 13,
+    fontWeight: '600',
   },
-  adminEmail: {
+  actionsGrid: {
+    gap: 12,
+  },
+  actionCard: {
+    backgroundColor: '#1a1b27',
+    padding: 18,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  actionIconText: {
+    fontSize: 20,
+  },
+  actionText: {
+    flex: 1,
+  },
+  actionTitle: {
+    color: '#ffffff',
+    fontSize: 17,
+    fontWeight: '600',
+    marginBottom: 3,
+  },
+  actionDescription: {
     color: '#8b9cb3',
-    fontSize: 12,
+    fontSize: 13,
   },
 });

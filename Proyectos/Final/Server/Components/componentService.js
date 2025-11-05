@@ -2,7 +2,8 @@ const pool = require('./database');
 
 class ComponentService {
 
-    // PROCESADORES
+    // ========== PROCESADORES ==========
+
     async getAllProcessors() {
         try {
             const [rows] = await pool.execute(
@@ -39,11 +40,11 @@ class ComponentService {
         try {
             const [result] = await pool.execute(
                 `INSERT INTO procesadores 
-        (marca, modelo, generacion, año_lanzamiento, socket, nucleos, hilos,
-         frecuencia_base, frecuencia_turbo, cache, tdp, tipo_memoria,
-         velocidad_memoria_max, graficos_integrados, modelo_graficos,
-         tecnologia, imagen_url) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                (marca, modelo, generacion, año_lanzamiento, socket, nucleos, hilos,
+                 frecuencia_base, frecuencia_turbo, cache, tdp, tipo_memoria,
+                 velocidad_memoria_max, graficos_integrados, modelo_graficos,
+                 tecnologia, imagen_url) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     marca, modelo, generacion, año_lanzamiento, socket, nucleos, hilos,
                     frecuencia_base, frecuencia_turbo, cache, tdp, tipo_memoria,
@@ -59,7 +60,57 @@ class ComponentService {
         }
     }
 
-    // MOTHERBOARDS
+    async updateProcessor(id, processorData) {
+        const {
+            marca, modelo, generacion, año_lanzamiento, socket, nucleos, hilos,
+            frecuencia_base, frecuencia_turbo, cache, tdp, tipo_memoria,
+            velocidad_memoria_max, graficos_integrados, modelo_graficos,
+            tecnologia, imagen_url
+        } = processorData;
+
+        try {
+            const [result] = await pool.execute(
+                `UPDATE procesadores SET 
+                 marca = ?, modelo = ?, generacion = ?, año_lanzamiento = ?, socket = ?, 
+                 nucleos = ?, hilos = ?, frecuencia_base = ?, frecuencia_turbo = ?, 
+                 cache = ?, tdp = ?, tipo_memoria = ?, velocidad_memoria_max = ?, 
+                 graficos_integrados = ?, modelo_graficos = ?, tecnologia = ?, imagen_url = ?
+                 WHERE id = ? AND estado = "activo"`,
+                [
+                    marca, modelo, generacion, año_lanzamiento, socket, nucleos, hilos,
+                    frecuencia_base, frecuencia_turbo, cache, tdp, tipo_memoria,
+                    velocidad_memoria_max, graficos_integrados, modelo_graficos,
+                    tecnologia, imagen_url, id
+                ]
+            );
+
+            if (result.affectedRows === 0) {
+                return null;
+            }
+
+            return { id: parseInt(id), ...processorData };
+        } catch (error) {
+            console.error('Error actualizando procesador:', error);
+            throw error;
+        }
+    }
+
+    async deleteProcessor(id) {
+        try {
+            const [result] = await pool.execute(
+                'UPDATE procesadores SET estado = "inactivo" WHERE id = ?',
+                [id]
+            );
+
+            return result.affectedRows > 0;
+        } catch (error) {
+            console.error('Error eliminando procesador:', error);
+            throw error;
+        }
+    }
+
+    // ========== MOTHERBOARDS ==========
+
     async getAllMotherboards() {
         try {
             const [rows] = await pool.execute(
@@ -82,10 +133,10 @@ class ComponentService {
         try {
             const [result] = await pool.execute(
                 `INSERT INTO motherboards 
-        (marca, modelo, socket, chipset, formato, tipo_memoria, slots_memoria,
-         memoria_maxima, velocidad_memoria_soportada, slots_pcie, version_pcie,
-         puertos_sata, puertos_m2, conectividad_red, audio, usb_puertos, imagen_url) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                (marca, modelo, socket, chipset, formato, tipo_memoria, slots_memoria,
+                 memoria_maxima, velocidad_memoria_soportada, slots_pcie, version_pcie,
+                 puertos_sata, puertos_m2, conectividad_red, audio, usb_puertos, imagen_url) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     marca, modelo, socket, chipset, formato, tipo_memoria, slots_memoria,
                     memoria_maxima, velocidad_memoria_soportada, slots_pcie, version_pcie,
@@ -100,7 +151,56 @@ class ComponentService {
         }
     }
 
-    // MEMORIAS RAM
+    async updateMotherboard(id, motherboardData) {
+        const {
+            marca, modelo, socket, chipset, formato, tipo_memoria, slots_memoria,
+            memoria_maxima, velocidad_memoria_soportada, slots_pcie, version_pcie,
+            puertos_sata, puertos_m2, conectividad_red, audio, usb_puertos, imagen_url
+        } = motherboardData;
+
+        try {
+            const [result] = await pool.execute(
+                `UPDATE motherboards SET 
+                 marca = ?, modelo = ?, socket = ?, chipset = ?, formato = ?, 
+                 tipo_memoria = ?, slots_memoria = ?, memoria_maxima = ?, 
+                 velocidad_memoria_soportada = ?, slots_pcie = ?, version_pcie = ?, 
+                 puertos_sata = ?, puertos_m2 = ?, conectividad_red = ?, audio = ?, 
+                 usb_puertos = ?, imagen_url = ?
+                 WHERE id = ? AND estado = "activo"`,
+                [
+                    marca, modelo, socket, chipset, formato, tipo_memoria, slots_memoria,
+                    memoria_maxima, velocidad_memoria_soportada, slots_pcie, version_pcie,
+                    puertos_sata, puertos_m2, conectividad_red, audio, usb_puertos, imagen_url, id
+                ]
+            );
+
+            if (result.affectedRows === 0) {
+                return null;
+            }
+
+            return { id: parseInt(id), ...motherboardData };
+        } catch (error) {
+            console.error('Error actualizando motherboard:', error);
+            throw error;
+        }
+    }
+
+    async deleteMotherboard(id) {
+        try {
+            const [result] = await pool.execute(
+                'UPDATE motherboards SET estado = "inactivo" WHERE id = ?',
+                [id]
+            );
+
+            return result.affectedRows > 0;
+        } catch (error) {
+            console.error('Error eliminando motherboard:', error);
+            throw error;
+        }
+    }
+
+    // ========== MEMORIAS RAM ==========
+
     async getAllRAM() {
         try {
             const [rows] = await pool.execute(
@@ -122,9 +222,9 @@ class ComponentService {
         try {
             const [result] = await pool.execute(
                 `INSERT INTO memorias_ram 
-        (marca, modelo, tipo, capacidad, velocidad_mhz, velocidad_mt,
-         latencia, voltaje, formato, rgb, imagen_url) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                (marca, modelo, tipo, capacidad, velocidad_mhz, velocidad_mt,
+                 latencia, voltaje, formato, rgb, imagen_url) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     marca, modelo, tipo, capacidad, velocidad_mhz, velocidad_mt,
                     latencia, voltaje, formato, rgb, imagen_url
@@ -138,7 +238,94 @@ class ComponentService {
         }
     }
 
-    // COMPATIBILIDAD
+    async updateRAM(id, ramData) {
+        const {
+            marca, modelo, tipo, capacidad, velocidad_mhz, velocidad_mt,
+            latencia, voltaje, formato, rgb, imagen_url
+        } = ramData;
+
+        try {
+            const [result] = await pool.execute(
+                `UPDATE memorias_ram SET 
+                 marca = ?, modelo = ?, tipo = ?, capacidad = ?, velocidad_mhz = ?, 
+                 velocidad_mt = ?, latencia = ?, voltaje = ?, formato = ?, rgb = ?, imagen_url = ?
+                 WHERE id = ? AND estado = "activo"`,
+                [
+                    marca, modelo, tipo, capacidad, velocidad_mhz, velocidad_mt,
+                    latencia, voltaje, formato, rgb, imagen_url, id
+                ]
+            );
+
+            if (result.affectedRows === 0) {
+                return null;
+            }
+
+            return { id: parseInt(id), ...ramData };
+        } catch (error) {
+            console.error('Error actualizando RAM:', error);
+            throw error;
+        }
+    }
+
+    async deleteRAM(id) {
+        try {
+            const [result] = await pool.execute(
+                'UPDATE memorias_ram SET estado = "inactivo" WHERE id = ?',
+                [id]
+            );
+
+            return result.affectedRows > 0;
+        } catch (error) {
+            console.error('Error eliminando RAM:', error);
+            throw error;
+        }
+    }
+
+    // ========== DELETE METHODS ==========
+
+async deleteProcessor(id) {
+  try {
+    const [result] = await pool.execute(
+      'UPDATE procesadores SET estado = "inactivo" WHERE id = ?',
+      [id]
+    );
+
+    return result.affectedRows > 0;
+  } catch (error) {
+    console.error('Error eliminando procesador:', error);
+    throw error;
+  }
+}
+
+async deleteMotherboard(id) {
+  try {
+    const [result] = await pool.execute(
+      'UPDATE motherboards SET estado = "inactivo" WHERE id = ?',
+      [id]
+    );
+
+    return result.affectedRows > 0;
+  } catch (error) {
+    console.error('Error eliminando motherboard:', error);
+    throw error;
+  }
+}
+
+async deleteRAM(id) {
+  try {
+    const [result] = await pool.execute(
+      'UPDATE memorias_ram SET estado = "inactivo" WHERE id = ?',
+      [id]
+    );
+
+    return result.affectedRows > 0;
+  } catch (error) {
+    console.error('Error eliminando RAM:', error);
+    throw error;
+  }
+}
+    // ========== COMPATIBILIDAD ==========
+
     async checkCPUCompatibility(cpuId, motherboardId) {
         try {
             const [cpu] = await pool.execute(
@@ -175,7 +362,8 @@ class ComponentService {
         }
     }
 
-    // Obtener componentes por tipo
+    // ========== COMPONENTES POR TIPO ==========
+
     async getComponentsByType(type) {
         const validTypes = ['procesadores', 'motherboards', 'memorias_ram', 'tarjetas_graficas', 'almacenamiento', 'fuentes_poder', 'gabinetes'];
 
@@ -194,12 +382,12 @@ class ComponentService {
         }
     }
 
-    // Estadísticas de componentes
+    // ========== ESTADÍSTICAS ==========
+
     async getComponentStats() {
         try {
             console.log('Calculando estadísticas de componentes...');
 
-            // Usar consultas más simples y compatibles
             const [processors] = await pool.execute('SELECT COUNT(*) as total FROM procesadores WHERE estado = "activo"');
             const [motherboards] = await pool.execute('SELECT COUNT(*) as total FROM motherboards WHERE estado = "activo"');
             const [ram] = await pool.execute('SELECT COUNT(*) as total FROM memorias_ram WHERE estado = "activo"');
@@ -208,7 +396,6 @@ class ComponentService {
             const [psus] = await pool.execute('SELECT COUNT(*) as total FROM fuentes_poder WHERE estado = "activo"');
             const [cases] = await pool.execute('SELECT COUNT(*) as total FROM gabinetes WHERE estado = "activo"');
 
-            // Extraer los valores numéricos correctamente
             const stats = {
                 procesadores: processors[0].total,
                 motherboards: motherboards[0].total,
@@ -219,7 +406,6 @@ class ComponentService {
                 gabinetes: cases[0].total
             };
 
-            // Calcular total
             stats.total = Object.values(stats).reduce((sum, count) => sum + parseInt(count), 0);
 
             console.log('Estadísticas calculadas:', stats);

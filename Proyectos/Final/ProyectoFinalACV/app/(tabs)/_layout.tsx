@@ -62,6 +62,13 @@ export default function TabsLayout() {
             headerBackTitle: 'Volver',
           }} 
         />
+        <Stack.Screen 
+          name="AddComponent" 
+          options={{ 
+            title: '➕ Agregar Componente',
+            headerBackTitle: 'Volver',
+          }} 
+        />
       </Stack>
     </>
   );
