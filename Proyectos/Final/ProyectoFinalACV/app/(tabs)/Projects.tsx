@@ -5,17 +5,22 @@ import {
   StyleSheet, 
   ScrollView, 
   TouchableOpacity,
-  ActivityIndicator
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { useAuth } from '../AuthContext';
 import { router } from 'expo-router';
+import projectService from '../services/projectService';
+import toast from '../utils/toast';
 
 interface Project {
   id: number;
   nombre: string;
   descripcion: string;
   fecha_creacion: string;
+  fecha_actualizacion: string;
   componentes_count: number;
+  presupuesto?: number;
 }
 
 export default function Projects() {
@@ -28,26 +33,23 @@ export default function Projects() {
   }, []);
 
   const loadProjects = async () => {
-    // Simular carga de proyectos
-    setTimeout(() => {
-      setProjects([
-        {
-          id: 1,
-          nombre: 'PC Gaming Ultimate',
-          descripcion: 'Build para gaming en 4K',
-          fecha_creacion: '2024-01-15',
-          componentes_count: 7
-        },
-        {
-          id: 2, 
-          nombre: 'Workstation Profesional',
-          descripcion: 'Para edición y renderizado',
-          fecha_creacion: '2024-01-10',
-          componentes_count: 6
-        }
-      ]);
+    try {
+      setLoading(true);
+      const result = await projectService.getUserProjects();
+      
+      if (result.success) {
+        setProjects(result.data || []);
+      } else {
+        toast.error('Error cargando proyectos');
+        setProjects([]);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error de conexión');
+      setProjects([]);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const handleCreateProject = () => {
@@ -56,6 +58,38 @@ export default function Projects() {
 
   const handleOpenProject = (projectId: number) => {
     router.push(`/(tabs)/PcBuilder?project=${projectId}`);
+  };
+
+  const handleDeleteProject = (project: Project) => {
+    Alert.alert(
+      'Eliminar Proyecto',
+      `¿Estás seguro de eliminar "${project.nombre}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Eliminar', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const result = await projectService.deleteProject(project.id);
+              if (result.success) {
+                toast.success('Proyecto eliminado');
+                loadProjects();
+              } else {
+                toast.error(result.error || 'Error eliminando proyecto');
+              }
+            } catch (error) {
+              toast.error('Error eliminando proyecto');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-AR');
   };
 
   if (loading) {
@@ -103,19 +137,33 @@ export default function Projects() {
               key={project.id}
               style={styles.projectCard}
               onPress={() => handleOpenProject(project.id)}
+              onLongPress={() => handleDeleteProject(project)}
             >
               <View style={styles.projectHeader}>
                 <Text style={styles.projectName}>{project.nombre}</Text>
-                <Text style={styles.projectDate}>{project.fecha_creacion}</Text>
+                <TouchableOpacity 
+                  style={styles.deleteButton}
+                  onPress={() => handleDeleteProject(project)}
+                >
+                  <Text style={styles.deleteButtonText}>🗑️</Text>
+                </TouchableOpacity>
               </View>
               
-              <Text style={styles.projectDescription}>{project.descripcion}</Text>
+              {project.descripcion ? (
+                <Text style={styles.projectDescription}>{project.descripcion}</Text>
+              ) : null}
+              
+              <View style={styles.projectInfo}>
+                <Text style={styles.projectDate}>
+                  📅 {formatDate(project.fecha_actualizacion || project.fecha_creacion)}
+                </Text>
+                <Text style={styles.componentsCount}>
+                  {project.componentes_count || 0} componente{project.componentes_count !== 1 ? 's' : ''}
+                </Text>
+              </View>
               
               <View style={styles.projectFooter}>
-                <Text style={styles.componentsCount}>
-                  {project.componentes_count} componentes seleccionados
-                </Text>
-                <Text style={styles.openProject}>Abrir →</Text>
+                <Text style={styles.openProject}>Tocá para editar →</Text>
               </View>
             </TouchableOpacity>
           ))}
@@ -236,25 +284,38 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     flex: 1,
   },
-  projectDate: {
-    fontSize: 12,
-    color: '#8b9cb3',
+  deleteButton: {
+    padding: 4,
+  },
+  deleteButtonText: {
+    fontSize: 16,
+    opacity: 0.7,
   },
   projectDescription: {
     fontSize: 14,
     color: '#8b9cb3',
-    marginBottom: 16,
+    marginBottom: 12,
     lineHeight: 20,
   },
-  projectFooter: {
+  projectInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 12,
+  },
+  projectDate: {
+    fontSize: 12,
+    color: '#8b9cb3',
   },
   componentsCount: {
     fontSize: 12,
     color: '#667eea',
     fontWeight: '600',
+  },
+  projectFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
   openProject: {
     fontSize: 14,

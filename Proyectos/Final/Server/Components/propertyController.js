@@ -1,4 +1,5 @@
 const propertyService = require('./propertyService');
+const pool = require('./database');
 
 class PropertyController {
 
@@ -120,84 +121,75 @@ class PropertyController {
             });
         }
     }
+
     async getAllPropertiesWithIds(req, res) {
-    try {
-        console.log('Obteniendo todas las propiedades con IDs...');
-        
-        const [rows] = await pool.execute(
-            `SELECT id, tipo_componente, propiedad, valor 
-             FROM propiedades_componentes 
-             WHERE estado = 'activo' 
-             ORDER BY tipo_componente, propiedad, valor`
-        );
+        try {
+            console.log('Obteniendo todas las propiedades con IDs...');
+            
+            const [rows] = await pool.execute(
+                `SELECT id, tipo_componente, propiedad, valor 
+                 FROM propiedades_componentes 
+                 WHERE estado = 'activo' 
+                 ORDER BY tipo_componente, propiedad, valor`
+            );
 
-        // Organizar por tipo de componente
-        const organized = {};
-        rows.forEach(row => {
-            if (!organized[row.tipo_componente]) {
-                organized[row.tipo_componente] = {};
-            }
-            if (!organized[row.tipo_componente][row.propiedad]) {
-                organized[row.tipo_componente][row.propiedad] = [];
-            }
-            organized[row.tipo_componente][row.propiedad].push({
-                id: row.id,
-                valor: row.valor
+            // Organizar por tipo de componente
+            const organized = {};
+            rows.forEach(row => {
+                if (!organized[row.tipo_componente]) {
+                    organized[row.tipo_componente] = {};
+                }
+                if (!organized[row.tipo_componente][row.propiedad]) {
+                    organized[row.tipo_componente][row.propiedad] = [];
+                }
+                organized[row.tipo_componente][row.propiedad].push({
+                    id: row.id,
+                    valor: row.valor
+                });
             });
-        });
 
-        res.json({
-            success: true,
-            data: organized
-        });
-    } catch (error) {
-        console.error('Error obteniendo propiedades con IDs:', error);
-        res.json({
-            success: false,
-            error: 'Error al obtener propiedades'
-        });
-    }
-    async function getFormOptions(req, res) {
-    try {
-        console.log('Obteniendo opciones para formularios...');
-        
-        // Obtener propiedades CON IDs
-        const [rows] = await pool.execute(
-            `SELECT id, tipo_componente, propiedad, valor 
-             FROM propiedades_componentes 
-             WHERE estado = 'activo' 
-             ORDER BY tipo_componente, propiedad, valor`
-        );
-
-        // Organizar por tipo de componente y propiedad
-        const organized = {};
-        rows.forEach(row => {
-            if (!organized[row.tipo_componente]) {
-                organized[row.tipo_componente] = {};
-            }
-            if (!organized[row.tipo_componente][row.propiedad]) {
-                organized[row.tipo_componente][row.propiedad] = [];
-            }
-            // Guardar objeto con ID y valor
-            organized[row.tipo_componente][row.propiedad].push({
-                id: row.id,
-                valor: row.valor
+            res.json({
+                success: true,
+                data: organized
             });
-        });
-
-        res.json({
-            success: true,
-            data: organized
-        });
-    } catch (error) {
-        console.error('Error obteniendo opciones:', error);
-        res.json({
-            success: false,
-            error: 'Error al obtener opciones'
-        });
+        } catch (error) {
+            console.error('Error obteniendo propiedades con IDs:', error);
+            res.json({
+                success: false,
+                error: 'Error al obtener propiedades'
+            });
+        }
     }
-}
-}
+
+    async findPropertyId(req, res) {
+        try {
+            const { tipo_componente, propiedad, valor } = req.body;
+            console.log('Buscando ID de propiedad:', { tipo_componente, propiedad, valor });
+
+            const [rows] = await pool.execute(
+                'SELECT id FROM propiedades_componentes WHERE tipo_componente = ? AND propiedad = ? AND valor = ? AND estado = "activo"',
+                [tipo_componente, propiedad, valor]
+            );
+
+            if (rows.length === 0) {
+                return res.json({
+                    success: false,
+                    error: 'Propiedad no encontrada'
+                });
+            }
+
+            res.json({
+                success: true,
+                data: { id: rows[0].id }
+            });
+        } catch (error) {
+            console.error('Error buscando propiedad:', error);
+            res.json({
+                success: false,
+                error: 'Error al buscar propiedad'
+            });
+        }
+    }
 }
 
 module.exports = new PropertyController();

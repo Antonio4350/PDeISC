@@ -6,7 +6,8 @@ import {
   ScrollView, 
   TouchableOpacity,
   ActivityIndicator,
-  useWindowDimensions
+  useWindowDimensions,
+  Alert
 } from 'react-native';
 import { useAuth } from '../AuthContext';
 import componentService, { ApiResponse } from '../services/components';
@@ -20,6 +21,8 @@ interface Component {
   especificaciones: string;
   socket?: string;
   tipo_memoria?: string;
+  imagen_url?: string;
+  [key: string]: any;
 }
 
 interface BuildComponent {
@@ -27,287 +30,681 @@ interface BuildComponent {
   type: string;
   name: string;
   component: Component | null;
+  compatible: boolean;
+  compatibilityIssues: string[];
+}
+
+interface ComponentCategory {
+  type: string;
+  name: string;
+  icon: string;
+  color: string;
+  endpoint: string;
 }
 
 export default function PcBuilder() {
   const { user } = useAuth();
-  const [components, setComponents] = useState<Component[]>([]);
+  const [allComponents, setAllComponents] = useState<{[key: string]: Component[]}>({});
   const [build, setBuild] = useState<BuildComponent[]>([
-    { id: '1', type: 'cpu', name: 'Procesador', component: null },
-    { id: '2', type: 'motherboard', name: 'Motherboard', component: null },
-    { id: '3', type: 'ram', name: 'Memoria RAM', component: null },
-    { id: '4', type: 'gpu', name: 'Tarjeta Gráfica', component: null },
-    { id: '5', type: 'storage', name: 'Almacenamiento', component: null },
-    { id: '6', type: 'psu', name: 'Fuente', component: null },
-    { id: '7', type: 'case', name: 'Gabinete', component: null }
+    { id: '1', type: 'cpu', name: 'Procesador', component: null, compatible: true, compatibilityIssues: [] },
+    { id: '2', type: 'motherboard', name: 'Motherboard', component: null, compatible: true, compatibilityIssues: [] },
+    { id: '3', type: 'ram', name: 'Memoria RAM', component: null, compatible: true, compatibilityIssues: [] },
+    { id: '4', type: 'gpu', name: 'Tarjeta Grafica', component: null, compatible: true, compatibilityIssues: [] },
+    { id: '5', type: 'storage', name: 'Almacenamiento', component: null, compatible: true, compatibilityIssues: [] },
+    { id: '6', type: 'psu', name: 'Fuente de Poder', component: null, compatible: true, compatibilityIssues: [] },
+    { id: '7', type: 'case', name: 'Gabinete', component: null, compatible: true, compatibilityIssues: [] }
   ]);
   const [loading, setLoading] = useState(true);
-  const [showComponents, setShowComponents] = useState(false);
-  const [selectedBuildItem, setSelectedBuildItem] = useState<BuildComponent | null>(null);
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const [selectedCategory, setSelectedCategory] = useState<string>('cpu');
+  const [activeTab, setActiveTab] = useState<'build' | 'components'>('components');
   
-  const isTablet = screenWidth >= 768;
-  const isDesktop = screenWidth >= 1024;
+  const { width: screenWidth } = useWindowDimensions();
+  const isMobile = screenWidth < 768;
+
+  const componentCategories: ComponentCategory[] = [
+    { 
+      type: 'cpu', 
+      name: 'Procesadores', 
+      icon: '⚡', 
+      color: '#FF6B6B',
+      endpoint: 'processors'
+    },
+    { 
+      type: 'motherboard', 
+      name: 'Motherboards', 
+      icon: '🔌', 
+      color: '#4ECDC4',
+      endpoint: 'motherboards'
+    },
+    { 
+      type: 'ram', 
+      name: 'Memoria RAM', 
+      icon: '💾', 
+      color: '#45B7D1',
+      endpoint: 'ram'
+    },
+    { 
+      type: 'gpu', 
+      name: 'Tarjetas Graficas', 
+      icon: '🎯', 
+      color: '#F7DC6F',
+      endpoint: 'tarjetas_graficas'
+    },
+    { 
+      type: 'storage', 
+      name: 'Almacenamiento', 
+      icon: '💿', 
+      color: '#98D8C8',
+      endpoint: 'almacenamiento'
+    },
+    { 
+      type: 'psu', 
+      name: 'Fuentes', 
+      icon: '🔋', 
+      color: '#FFEAA7',
+      endpoint: 'fuentes_poder'
+    },
+    { 
+      type: 'case', 
+      name: 'Gabinetes', 
+      icon: '🖥️', 
+      color: '#DDA0DD',
+      endpoint: 'gabinetes'
+    }
+  ];
 
   useEffect(() => {
-    loadComponents();
+    loadAllComponents();
   }, []);
 
-  const loadComponents = async () => {
+  const loadAllComponents = async () => {
     try {
       setLoading(true);
-      const result: ApiResponse<any[]> = await componentService.getProcessors();
-      
-      if (result.success && result.data) {
-        const mappedComponents = result.data.map((comp: any) => ({
-          ...comp,
-          tipo: 'procesadores',
-          especificaciones: `${comp.nucleos || 'N/A'} núcleos, ${comp.socket || 'N/A'}, ${comp.tipo_memoria || 'N/A'}`
-        }));
-        setComponents(mappedComponents);
-      } else {
-        // Datos de prueba si la BD está vacía
-        const mockComponents: Component[] = [
-          {
-            id: 1,
-            marca: 'Intel',
-            modelo: 'Core i9-13900K',
-            tipo: 'procesadores',
-            especificaciones: '24 núcleos, LGA 1700, DDR5',
-            socket: 'LGA 1700',
-            tipo_memoria: 'DDR5'
-          },
-          {
-            id: 2,
-            marca: 'AMD',
-            modelo: 'Ryzen 9 7950X',
-            tipo: 'procesadores', 
-            especificaciones: '16 núcleos, AM5, DDR5',
-            socket: 'AM5',
-            tipo_memoria: 'DDR5'
+      const componentsData: {[key: string]: Component[]} = {};
+
+      for (const category of componentCategories) {
+        try {
+          console.log(`Cargando componentes de: ${category.endpoint}`);
+          const result: ApiResponse<any[]> = await componentService.getComponents(category.endpoint);
+          
+          console.log(`Resultado para ${category.endpoint}:`, result);
+          
+          if (result.success && result.data && result.data.length > 0) {
+            componentsData[category.type] = result.data.map((comp: any) => ({
+              id: comp.id,
+              marca: comp.marca || 'Sin marca',
+              modelo: comp.modelo || 'Sin modelo',
+              tipo: category.type,
+              especificaciones: generateSpecifications(comp, category.type),
+              socket: comp.socket,
+              tipo_memoria: comp.tipo_memoria,
+              imagen_url: comp.imagen_url,
+              ...comp
+            }));
+            console.log(`✅ ${category.name}: ${componentsData[category.type].length} componentes cargados`);
+          } else {
+            console.log(`❌ ${category.name}: No hay datos o error en la respuesta`);
+            componentsData[category.type] = [];
           }
-        ];
-        setComponents(mockComponents);
+        } catch (error) {
+          console.error(`Error cargando ${category.name}:`, error);
+          componentsData[category.type] = [];
+        }
       }
+
+      setAllComponents(componentsData);
     } catch (error) {
-      toast.error('Error cargando componentes');
-      setComponents([]);
+      console.error('Error general cargando componentes:', error);
+      const emptyData: {[key: string]: Component[]} = {};
+      componentCategories.forEach(category => {
+        emptyData[category.type] = [];
+      });
+      setAllComponents(emptyData);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddComponent = (component: Component) => {
-    if (!selectedBuildItem) return;
+  const generateSpecifications = (component: any, type: string): string => {
+    const specs = [];
+    
+    switch (type) {
+      case 'cpu':
+        if (component.nucleos) specs.push(`${component.nucleos} nucleos`);
+        if (component.socket) specs.push(`Socket ${component.socket}`);
+        if (component.tipo_memoria) specs.push(component.tipo_memoria);
+        if (component.frecuencia_base) specs.push(`${component.frecuencia_base}GHz`);
+        break;
+      case 'motherboard':
+        if (component.socket) specs.push(`Socket ${component.socket}`);
+        if (component.tipo_memoria) specs.push(component.tipo_memoria);
+        if (component.formato) specs.push(component.formato);
+        if (component.chipset) specs.push(component.chipset);
+        break;
+      case 'ram':
+        if (component.capacidad) specs.push(`${component.capacidad}GB`);
+        if (component.tipo) specs.push(component.tipo);
+        if (component.velocidad_mhz) specs.push(`${component.velocidad_mhz}MHz`);
+        if (component.latencia) specs.push(`CL${component.latencia}`);
+        break;
+      case 'gpu':
+        if (component.memoria) specs.push(`${component.memoria}GB`);
+        if (component.tipo_memoria) specs.push(component.tipo_memoria);
+        if (component.nucleos_cuda) specs.push(`${component.nucleos_cuda} nucleos`);
+        break;
+      case 'storage':
+        if (component.capacidad) specs.push(`${component.capacidad}GB`);
+        if (component.tipo) specs.push(component.tipo);
+        if (component.interfaz) specs.push(component.interfaz);
+        break;
+      case 'psu':
+        if (component.potencia) specs.push(`${component.potencia}W`);
+        if (component.certificacion) specs.push(component.certificacion);
+        break;
+      case 'case':
+        if (component.formato) specs.push(component.formato);
+        if (component.motherboards_soportadas) specs.push(component.motherboards_soportadas);
+        break;
+    }
+    
+    return specs.join(' • ') || 'Especificaciones no disponibles';
+  };
 
+  const handleAddComponent = (component: Component) => {
     const updatedBuild = build.map(item => 
-      item.id === selectedBuildItem.id 
+      item.type === component.tipo 
         ? { ...item, component }
         : item
     );
     
     setBuild(updatedBuild);
-    setShowComponents(false);
-    setSelectedBuildItem(null);
     toast.success(`${component.marca} ${component.modelo} agregado`);
     
-    checkCompatibility(updatedBuild);
-  };
-
-  const checkCompatibility = (currentBuild: BuildComponent[]) => {
-    const cpu = currentBuild.find(item => item.type === 'cpu')?.component;
-    const motherboard = currentBuild.find(item => item.type === 'motherboard')?.component;
-    
-    if (cpu && motherboard && cpu.socket && motherboard.socket && cpu.socket !== motherboard.socket) {
-      toast.error(`⚠️ Incompatibilidad: Socket ${cpu.socket} vs ${motherboard.socket}`);
-    }
+    setTimeout(() => checkAllCompatibility(updatedBuild), 100);
   };
 
   const handleRemoveComponent = (buildItem: BuildComponent) => {
     const updatedBuild = build.map(item => 
       item.id === buildItem.id 
-        ? { ...item, component: null }
+        ? { ...item, component: null, compatible: true, compatibilityIssues: [] }
         : item
     );
     setBuild(updatedBuild);
     toast.info('Componente removido');
+    checkAllCompatibility(updatedBuild);
+  };
+
+  const checkAllCompatibility = (currentBuild: BuildComponent[]) => {
+    const updatedBuild = currentBuild.map(item => {
+      const issues: string[] = [];
+      let compatible = true;
+
+      if (!item.component) {
+        return { ...item, compatible: true, compatibilityIssues: [] };
+      }
+
+      const cpu = currentBuild.find(i => i.type === 'cpu')?.component;
+      const motherboard = currentBuild.find(i => i.type === 'motherboard')?.component;
+      const ram = currentBuild.find(i => i.type === 'ram')?.component;
+
+      switch (item.type) {
+        case 'cpu':
+          if (motherboard && item.component.socket && motherboard.socket && item.component.socket !== motherboard.socket) {
+            issues.push(`Socket incompatible con motherboard (${item.component.socket} vs ${motherboard.socket})`);
+            compatible = false;
+          }
+          if (ram && item.component.tipo_memoria && ram.tipo_memoria && item.component.tipo_memoria !== ram.tipo_memoria) {
+            issues.push(`Tipo de memoria incompatible con RAM (${item.component.tipo_memoria} vs ${ram.tipo_memoria})`);
+            compatible = false;
+          }
+          break;
+
+        case 'motherboard':
+          if (cpu && item.component.socket && cpu.socket && item.component.socket !== cpu.socket) {
+            issues.push(`Socket incompatible con CPU (${item.component.socket} vs ${cpu.socket})`);
+            compatible = false;
+          }
+          if (ram && item.component.tipo_memoria && ram.tipo_memoria && item.component.tipo_memoria !== ram.tipo_memoria) {
+            issues.push(`Tipo de memoria incompatible con RAM (${item.component.tipo_memoria} vs ${ram.tipo_memoria})`);
+            compatible = false;
+          }
+          break;
+
+        case 'ram':
+          if (motherboard && item.component.tipo_memoria && motherboard.tipo_memoria && item.component.tipo_memoria !== motherboard.tipo_memoria) {
+            issues.push(`Tipo de memoria incompatible con motherboard (${item.component.tipo_memoria} vs ${motherboard.tipo_memoria})`);
+            compatible = false;
+          }
+          if (cpu && item.component.tipo_memoria && cpu.tipo_memoria && item.component.tipo_memoria !== cpu.tipo_memoria) {
+            issues.push(`Tipo de memoria incompatible con CPU (${item.component.tipo_memoria} vs ${cpu.tipo_memoria})`);
+            compatible = false;
+          }
+          break;
+      }
+
+      if (issues.length === 0 && item.component) {
+        issues.push('Compatible');
+      }
+
+      return { ...item, compatible, compatibilityIssues: issues };
+    });
+
+    setBuild(updatedBuild);
   };
 
   const handleSaveBuild = () => {
     const selectedComponents = build.filter(item => item.component);
     if (selectedComponents.length === 0) {
-      toast.error('Agregá al menos un componente');
+      toast.error('Agrega al menos un componente');
       return;
     }
-    
-    toast.success('¡Build guardado exitosamente!');
-  };
 
-  const handleSelectComponentType = (buildItem: BuildComponent) => {
-    setSelectedBuildItem(buildItem);
-    setShowComponents(true);
-  };
-
-  const getComponentIcon = (type: string) => {
-    const icons: { [key: string]: string } = {
-      cpu: '⚡',
-      motherboard: '🔌',
-      ram: '💾',
-      gpu: '🎯',
-      storage: '💿',
-      psu: '🔋',
-      case: '🖥️'
-    };
-    return icons[type] || '🔧';
-  };
-
-  // Calcular dimensiones del modal
-  const getModalStyle = () => {
-    if (isDesktop) {
-      return {
-        width: screenWidth * 0.6,
-        height: screenHeight * 0.7,
-        left: screenWidth * 0.2,
-        top: screenHeight * 0.15,
-      };
+    const incompatibleComponents = build.filter(item => !item.compatible && item.component);
+    if (incompatibleComponents.length > 0) {
+      Alert.alert(
+        'Problemas de compatibilidad',
+        'Hay componentes incompatibles en tu build. ¿Estas seguro de querer guardar?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { 
+            text: 'Guardar', 
+            onPress: () => {
+              toast.success('Build guardado!');
+            }
+          }
+        ]
+      );
     } else {
-      return {
-        width: screenWidth * 0.9,
-        height: screenHeight * 0.8,
-        left: screenWidth * 0.05,
-        top: screenHeight * 0.1,
-      };
+      toast.success('Build guardado!');
     }
+  };
+
+  const getCurrentCategoryComponents = (): Component[] => {
+    return allComponents[selectedCategory] || [];
   };
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#667eea" />
-        <Text style={styles.loadingText}>Cargando constructor...</Text>
+        <Text style={styles.loadingText}>Cargando componentes...</Text>
       </View>
     );
   }
 
-  const modalStyle = getModalStyle();
+  const currentComponents = getCurrentCategoryComponents();
+  const selectedComponentsCount = build.filter(item => item.component).length;
+  const incompatibleComponentsCount = build.filter(item => !item.compatible && item.component).length;
 
-  return (
-    <View style={[
-      styles.container, 
-      { paddingHorizontal: isDesktop ? 40 : isTablet ? 30 : 20 }
-    ]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>🛠️ Constructor de PC</Text>
-        <Text style={styles.subtitle}>
-          Hola {user?.nombre}, seleccioná componentes para armar tu PC
-        </Text>
-      </View>
+  // Render para móvil
+  if (isMobile) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Constructor de PC</Text>
+        </View>
 
-      <View style={styles.buildSection}>
-        <Text style={styles.sectionTitle}>Tu Build</Text>
-        <Text style={styles.sectionSubtitle}>
-          Tocá en cada componente para seleccionarlo
-        </Text>
+        {/* TABS PARA MÓVIL - AHORA MÁS ARRIBA */}
+        <View style={styles.tabsContainer}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'components' && styles.tabActive]}
+            onPress={() => setActiveTab('components')}
+          >
+            <Text style={[styles.tabText, activeTab === 'components' && styles.tabTextActive]}>
+              Componentes
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'build' && styles.tabActive]}
+            onPress={() => setActiveTab('build')}
+          >
+            <Text style={[styles.tabText, activeTab === 'build' && styles.tabTextActive]}>
+              Mi Build ({selectedComponentsCount})
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-        <View style={[
-          styles.buildGrid, 
-          { 
-            flexDirection: isDesktop ? 'row' : 'column',
-            flexWrap: isDesktop ? 'wrap' : 'nowrap',
-            gap: isDesktop ? 16 : 12,
-          }
-        ]}>
-          {build.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[
-                styles.buildItem,
-                { width: isDesktop ? '48%' : '100%' },
-                item.component && styles.buildItemFilled
-              ]}
-              onPress={() => handleSelectComponentType(item)}
-            >
-              <View style={styles.buildItemHeader}>
-                <Text style={styles.buildItemIcon}>
-                  {getComponentIcon(item.type)}
+        {activeTab === 'build' ? (
+          /* PANEL BUILD PARA MÓVIL - CONTENIDO MÁS ARRIBA */
+          <View style={styles.mobilePanel}>
+            <View style={styles.buildSummary}>
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryNumber}>{selectedComponentsCount}</Text>
+                <Text style={styles.summaryLabel}>Componentes</Text>
+              </View>
+              <View style={styles.summaryItem}>
+                <Text style={[
+                  styles.summaryNumber, 
+                  incompatibleComponentsCount > 0 ? styles.summaryNumberError : styles.summaryNumberSuccess
+                ]}>
+                  {incompatibleComponentsCount}
                 </Text>
-                <View style={styles.buildItemInfo}>
-                  <Text style={styles.buildItemName}>{item.name}</Text>
-                  {item.component ? (
-                    <Text style={styles.buildItemModel}>
-                      {item.component.marca} {item.component.modelo}
+                <Text style={styles.summaryLabel}>Incompatibles</Text>
+              </View>
+            </View>
+
+            <ScrollView style={styles.buildList}>
+              {build.map((item) => (
+                <View 
+                  key={item.id} 
+                  style={[
+                    styles.buildItem,
+                    !item.compatible && styles.buildItemIncompatible,
+                    !item.component && styles.buildItemEmpty
+                  ]}
+                >
+                  <View style={styles.buildItemHeader}>
+                    <View style={styles.buildItemInfo}>
+                      <Text style={styles.buildItemName}>{item.name}</Text>
+                      {item.component ? (
+                        <Text style={styles.buildItemModel}>
+                          {item.component.marca} {item.component.modelo}
+                        </Text>
+                      ) : (
+                        <Text style={styles.buildItemEmptyText}>
+                          Sin seleccionar
+                        </Text>
+                      )}
+                    </View>
+                    
+                    <View style={styles.buildItemActions}>
+                      {item.component && (
+                        <TouchableOpacity 
+                          style={styles.removeButton}
+                          onPress={() => handleRemoveComponent(item)}
+                        >
+                          <Text style={styles.removeButtonText}>✕</Text>
+                        </TouchableOpacity>
+                      )}
+                      <View style={[
+                        styles.compatibilityCircle,
+                        item.component ? 
+                          (item.compatible ? styles.compatibleCircle : styles.incompatibleCircle) 
+                          : styles.emptyCircle
+                      ]} />
+                    </View>
+                  </View>
+
+                  {item.component && item.compatibilityIssues.length > 0 && (
+                    <View style={styles.compatibilityDetails}>
+                      {item.compatibilityIssues.map((issue, index) => (
+                        <Text 
+                          key={index} 
+                          style={[
+                            styles.compatibilityIssue,
+                            issue.includes('Compatible') ? styles.compatibilitySuccess : styles.compatibilityError
+                          ]}
+                        >
+                          {issue}
+                        </Text>
+                      ))}
+                    </View>
+                  )}
+
+                  {item.component && (
+                    <Text style={styles.buildItemSpecs}>
+                      {item.component.especificaciones}
                     </Text>
-                  ) : (
-                    <Text style={styles.buildItemEmpty}>Sin seleccionar</Text>
                   )}
                 </View>
-                {item.component && (
-                  <TouchableOpacity 
-                    style={styles.removeButton}
-                    onPress={() => handleRemoveComponent(item)}
-                  >
-                    <Text style={styles.removeButtonText}>✕</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              
-              {item.component && (
-                <Text style={styles.buildItemSpecs}>
-                  {item.component.especificaciones}
-                </Text>
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+              ))}
+            </ScrollView>
 
-      {showComponents && selectedBuildItem && (
-        <View style={[styles.componentsModal, modalStyle]}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Seleccionar {selectedBuildItem.name}</Text>
             <TouchableOpacity 
-              style={styles.closeButton}
-              onPress={() => {
-                setShowComponents(false);
-                setSelectedBuildItem(null);
-              }}
+              style={[
+                styles.saveButton,
+                selectedComponentsCount === 0 && styles.saveButtonDisabled
+              ]}
+              onPress={handleSaveBuild}
+              disabled={selectedComponentsCount === 0}
             >
-              <Text style={styles.closeButtonText}>✕</Text>
+              <Text style={styles.saveButtonText}>Guardar Build</Text>
             </TouchableOpacity>
           </View>
+        ) : (
+          /* PANEL COMPONENTES PARA MÓVIL - CONTENIDO MÁS ARRIBA */
+          <View style={styles.mobilePanel}>
+            {/* CATEGORÍAS MÁS ARRIBA */}
+            <View style={styles.categoriesContainer}>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                style={styles.categoriesScroll}
+              >
+                {componentCategories.map((category) => (
+                  <TouchableOpacity
+                    key={category.type}
+                    style={[
+                      styles.categoryButton,
+                      { backgroundColor: category.color },
+                      selectedCategory === category.type && styles.categoryButtonActive
+                    ]}
+                    onPress={() => setSelectedCategory(category.type)}
+                  >
+                    <Text style={styles.categoryIcon}>{category.icon}</Text>
+                    <Text style={styles.categoryName}>{category.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* COMPONENTES INMEDIATAMENTE DEBAJO DE LAS CATEGORÍAS */}
+            <View style={styles.componentsSection}>
+              <Text style={styles.componentsTitle}>
+                {componentCategories.find(cat => cat.type === selectedCategory)?.name} ({currentComponents.length})
+              </Text>
+              
+              <ScrollView style={styles.componentsList}>
+                {currentComponents.map((component) => (
+                  <TouchableOpacity
+                    key={component.id}
+                    style={styles.componentCard}
+                    onPress={() => handleAddComponent(component)}
+                  >
+                    <View style={styles.componentHeader}>
+                      <Text style={styles.componentBrand}>{component.marca}</Text>
+                    </View>
+                    
+                    <Text style={styles.componentModel}>{component.modelo}</Text>
+                    <Text style={styles.componentSpecs}>{component.especificaciones}</Text>
+                    
+                    <View style={styles.componentFooter}>
+                      <Text style={styles.addButton}>+ Agregar</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+                
+                {currentComponents.length === 0 && (
+                  <View style={styles.noComponents}>
+                    <Text style={styles.noComponentsText}>
+                      No hay componentes disponibles
+                    </Text>
+                    <Text style={styles.noComponentsSubtext}>
+                      Esta categoria esta vacia en la base de datos
+                    </Text>
+                  </View>
+                )}
+              </ScrollView>
+            </View>
+          </View>
+        )}
+      </View>
+    );
+  }
+
+  // Render para Desktop/Tablet - ESTRUCTURA MEJORADA
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Constructor de PC</Text>
+      </View>
+
+      <View style={styles.desktopContent}>
+        {/* PANEL IZQUIERDO - BUILD */}
+        <View style={styles.buildPanel}>
+          <Text style={styles.panelTitle}>Tu Build</Text>
           
-          <ScrollView style={styles.componentsList}>
-            {components.length > 0 ? (
-              components.map((component) => (
+          <View style={styles.buildSummary}>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryNumber}>{selectedComponentsCount}</Text>
+              <Text style={styles.summaryLabel}>Componentes</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={[
+                styles.summaryNumber, 
+                incompatibleComponentsCount > 0 ? styles.summaryNumberError : styles.summaryNumberSuccess
+              ]}>
+                {incompatibleComponentsCount}
+              </Text>
+              <Text style={styles.summaryLabel}>Incompatibles</Text>
+            </View>
+          </View>
+
+          <ScrollView style={styles.buildList}>
+            {build.map((item) => (
+              <View 
+                key={item.id} 
+                style={[
+                  styles.buildItem,
+                  !item.compatible && styles.buildItemIncompatible,
+                  !item.component && styles.buildItemEmpty
+                ]}
+              >
+                <View style={styles.buildItemHeader}>
+                  <View style={styles.buildItemInfo}>
+                    <Text style={styles.buildItemName}>{item.name}</Text>
+                    {item.component ? (
+                      <Text style={styles.buildItemModel}>
+                        {item.component.marca} {item.component.modelo}
+                      </Text>
+                    ) : (
+                      <Text style={styles.buildItemEmptyText}>
+                        Sin seleccionar
+                      </Text>
+                    )}
+                  </View>
+                  
+                  <View style={styles.buildItemActions}>
+                    {item.component && (
+                      <TouchableOpacity 
+                        style={styles.removeButton}
+                        onPress={() => handleRemoveComponent(item)}
+                      >
+                        <Text style={styles.removeButtonText}>✕</Text>
+                      </TouchableOpacity>
+                    )}
+                    <View style={[
+                      styles.compatibilityCircle,
+                      item.component ? 
+                        (item.compatible ? styles.compatibleCircle : styles.incompatibleCircle) 
+                        : styles.emptyCircle
+                    ]} />
+                  </View>
+                </View>
+
+                {item.component && item.compatibilityIssues.length > 0 && (
+                  <View style={styles.compatibilityDetails}>
+                    {item.compatibilityIssues.map((issue, index) => (
+                      <Text 
+                        key={index} 
+                        style={[
+                          styles.compatibilityIssue,
+                          issue.includes('Compatible') ? styles.compatibilitySuccess : styles.compatibilityError
+                        ]}
+                      >
+                        {issue}
+                      </Text>
+                    ))}
+                  </View>
+                )}
+
+                {item.component && (
+                  <Text style={styles.buildItemSpecs}>
+                    {item.component.especificaciones}
+                  </Text>
+                )}
+              </View>
+            ))}
+          </ScrollView>
+
+          <TouchableOpacity 
+            style={[
+              styles.saveButton,
+              selectedComponentsCount === 0 && styles.saveButtonDisabled
+            ]}
+            onPress={handleSaveBuild}
+            disabled={selectedComponentsCount === 0}
+          >
+            <Text style={styles.saveButtonText}>Guardar Build</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* PANEL DERECHO - COMPONENTES CON MEJOR ESTRUCTURA */}
+        <View style={styles.componentsPanel}>
+          {/* CATEGORÍAS EN LA PARTE SUPERIOR */}
+          <View style={styles.categoriesSection}>
+            <Text style={styles.categoriesTitle}>Selecciona una categoria:</Text>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              style={styles.categoriesScroll}
+            >
+              {componentCategories.map((category) => (
+                <TouchableOpacity
+                  key={category.type}
+                  style={[
+                    styles.categoryButton,
+                    { backgroundColor: category.color },
+                    selectedCategory === category.type && styles.categoryButtonActive
+                  ]}
+                  onPress={() => setSelectedCategory(category.type)}
+                >
+                  <Text style={styles.categoryIcon}>{category.icon}</Text>
+                  <Text style={styles.categoryName}>{category.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* COMPONENTES INMEDIATAMENTE DEBAJO */}
+          <View style={styles.componentsSection}>
+            <Text style={styles.componentsTitle}>
+              {componentCategories.find(cat => cat.type === selectedCategory)?.name} ({currentComponents.length})
+            </Text>
+            
+            <ScrollView style={styles.componentsList}>
+              {currentComponents.map((component) => (
                 <TouchableOpacity
                   key={component.id}
-                  style={styles.componentOption}
+                  style={styles.componentCard}
                   onPress={() => handleAddComponent(component)}
                 >
-                  <Text style={styles.componentBrand}>{component.marca}</Text>
+                  <View style={styles.componentHeader}>
+                    <Text style={styles.componentBrand}>{component.marca}</Text>
+                  </View>
+                  
                   <Text style={styles.componentModel}>{component.modelo}</Text>
                   <Text style={styles.componentSpecs}>{component.especificaciones}</Text>
+                  
+                  <View style={styles.componentFooter}>
+                    <Text style={styles.addButton}>+ Agregar al Build</Text>
+                  </View>
                 </TouchableOpacity>
-              ))
-            ) : (
-              <Text style={styles.noComponentsText}>No hay componentes disponibles</Text>
-            )}
-          </ScrollView>
+              ))}
+              
+              {currentComponents.length === 0 && (
+                <View style={styles.noComponents}>
+                  <Text style={styles.noComponentsText}>
+                    No hay componentes disponibles
+                  </Text>
+                  <Text style={styles.noComponentsSubtext}>
+                    Esta categoria esta vacia en la base de datos
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
         </View>
-      )}
-
-      <TouchableOpacity 
-        style={styles.saveButton}
-        onPress={handleSaveBuild}
-      >
-        <Text style={styles.saveButtonText}>💾 Guardar Build</Text>
-      </TouchableOpacity>
-
-      <View style={styles.compatibilityInfo}>
-        <Text style={styles.compatibilityTitle}>💡 Compatibilidad</Text>
-        <Text style={styles.compatibilityText}>
-          El sistema verifica automáticamente compatibilidad entre componentes
-        </Text>
       </View>
     </View>
   );
@@ -317,7 +714,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0f1117',
-    paddingVertical: 20,
   },
   loadingContainer: {
     flex: 1,
@@ -331,188 +727,323 @@ const styles = StyleSheet.create({
     color: '#8b9cb3',
   },
   header: {
-    alignItems: 'center',
-    marginBottom: 30,
+    padding: 20,
+    paddingTop: 10,
+    backgroundColor: '#1a1b27',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '800',
     color: '#ffffff',
     textAlign: 'center',
-    marginBottom: 8,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#8b9cb3',
-    textAlign: 'center',
+  // Tabs para móvil
+  tabsContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#1a1b27',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
-  buildSection: {
+  tab: {
     flex: 1,
-    marginBottom: 20,
+    padding: 16,
+    alignItems: 'center',
   },
-  sectionTitle: {
-    fontSize: 22,
+  tabActive: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#667eea',
+  },
+  tabText: {
+    color: '#8b9cb3',
+    fontWeight: '600',
+  },
+  tabTextActive: {
+    color: '#667eea',
+    fontWeight: '700',
+  },
+  // Layout desktop
+  desktopContent: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  // Paneles
+  buildPanel: {
+    flex: 1,
+    maxWidth: 400,
+    backgroundColor: '#1a1b27',
+    padding: 16,
+  },
+  componentsPanel: {
+    flex: 2,
+    backgroundColor: '#1a1b27',
+    padding: 0, // Eliminamos padding general para control específico
+  },
+  mobilePanel: {
+    flex: 1,
+    backgroundColor: '#1a1b27',
+  },
+  panelTitle: {
+    fontSize: 20,
     fontWeight: '700',
     color: '#ffffff',
-    marginBottom: 8,
+    marginBottom: 16,
   },
-  sectionSubtitle: {
-    fontSize: 14,
+  // Build Summary
+  buildSummary: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  summaryItem: {
+    alignItems: 'center',
+  },
+  summaryNumber: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#ffffff',
+    marginBottom: 4,
+  },
+  summaryNumberSuccess: {
+    color: '#10B981',
+  },
+  summaryNumberError: {
+    color: '#EF4444',
+  },
+  summaryLabel: {
+    fontSize: 12,
     color: '#8b9cb3',
-    marginBottom: 20,
+    fontWeight: '600',
   },
-  buildGrid: {
-    gap: 12,
+  // Build List
+  buildList: {
+    flex: 1,
+    marginBottom: 16,
   },
   buildItem: {
-    backgroundColor: '#1a1b27',
-    padding: 20,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderStyle: 'dashed',
-    minHeight: 100,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#667eea',
   },
-  buildItemFilled: {
-    borderStyle: 'solid',
-    borderColor: 'rgba(102, 126, 234, 0.5)',
+  buildItemEmpty: {
+    borderLeftColor: '#8b9cb3',
+    opacity: 0.7,
+  },
+  buildItemIncompatible: {
+    borderLeftColor: '#EF4444',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
   },
   buildItemHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 8,
-  },
-  buildItemIcon: {
-    fontSize: 24,
-    marginRight: 15,
   },
   buildItemInfo: {
     flex: 1,
   },
   buildItemName: {
-    color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    color: '#ffffff',
     marginBottom: 4,
   },
   buildItemModel: {
-    color: '#667eea',
     fontSize: 14,
     fontWeight: '600',
+    color: '#667eea',
   },
-  buildItemEmpty: {
-    color: '#8b9cb3',
+  buildItemEmptyText: {
     fontSize: 14,
+    color: '#8b9cb3',
     fontStyle: 'italic',
   },
   buildItemSpecs: {
-    color: '#8b9cb3',
     fontSize: 12,
+    color: '#8b9cb3',
     marginTop: 8,
+  },
+  buildItemActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   removeButton: {
     backgroundColor: 'rgba(239, 68, 68, 0.2)',
     padding: 6,
-    borderRadius: 8,
+    borderRadius: 6,
   },
   removeButtonText: {
-    color: '#ef4444',
+    color: '#EF4444',
     fontSize: 12,
     fontWeight: '700',
   },
-  componentsModal: {
-    position: 'absolute',
-    backgroundColor: '#1a1b27',
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: 'rgba(102, 126, 234, 0.3)',
-    zIndex: 1000,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  closeButton: {
-    backgroundColor: 'rgba(239, 68, 68, 0.2)',
-    padding: 8,
+  // Círculos de compatibilidad
+  compatibilityCircle: {
+    width: 16,
+    height: 16,
     borderRadius: 8,
   },
-  closeButtonText: {
-    color: '#ef4444',
+  compatibleCircle: {
+    backgroundColor: '#10B981',
+  },
+  incompatibleCircle: {
+    backgroundColor: '#EF4444',
+  },
+  emptyCircle: {
+    backgroundColor: '#8b9cb3',
+  },
+  compatibilityDetails: {
+    marginTop: 8,
+    padding: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 6,
+  },
+  compatibilityIssue: {
+    fontSize: 11,
+    marginBottom: 2,
+  },
+  compatibilitySuccess: {
+    color: '#10B981',
+  },
+  compatibilityError: {
+    color: '#EF4444',
+  },
+  // Botón guardar
+  saveButton: {
+    backgroundColor: '#667eea',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  saveButtonDisabled: {
+    backgroundColor: '#8b9cb3',
+    opacity: 0.6,
+  },
+  saveButtonText: {
+    color: '#ffffff',
     fontSize: 16,
     fontWeight: '700',
   },
+  // CATEGORÍAS MEJOR POSICIONADAS
+  categoriesContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  categoriesSection: {
+    padding: 16,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  categoriesTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 12,
+  },
+  categoriesScroll: {
+    // El scroll ahora está contenido dentro de su sección
+  },
+  categoryButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderRadius: 10,
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 110,
+    height: 80,
+  },
+  categoryButtonActive: {
+    transform: [{ scale: 1.05 }],
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  categoryIcon: {
+    fontSize: 24,
+    marginBottom: 6,
+  },
+  categoryName: {
+    color: '#1a1b27',
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  // COMPONENTES MEJOR POSICIONADOS
+  componentsSection: {
+    flex: 1,
+    padding: 16,
+    paddingTop: 8, // Menos espacio arriba para estar más cerca de las categorías
+  },
+  componentsTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#ffffff',
+    marginBottom: 16,
+  },
   componentsList: {
     flex: 1,
-    padding: 20,
   },
-  componentOption: {
+  componentCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    padding: 16,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 10,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
+  componentHeader: {
+    marginBottom: 8,
+  },
   componentBrand: {
     color: '#667eea',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    marginBottom: 4,
   },
   componentModel: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
     marginBottom: 8,
   },
   componentSpecs: {
     color: '#8b9cb3',
-    fontSize: 12,
+    fontSize: 14,
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  componentFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  addButton: {
+    color: '#667eea',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  noComponents: {
+    alignItems: 'center',
+    paddingVertical: 40,
   },
   noComponentsText: {
     color: '#8b9cb3',
     fontSize: 16,
-    textAlign: 'center',
-    marginTop: 40,
-  },
-  saveButton: {
-    backgroundColor: '#667eea',
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  saveButtonText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  compatibilityInfo: {
-    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-    padding: 16,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#667eea',
-  },
-  compatibilityTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
     marginBottom: 8,
   },
-  compatibilityText: {
+  noComponentsSubtext: {
     color: '#8b9cb3',
     fontSize: 14,
-    lineHeight: 20,
+    opacity: 0.7,
   },
 });

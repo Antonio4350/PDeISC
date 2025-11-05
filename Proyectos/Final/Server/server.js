@@ -13,6 +13,10 @@ const authController = require('./Components/authController');
 const startupMonitor = require('./Components/startupMonitor');
 const componentController = require('./Components/componentController');
 const propertyController = require('./Components/propertyController');
+const projectController = require('./Components/projectController');
+
+// Extraer middleware
+const { authenticateToken } = authController;
 
 // Ruta de prueba
 app.get('/', (req, res) => {
@@ -65,15 +69,25 @@ app.get("/components/:type", (req, res) => componentController.getComponentsByTy
 // COMPATIBILIDAD
 app.post("/components/compatibility", (req, res) => componentController.checkCompatibility(req, res));
 
+// ========== RUTAS DE PROPIEDADES ==========
 app.get("/properties", (req, res) => propertyController.getAllProperties(req, res));
 app.get("/properties/form", (req, res) => propertyController.getFormProperties(req, res));
 app.get("/properties/:type", (req, res) => propertyController.getPropertiesByType(req, res));
 app.post("/properties", (req, res) => propertyController.addProperty(req, res));
 app.delete("/properties/:id", (req, res) => propertyController.deleteProperty(req, res));
-// ========== MANEJO DE ERRORES ==========
 app.get("/properties/with-ids", (req, res) => propertyController.getAllPropertiesWithIds(req, res));
-
 app.post("/properties/find-id", (req, res) => propertyController.findPropertyId(req, res));
+
+// ========== RUTAS DE PROYECTOS ==========
+app.get('/api/projects', authenticateToken, projectController.getUserProjects);
+app.post('/api/projects', authenticateToken, projectController.createProject);
+app.get('/api/projects/:id', authenticateToken, projectController.getProjectById);
+app.delete('/api/projects/:id', authenticateToken, projectController.deleteProject);
+app.post('/api/projects/:projectId/components', authenticateToken, projectController.addComponentToProject);
+app.delete('/api/projects/:projectId/components/:tipoComponente', authenticateToken, projectController.removeComponentFromProject);
+app.get('/api/projects/:projectId/compatibility', authenticateToken, projectController.checkProjectCompatibility);
+
+// ========== MANEJO DE ERRORES ==========
 
 // Manejo de errores
 app.use((err, req, res, next) => {
@@ -95,10 +109,7 @@ app.use('*', (req, res) => {
 });
 
 // ========== INICIAR SERVIDOR ==========
-// ========== RUTAS DELETE ==========
-app.delete("/components/processors/:id", (req, res) => componentController.deleteProcessor(req, res));
-app.delete("/components/motherboards/:id", (req, res) => componentController.deleteMotherboard(req, res));
-app.delete("/components/ram/:id", (req, res) => componentController.deleteRAM(req, res));
+
 // Iniciar servidor
 const PORT = process.env.PORT || 5000;
 
@@ -108,7 +119,7 @@ async function startServer() {
     const startupInfo = await startupMonitor.displayStartupInfo(PORT);
     
     // Iniciar servidor
-    app.listen(PORT,'192.168.1.35', () => {
+    app.listen(PORT, '192.168.1.35', () => {
       startupMonitor.displayServerReady(startupInfo);
     });
     
