@@ -5,8 +5,8 @@ class UserService {
   // Buscar usuario por email
   async findUserByEmail(email) {
     try {
-      const [rows] = await pool.execute(
-        'SELECT * FROM usuarios WHERE email = ?',
+      const { rows } = await pool.query(
+        'SELECT * FROM usuarios WHERE email = $1',
         [email]
       );
       return rows[0] || null;
@@ -19,8 +19,8 @@ class UserService {
   // Buscar usuario por ID
   async findUserById(userId) {
     try {
-      const [rows] = await pool.execute(
-        'SELECT * FROM usuarios WHERE id = ?',
+      const { rows } = await pool.query(
+        'SELECT * FROM usuarios WHERE id = $1',
         [userId]
       );
       return rows[0] || null;
@@ -33,8 +33,8 @@ class UserService {
   // Buscar usuario por Google ID
   async findUserByGoogleId(googleId) {
     try {
-      const [rows] = await pool.execute(
-        'SELECT * FROM usuarios WHERE google_id = ?',
+      const { rows } = await pool.query(
+        'SELECT * FROM usuarios WHERE google_id = $1',
         [googleId]
       );
       return rows[0] || null;
@@ -52,20 +52,14 @@ class UserService {
       // Encriptar contraseña
       const hashedPassword = await bcrypt.hash(password, 12);
       
-      const [result] = await pool.execute(
+      const { rows } = await pool.query(
         `INSERT INTO usuarios (email, nombre, apellido, telefono, password) 
-         VALUES (?, ?, ?, ?, ?)`,
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING *`,
         [email, nombre, apellido, telefono, hashedPassword]
       );
       
-      return { 
-        id: result.insertId, 
-        email, 
-        nombre, 
-        apellido, 
-        telefono,
-        rol: 'user'
-      };
+      return rows[0];
     } catch (error) {
       console.error('Error creando usuario:', error);
       throw error;
@@ -82,20 +76,14 @@ class UserService {
     const { email, nombre, google_id, avatar_url } = googleData;
     
     try {
-      const [result] = await pool.execute(
+      const { rows } = await pool.query(
         `INSERT INTO usuarios (email, nombre, google_id, avatar_url) 
-         VALUES (?, ?, ?, ?)`,
+         VALUES ($1, $2, $3, $4)
+         RETURNING *`,
         [email, nombre, google_id, avatar_url]
       );
       
-      return { 
-        id: result.insertId, 
-        email, 
-        nombre, 
-        google_id,
-        avatar_url,
-        rol: 'user'
-      };
+      return rows[0];
     } catch (error) {
       console.error('Error creando usuario Google:', error);
       throw error;
@@ -105,11 +93,11 @@ class UserService {
   // Actualizar Google ID de usuario existente
   async updateGoogleId(userId, googleId) {
     try {
-      await pool.execute(
-        'UPDATE usuarios SET google_id = ? WHERE id = ?',
+      const { rowCount } = await pool.query(
+        'UPDATE usuarios SET google_id = $1 WHERE id = $2',
         [googleId, userId]
       );
-      return true;
+      return rowCount > 0;
     } catch (error) {
       console.error('Error actualizando Google ID:', error);
       throw error;
@@ -119,7 +107,7 @@ class UserService {
   // Verificar conexión a la base de datos
   async checkDatabaseConnection() {
     try {
-      const [rows] = await pool.execute('SELECT 1 as connected');
+      const { rows } = await pool.query('SELECT 1 as connected');
       return true;
     } catch (error) {
       console.error('Error verificando conexión a BD:', error);

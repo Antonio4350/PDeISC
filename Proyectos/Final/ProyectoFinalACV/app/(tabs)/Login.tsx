@@ -56,7 +56,7 @@ export default function Login() {
       const result = await apiService.login({ email, password });
       
       if (result.success && result.user) {
-        await login(result.user);
+        await login(result.user, result.token);
         toast.success(`¡Bienvenido ${result.user.nombre || result.user.email}!`);
         
         // ✅ REDIRECCIÓN AUTOMÁTICA después del login
@@ -68,7 +68,7 @@ export default function Login() {
         toast.error(result.error || 'Credenciales incorrectas');
       }
     } catch (error) {
-      toast.error('Error de conexión con el servidor');
+      toast.error('Error de conexión con el servidor. Verifica que el servidor esté ejecutándose.');
     } finally {
       setLoading(false);
     }

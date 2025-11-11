@@ -126,11 +126,12 @@ class PropertyController {
         try {
             console.log('Obteniendo todas las propiedades con IDs...');
             
-            const [rows] = await pool.execute(
+            const { rows } = await pool.query(
                 `SELECT id, tipo_componente, propiedad, valor 
                  FROM propiedades_componentes 
-                 WHERE estado = 'activo' 
-                 ORDER BY tipo_componente, propiedad, valor`
+                 WHERE estado = $1 
+                 ORDER BY tipo_componente, propiedad, valor`,
+                ['activo']
             );
 
             // Organizar por tipo de componente
@@ -166,9 +167,9 @@ class PropertyController {
             const { tipo_componente, propiedad, valor } = req.body;
             console.log('Buscando ID de propiedad:', { tipo_componente, propiedad, valor });
 
-            const [rows] = await pool.execute(
-                'SELECT id FROM propiedades_componentes WHERE tipo_componente = ? AND propiedad = ? AND valor = ? AND estado = "activo"',
-                [tipo_componente, propiedad, valor]
+            const { rows } = await pool.query(
+                'SELECT id FROM propiedades_componentes WHERE tipo_componente = $1 AND propiedad = $2 AND valor = $3 AND estado = $4',
+                [tipo_componente, propiedad, valor, 'activo']
             );
 
             if (rows.length === 0) {

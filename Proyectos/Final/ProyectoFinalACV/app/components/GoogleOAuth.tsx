@@ -7,7 +7,7 @@ import { StyleSheet } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const API_URL = "http://192.168.1.35:5000"; // Cambiar por tu IP local si es necesario
+const API_URL = "http://192.168.1.38:5000"; // Cambiar por tu IP local si es necesario
 
 interface GoogleOAuthProps {
   type: 'login' | 'register';

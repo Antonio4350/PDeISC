@@ -369,88 +369,6 @@ class ComponentController {
     }
   }
 
-  // ========== DELETE METHODS ==========
-
-async deleteProcessor(req, res) {
-  try {
-    const { id } = req.params;
-    console.log(`Eliminando procesador ID: ${id}`);
-    
-    const result = await componentService.deleteProcessor(id);
-    
-    if (!result) {
-      return res.json({
-        success: false,
-        error: 'Procesador no encontrado'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Procesador eliminado exitosamente'
-    });
-  } catch (error) {
-    console.error('Error eliminando procesador:', error);
-    res.json({
-      success: false,
-      error: 'Error al eliminar procesador'
-    });
-  }
-}
-
-async deleteMotherboard(req, res) {
-  try {
-    const { id } = req.params;
-    console.log(`Eliminando motherboard ID: ${id}`);
-    
-    const result = await componentService.deleteMotherboard(id);
-    
-    if (!result) {
-      return res.json({
-        success: false,
-        error: 'Motherboard no encontrada'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Motherboard eliminada exitosamente'
-    });
-  } catch (error) {
-    console.error('Error eliminando motherboard:', error);
-    res.json({
-      success: false,
-      error: 'Error al eliminar motherboard'
-    });
-  }
-}
-
-async deleteRAM(req, res) {
-  try {
-    const { id } = req.params;
-    console.log(`Eliminando RAM ID: ${id}`);
-    
-    const result = await componentService.deleteRAM(id);
-    
-    if (!result) {
-      return res.json({
-        success: false,
-        error: 'Memoria RAM no encontrada'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Memoria RAM eliminada exitosamente'
-    });
-  } catch (error) {
-    console.error('Error eliminando RAM:', error);
-    res.json({
-      success: false,
-      error: 'Error al eliminar memoria RAM'
-    });
-  }
-}
   // ========== COMPATIBILIDAD ==========
   
   async checkCompatibility(req, res) {
@@ -503,7 +421,7 @@ async deleteRAM(req, res) {
 
   // ========== OPCIONES DE FORMULARIOS ==========
   
-async getFormOptions(req, res) {
+  async getFormOptions(req, res) {
     try {
         console.log('Obteniendo opciones para formularios...');
         
@@ -520,7 +438,7 @@ async getFormOptions(req, res) {
             error: 'Error al obtener opciones'
         });
     }
-}
+  }
 }
 
 module.exports = new ComponentController();

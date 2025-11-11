@@ -5,13 +5,13 @@ class StartupMonitor {
   async checkDatabaseConnection() {
     try {
       const startTime = Date.now();
-      const [rows] = await pool.execute('SELECT 1 as connected');
+      const { rows } = await pool.query('SELECT 1 as connected');
       const ping = Date.now() - startTime;
       
       return {
         status: '✅ CONECTADA',
         ping: `${ping}ms`,
-        message: 'Conexión exitosa a MySQL',
+        message: 'Conexión exitosa a PostgreSQL (Neon)',
         success: true
       };
     } catch (error) {
@@ -61,8 +61,8 @@ class StartupMonitor {
     // Información del entorno
     console.log('⚙️  Configuración:');
     console.log(`   Entorno: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`   Base de datos: ${process.env.DB_NAME || 'antoniopcbuilder'}`);
-    console.log(`   Host BD: ${process.env.DB_HOST || 'localhost'}\n`);
+    console.log(`   Base de datos: PostgreSQL (Neon)`);
+    console.log(`   Host BD: ${process.env.DATABASE_URL ? 'Neon Cloud' : 'No configurado'}\n`);
     
     return {
       dbStatus,

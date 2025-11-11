@@ -87,7 +87,7 @@ export default function Register() {
       });
 
       if (result.success && result.user) {
-        await login(result.user);
+        await login(result.user, result.token);
         toast.success(`¡Cuenta creada para ${result.user.nombre}!`);
         
         // ✅ REDIRECCIÓN AUTOMÁTICA después del registro
@@ -99,7 +99,7 @@ export default function Register() {
         toast.error(result.error || 'No se pudo crear la cuenta');
       }
     } catch (error) {
-      toast.error('Error de conexión con el servidor');
+      toast.error('Error de conexión con el servidor. Verifica que el servidor esté ejecutándose.');
     } finally {
       setLoading(false);
     }

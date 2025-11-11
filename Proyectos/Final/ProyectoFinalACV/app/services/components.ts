@@ -1,5 +1,5 @@
 // services/components.ts - COMPLETAMENTE ACTUALIZADO
-const API_URL = "http://192.168.1.35:5000";
+const API_URL = "http://localhost:5000";
 
 export interface Componente {
   id?: number;
@@ -135,10 +135,17 @@ class ComponentService {
         headers: { 'Content-Type': 'application/json' },
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error obteniendo componentes:', error);
-      return { success: false, error: 'Error de conexión' };
+      return { 
+        success: false, 
+        error: 'Error de conexión. Verifica que el servidor esté ejecutándose.' 
+      };
     }
   }
 
@@ -148,6 +155,10 @@ class ComponentService {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -162,6 +173,10 @@ class ComponentService {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -179,6 +194,10 @@ class ComponentService {
         headers: { 'Content-Type': 'application/json' },
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error obteniendo procesadores:', error);
@@ -192,6 +211,10 @@ class ComponentService {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -208,6 +231,10 @@ class ComponentService {
         body: JSON.stringify(processorData),
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error creando procesador:', error);
@@ -223,6 +250,10 @@ class ComponentService {
         body: JSON.stringify(processorData),
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error actualizando procesador:', error);
@@ -236,6 +267,10 @@ class ComponentService {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -253,6 +288,10 @@ class ComponentService {
         headers: { 'Content-Type': 'application/json' },
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error obteniendo motherboards:', error);
@@ -266,6 +305,10 @@ class ComponentService {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -282,6 +325,10 @@ class ComponentService {
         body: JSON.stringify(motherboardData),
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error creando motherboard:', error);
@@ -297,6 +344,10 @@ class ComponentService {
         body: JSON.stringify(motherboardData),
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error actualizando motherboard:', error);
@@ -310,6 +361,10 @@ class ComponentService {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -327,6 +382,10 @@ class ComponentService {
         headers: { 'Content-Type': 'application/json' },
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error obteniendo RAM:', error);
@@ -340,6 +399,10 @@ class ComponentService {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -356,6 +419,10 @@ class ComponentService {
         body: JSON.stringify(ramData),
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error creando RAM:', error);
@@ -371,6 +438,10 @@ class ComponentService {
         body: JSON.stringify(ramData),
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error actualizando RAM:', error);
@@ -384,6 +455,10 @@ class ComponentService {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -401,6 +476,10 @@ class ComponentService {
         headers: { 'Content-Type': 'application/json' },
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error obteniendo GPUs:', error);
@@ -415,6 +494,10 @@ class ComponentService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(gpuData),
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -431,6 +514,10 @@ class ComponentService {
         body: JSON.stringify(gpuData),
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error actualizando GPU:', error);
@@ -444,6 +531,10 @@ class ComponentService {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -461,6 +552,10 @@ class ComponentService {
         headers: { 'Content-Type': 'application/json' },
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error obteniendo almacenamiento:', error);
@@ -475,6 +570,10 @@ class ComponentService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(storageData),
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -491,6 +590,10 @@ class ComponentService {
         body: JSON.stringify(storageData),
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error actualizando almacenamiento:', error);
@@ -504,6 +607,10 @@ class ComponentService {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -521,6 +628,10 @@ class ComponentService {
         headers: { 'Content-Type': 'application/json' },
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error obteniendo fuentes de poder:', error);
@@ -535,6 +646,10 @@ class ComponentService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(psuData),
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -551,6 +666,10 @@ class ComponentService {
         body: JSON.stringify(psuData),
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error actualizando fuente de poder:', error);
@@ -564,6 +683,10 @@ class ComponentService {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -581,6 +704,10 @@ class ComponentService {
         headers: { 'Content-Type': 'application/json' },
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error obteniendo gabinetes:', error);
@@ -595,6 +722,10 @@ class ComponentService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(caseData),
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {
@@ -611,6 +742,10 @@ class ComponentService {
         body: JSON.stringify(caseData),
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error actualizando gabinete:', error);
@@ -625,6 +760,10 @@ class ComponentService {
         headers: { 'Content-Type': 'application/json' },
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error eliminando gabinete:', error);
@@ -633,18 +772,22 @@ class ComponentService {
   }
 
   async getPropertiesByType(type: string): Promise<ApiResponse<any>> {
-  try {
-    const response = await fetch(`${API_URL}/properties/${type}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error obteniendo propiedades:', error);
-    return { success: false, error: 'Error de conexión' };
+    try {
+      const response = await fetch(`${API_URL}/properties/${type}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error obteniendo propiedades:', error);
+      return { success: false, error: 'Error de conexión' };
+    }
   }
-}
 
   // ========== COMPATIBILIDAD ==========
 
@@ -655,6 +798,10 @@ class ComponentService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cpuId, motherboardId }),
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       return await response.json();
     } catch (error) {

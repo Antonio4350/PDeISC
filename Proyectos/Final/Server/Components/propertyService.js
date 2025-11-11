@@ -5,13 +5,13 @@ class PropertyService {
     // Obtener todas las propiedades de un tipo de componente
     async getPropertiesByComponentType(componentType) {
         try {
-            const [rows] = await pool.execute(
-                `SELECT propiedad, GROUP_CONCAT(valor) as valores 
+            const { rows } = await pool.query(
+                `SELECT propiedad, STRING_AGG(valor, ',') as valores 
                  FROM propiedades_componentes 
-                 WHERE tipo_componente = ? AND estado = 'activo' 
+                 WHERE tipo_componente = $1 AND estado = $2 
                  GROUP BY propiedad 
                  ORDER BY propiedad`,
-                [componentType]
+                [componentType, 'activo']
             );
 
             // Convertir a objeto con arrays
@@ -30,11 +30,12 @@ class PropertyService {
     // Obtener todas las propiedades organizadas
     async getAllProperties() {
         try {
-            const [rows] = await pool.execute(
+            const { rows } = await pool.query(
                 `SELECT tipo_componente, propiedad, valor 
                  FROM propiedades_componentes 
-                 WHERE estado = 'activo' 
-                 ORDER BY tipo_componente, propiedad, valor`
+                 WHERE estado = $1 
+                 ORDER BY tipo_componente, propiedad, valor`,
+                ['activo']
             );
 
             // Organizar por tipo de componente y propiedad
@@ -62,21 +63,21 @@ class PropertyService {
 
         try {
             // Verificar si ya existe
-            const [existing] = await pool.execute(
-                'SELECT id FROM propiedades_componentes WHERE tipo_componente = ? AND propiedad = ? AND valor = ? AND estado = "activo"',
-                [tipo_componente, propiedad, valor]
+            const { rows: existing } = await pool.query(
+                'SELECT id FROM propiedades_componentes WHERE tipo_componente = $1 AND propiedad = $2 AND valor = $3 AND estado = $4',
+                [tipo_componente, propiedad, valor, 'activo']
             );
 
             if (existing.length > 0) {
                 throw new Error('La propiedad ya existe');
             }
 
-            const [result] = await pool.execute(
-                'INSERT INTO propiedades_componentes (tipo_componente, propiedad, valor) VALUES (?, ?, ?)',
+            const { rows } = await pool.query(
+                'INSERT INTO propiedades_componentes (tipo_componente, propiedad, valor) VALUES ($1, $2, $3) RETURNING *',
                 [tipo_componente, propiedad, valor]
             );
 
-            return { id: result.insertId, ...propertyData };
+            return rows[0];
         } catch (error) {
             console.error('Error agregando propiedad:', error);
             throw error;
@@ -86,50 +87,51 @@ class PropertyService {
     // Eliminar propiedad (soft delete)
     async deleteProperty(id) {
         try {
-            const [result] = await pool.execute(
-                'UPDATE propiedades_componentes SET estado = "inactivo" WHERE id = ?',
-                [id]
+            const { rowCount } = await pool.query(
+                'UPDATE propiedades_componentes SET estado = $1 WHERE id = $2',
+                ['inactivo', id]
             );
 
-            return result.affectedRows > 0;
+            return rowCount > 0;
         } catch (error) {
             console.error('Error eliminando propiedad:', error);
             throw error;
         }
     }
 
-async getFormProperties() {
-    try {
-        // Obtener propiedades CON IDs
-        const [rows] = await pool.execute(
-            `SELECT id, tipo_componente, propiedad, valor 
-             FROM propiedades_componentes 
-             WHERE estado = 'activo' 
-             ORDER BY tipo_componente, propiedad, valor`
-        );
+    async getFormProperties() {
+        try {
+            // Obtener propiedades CON IDs
+            const { rows } = await pool.query(
+                `SELECT id, tipo_componente, propiedad, valor 
+                 FROM propiedades_componentes 
+                 WHERE estado = $1 
+                 ORDER BY tipo_componente, propiedad, valor`,
+                ['activo']
+            );
 
-        // Organizar por tipo de componente y propiedad
-        const organized = {};
-        rows.forEach(row => {
-            if (!organized[row.tipo_componente]) {
-                organized[row.tipo_componente] = {};
-            }
-            if (!organized[row.tipo_componente][row.propiedad]) {
-                organized[row.tipo_componente][row.propiedad] = [];
-            }
-            // Guardar objeto completo con ID
-            organized[row.tipo_componente][row.propiedad].push({
-                id: row.id,
-                valor: row.valor
+            // Organizar por tipo de componente y propiedad
+            const organized = {};
+            rows.forEach(row => {
+                if (!organized[row.tipo_componente]) {
+                    organized[row.tipo_componente] = {};
+                }
+                if (!organized[row.tipo_componente][row.propiedad]) {
+                    organized[row.tipo_componente][row.propiedad] = [];
+                }
+                // Guardar objeto completo con ID
+                organized[row.tipo_componente][row.propiedad].push({
+                    id: row.id,
+                    valor: row.valor
+                });
             });
-        });
 
-        return organized;
-    } catch (error) {
-        console.error('Error obteniendo propiedades para formularios:', error);
-        throw error;
+            return organized;
+        } catch (error) {
+            console.error('Error obteniendo propiedades para formularios:', error);
+            throw error;
+        }
     }
-}
 }
 
 module.exports = new PropertyService();

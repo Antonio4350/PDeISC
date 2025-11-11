@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import apiService from './services/api';
 
 export interface User {
   id: number;
@@ -9,13 +10,14 @@ export interface User {
   rol?: string;
   avatar_url?: string;
   telefono?: string;
+  token?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (userData: User) => Promise<void>;
+  login: (userData: User, token?: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   isAdmin: () => boolean;
@@ -32,6 +34,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const saveUserToStorage = async (userData: User) => {
     try {
       await AsyncStorage.setItem('user', JSON.stringify(userData));
+      if (userData.token) {
+        await AsyncStorage.setItem('token', userData.token);
+      }
     } catch (error) {
       console.error('Error guardando usuario:', error);
     }
@@ -40,8 +45,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Remover usuario de AsyncStorage
   const removeUserFromStorage = async () => {
     try {
-      await AsyncStorage.removeItem('user');
-      console.log('✅ Usuario removido de AsyncStorage');
+      await AsyncStorage.multiRemove(['user', 'token']);
+      console.log('✅ Usuario y token removidos de AsyncStorage');
     } catch (error) {
       console.error('Error removiendo usuario:', error);
     }
@@ -50,8 +55,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Cargar usuario desde AsyncStorage
   const loadUserFromStorage = async (): Promise<User | null> => {
     try {
-      const userString = await AsyncStorage.getItem('user');
-      return userString ? JSON.parse(userString) : null;
+      const [userString, token] = await AsyncStorage.multiGet(['user', 'token']);
+      const userData = userString[1] ? JSON.parse(userString[1]) : null;
+      
+      if (userData && token[1]) {
+        userData.token = token[1];
+      }
+      
+      return userData;
     } catch (error) {
       console.error('Error cargando usuario:', error);
       return null;
@@ -63,16 +74,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return user?.rol === 'admin' || user?.rol === 'moderator';
   };
 
-  // Login
-  const login = async (userData: User) => {
+  // Login mejorado
+  const login = async (userData: User, token?: string) => {
     console.log('🔐 Iniciando login...', userData.email);
-    setUser(userData);
+    
+    const userWithToken = {
+      ...userData,
+      token: token || userData.token
+    };
+    
+    setUser(userWithToken);
     setIsAuthenticated(true);
-    await saveUserToStorage(userData);
+    await saveUserToStorage(userWithToken);
     console.log(`✅ Usuario ${userData.email} logueado correctamente`);
   };
 
-  // Logout - VERSIÓN CORREGIDA
+  // Logout
   const logout = async (): Promise<void> => {
     return new Promise(async (resolve) => {
       console.log('🚪 Iniciando logout...');

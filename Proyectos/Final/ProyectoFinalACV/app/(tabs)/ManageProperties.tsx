@@ -96,7 +96,7 @@ export default function ManageProperties() {
       console.log('🔄 Cargando todas las propiedades...');
       
       // Cargar propiedades
-      const response = await fetch('http://192.168.1.35:5000/properties');
+      const response = await fetch('http://192.168.1.38:5000/properties');
       const result = await response.json();
       
       console.log('📊 Respuesta del servidor:', result);
@@ -143,7 +143,7 @@ export default function ManageProperties() {
     try {
       console.log('🔄 Agregando propiedad:', newProperty);
       
-      const response = await fetch('http://192.168.1.35:5000/properties', {
+      const response = await fetch('http://192.168.1.38:5000/properties', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProperty)
@@ -212,7 +212,7 @@ export default function ManageProperties() {
               try {
                 console.log(`🎯 Enviando DELETE para ID: ${propertyId}`);
                 
-                const response = await fetch(`http://192.168.1.35:5000/properties/${propertyId}`, {
+                const response = await fetch(`http://192.168.1.38:5000/properties/${propertyId}`, {
                   method: 'DELETE',
                   headers: { 'Content-Type': 'application/json' },
                 });

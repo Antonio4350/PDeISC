@@ -18,6 +18,14 @@ const projectController = require('./Components/projectController');
 // Extraer middleware
 const { authenticateToken } = authController;
 
+// Middleware CORS mejorado
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:19006', 'exp://localhost:19000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.json({ 
@@ -118,8 +126,8 @@ async function startServer() {
     // Mostrar información de inicio
     const startupInfo = await startupMonitor.displayStartupInfo(PORT);
     
-    // Iniciar servidor
-    app.listen(PORT, '192.168.1.35', () => {
+    // Iniciar servidor - ESCUCHAR EN TODAS LAS INTERFACES
+    app.listen(PORT, '0.0.0.0', () => {
       startupMonitor.displayServerReady(startupInfo);
     });
     

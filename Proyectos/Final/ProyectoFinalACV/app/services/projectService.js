@@ -1,12 +1,21 @@
-import api from './api';
+// services/projectService.js - CORREGIDO
+const API_URL = "http://localhost:5000";
 
 class ProjectService {
   
   // Obtener proyectos del usuario
   async getUserProjects() {
     try {
-      const response = await api.get('/api/projects');
-      return response.data;
+      const response = await fetch(`${API_URL}/api/projects`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
       console.error('Error obteniendo proyectos:', error);
       throw error;
@@ -16,8 +25,17 @@ class ProjectService {
   // Crear nuevo proyecto
   async createProject(projectData) {
     try {
-      const response = await api.post('/api/projects', projectData);
-      return response.data;
+      const response = await fetch(`${API_URL}/api/projects`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(projectData),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
       console.error('Error creando proyecto:', error);
       throw error;
@@ -27,8 +45,16 @@ class ProjectService {
   // Obtener proyecto específico
   async getProjectById(projectId) {
     try {
-      const response = await api.get(`/api/projects/${projectId}`);
-      return response.data;
+      const response = await fetch(`${API_URL}/api/projects/${projectId}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
       console.error('Error obteniendo proyecto:', error);
       throw error;
@@ -38,8 +64,17 @@ class ProjectService {
   // Agregar componente a proyecto
   async addComponentToProject(projectId, componentData) {
     try {
-      const response = await api.post(`/api/projects/${projectId}/components`, componentData);
-      return response.data;
+      const response = await fetch(`${API_URL}/api/projects/${projectId}/components`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(componentData),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
       console.error('Error agregando componente:', error);
       throw error;
@@ -49,8 +84,16 @@ class ProjectService {
   // Remover componente de proyecto
   async removeComponentFromProject(projectId, tipoComponente) {
     try {
-      const response = await api.delete(`/api/projects/${projectId}/components/${tipoComponente}`);
-      return response.data;
+      const response = await fetch(`${API_URL}/api/projects/${projectId}/components/${tipoComponente}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
       console.error('Error removiendo componente:', error);
       throw error;
@@ -60,8 +103,16 @@ class ProjectService {
   // Verificar compatibilidad
   async checkCompatibility(projectId) {
     try {
-      const response = await api.get(`/api/projects/${projectId}/compatibility`);
-      return response.data;
+      const response = await fetch(`${API_URL}/api/projects/${projectId}/compatibility`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
       console.error('Error verificando compatibilidad:', error);
       throw error;
@@ -71,8 +122,16 @@ class ProjectService {
   // Eliminar proyecto
   async deleteProject(projectId) {
     try {
-      const response = await api.delete(`/api/projects/${projectId}`);
-      return response.data;
+      const response = await fetch(`${API_URL}/api/projects/${projectId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
       console.error('Error eliminando proyecto:', error);
       throw error;

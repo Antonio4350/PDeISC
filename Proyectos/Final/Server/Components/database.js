@@ -1,22 +1,19 @@
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'antoniopcbuilder',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_zcAn3gWPJeC2@ep-autumn-mountain-ahjdns06-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require',
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 // Test connection
 async function testConnection() {
   try {
-    const connection = await pool.getConnection();
-    console.log('✅ Conectado a la base de datos MySQL');
-    connection.release();
+    const client = await pool.connect();
+    console.log('✅ Conectado a la base de datos PostgreSQL (Neon)');
+    client.release();
   } catch (error) {
     console.error('❌ Error conectando a la base de datos:', error.message);
   }

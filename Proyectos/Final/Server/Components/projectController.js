@@ -8,15 +8,15 @@ class ProjectController {
       const userId = req.user.id;
       console.log(`Obteniendo proyectos para usuario: ${userId}`);
       
-      const [projects] = await pool.execute(
+      const { rows: projects } = await pool.query(
         `SELECT p.*, 
          COUNT(pc.componente_id) as componentes_count
          FROM proyectos p 
          LEFT JOIN proyecto_componentes pc ON p.id = pc.proyecto_id
-         WHERE p.usuario_id = ? AND p.estado = 'activo'
+         WHERE p.usuario_id = $1 AND p.estado = $2
          GROUP BY p.id
          ORDER BY p.fecha_actualizacion DESC`,
-        [userId]
+        [userId, 'activo']
       );
 
       res.json({
@@ -47,21 +47,17 @@ class ProjectController {
         });
       }
 
-      const [result] = await pool.execute(
+      const { rows } = await pool.query(
         `INSERT INTO proyectos (usuario_id, nombre, descripcion, presupuesto) 
-         VALUES (?, ?, ?, ?)`,
+         VALUES ($1, $2, $3, $4)
+         RETURNING *`,
         [userId, nombre, descripcion || '', presupuesto || null]
-      );
-
-      const [newProject] = await pool.execute(
-        'SELECT * FROM proyectos WHERE id = ?',
-        [result.insertId]
       );
 
       res.json({
         success: true,
         message: 'Proyecto creado exitosamente',
-        data: newProject[0]
+        data: rows[0]
       });
     } catch (error) {
       console.error('Error creando proyecto:', error);
@@ -81,10 +77,10 @@ class ProjectController {
       console.log(`Obteniendo proyecto ID: ${id} para usuario: ${userId}`);
 
       // Obtener información del proyecto
-      const [projects] = await pool.execute(
+      const { rows: projects } = await pool.query(
         `SELECT p.* FROM proyectos p 
-         WHERE p.id = ? AND p.usuario_id = ? AND p.estado = 'activo'`,
-        [id, userId]
+         WHERE p.id = $1 AND p.usuario_id = $2 AND p.estado = $3`,
+        [id, userId, 'activo']
       );
 
       if (projects.length === 0) {
@@ -97,7 +93,7 @@ class ProjectController {
       const project = projects[0];
 
       // Obtener componentes del proyecto
-      const [components] = await pool.execute(
+      const { rows: components } = await pool.query(
         `SELECT pc.*, 
          c.marca, c.modelo, c.tipo_memoria, c.socket,
          c.nucleos, c.capacidad, c.velocidad_mhz,
@@ -110,7 +106,7 @@ class ProjectController {
          LEFT JOIN almacenamiento c ON pc.componente_id = c.id AND pc.tipo_componente = 'almacenamiento'
          LEFT JOIN fuentes_poder c ON pc.componente_id = c.id AND pc.tipo_componente = 'fuentes_poder'
          LEFT JOIN gabinetes c ON pc.componente_id = c.id AND pc.tipo_componente = 'gabinetes'
-         WHERE pc.proyecto_id = ?
+         WHERE pc.proyecto_id = $1
          ORDER BY pc.orden`,
         [id]
       );
@@ -140,8 +136,8 @@ class ProjectController {
       console.log(`Agregando componente al proyecto: ${projectId}`, { componente_id, tipo_componente });
 
       // Verificar que el proyecto pertenece al usuario
-      const [projects] = await pool.execute(
-        'SELECT id FROM proyectos WHERE id = ? AND usuario_id = ?',
+      const { rows: projects } = await pool.query(
+        'SELECT id FROM proyectos WHERE id = $1 AND usuario_id = $2',
         [projectId, userId]
       );
 
@@ -153,28 +149,28 @@ class ProjectController {
       }
 
       // Verificar si ya existe un componente de este tipo en el proyecto
-      const [existing] = await pool.execute(
-        'SELECT id FROM proyecto_componentes WHERE proyecto_id = ? AND tipo_componente = ?',
+      const { rows: existing } = await pool.query(
+        'SELECT id FROM proyecto_componentes WHERE proyecto_id = $1 AND tipo_componente = $2',
         [projectId, tipo_componente]
       );
 
       if (existing.length > 0) {
         // Actualizar componente existente
-        await pool.execute(
-          'UPDATE proyecto_componentes SET componente_id = ? WHERE proyecto_id = ? AND tipo_componente = ?',
+        await pool.query(
+          'UPDATE proyecto_componentes SET componente_id = $1 WHERE proyecto_id = $2 AND tipo_componente = $3',
           [componente_id, projectId, tipo_componente]
         );
       } else {
         // Insertar nuevo componente
-        await pool.execute(
-          'INSERT INTO proyecto_componentes (proyecto_id, componente_id, tipo_componente, orden) VALUES (?, ?, ?, ?)',
+        await pool.query(
+          'INSERT INTO proyecto_componentes (proyecto_id, componente_id, tipo_componente, orden) VALUES ($1, $2, $3, $4)',
           [projectId, componente_id, tipo_componente, getOrderForType(tipo_componente)]
         );
       }
 
       // Actualizar fecha de modificación del proyecto
-      await pool.execute(
-        'UPDATE proyectos SET fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = ?',
+      await pool.query(
+        'UPDATE proyectos SET fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = $1',
         [projectId]
       );
 
@@ -200,8 +196,8 @@ class ProjectController {
       console.log(`Removiendo componente del proyecto: ${projectId}`, { tipoComponente });
 
       // Verificar que el proyecto pertenece al usuario
-      const [projects] = await pool.execute(
-        'SELECT id FROM proyectos WHERE id = ? AND usuario_id = ?',
+      const { rows: projects } = await pool.query(
+        'SELECT id FROM proyectos WHERE id = $1 AND usuario_id = $2',
         [projectId, userId]
       );
 
@@ -212,14 +208,14 @@ class ProjectController {
         });
       }
 
-      await pool.execute(
-        'DELETE FROM proyecto_componentes WHERE proyecto_id = ? AND tipo_componente = ?',
+      await pool.query(
+        'DELETE FROM proyecto_componentes WHERE proyecto_id = $1 AND tipo_componente = $2',
         [projectId, tipoComponente]
       );
 
       // Actualizar fecha de modificación del proyecto
-      await pool.execute(
-        'UPDATE proyectos SET fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = ?',
+      await pool.query(
+        'UPDATE proyectos SET fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = $1',
         [projectId]
       );
 
@@ -244,12 +240,12 @@ class ProjectController {
       
       console.log(`Eliminando proyecto ID: ${id} para usuario: ${userId}`);
 
-      const [result] = await pool.execute(
-        'UPDATE proyectos SET estado = "archivado" WHERE id = ? AND usuario_id = ?',
-        [id, userId]
+      const { rowCount } = await pool.query(
+        'UPDATE proyectos SET estado = $1 WHERE id = $2 AND usuario_id = $3',
+        ['archivado', id, userId]
       );
 
-      if (result.affectedRows === 0) {
+      if (rowCount === 0) {
         return res.json({
           success: false,
           error: 'Proyecto no encontrado'
@@ -278,7 +274,7 @@ class ProjectController {
       console.log(`Verificando compatibilidad para proyecto: ${projectId}`);
 
       // Obtener componentes del proyecto
-      const [components] = await pool.execute(
+      const { rows: components } = await pool.query(
         `SELECT pc.tipo_componente, 
          c.socket, c.tipo_memoria, c.formato,
          c.marca, c.modelo
@@ -287,7 +283,7 @@ class ProjectController {
          LEFT JOIN motherboards c ON pc.componente_id = c.id AND pc.tipo_componente = 'motherboards'
          LEFT JOIN memorias_ram c ON pc.componente_id = c.id AND pc.tipo_componente = 'memorias_ram'
          LEFT JOIN gabinetes c ON pc.componente_id = c.id AND pc.tipo_componente = 'gabinetes'
-         WHERE pc.proyecto_id = ?`,
+         WHERE pc.proyecto_id = $1`,
         [projectId]
       );
 
