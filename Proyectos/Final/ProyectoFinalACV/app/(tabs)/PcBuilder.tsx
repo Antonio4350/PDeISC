@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../AuthContext';
 import componentService, { ApiResponse } from '../services/components';
+import advancedCompatibility from '../services/advancedCompatibility';
 import toast from '../utils/toast';
 
 interface Component {
@@ -30,8 +31,10 @@ interface BuildComponent {
   type: string;
   name: string;
   component: Component | null;
+  components: Component[]; // Para soportar múltiples (RAM, Storage)
   compatible: boolean;
   compatibilityIssues: string[];
+  warnings: string[];
 }
 
 interface ComponentCategory {
@@ -46,13 +49,13 @@ export default function PcBuilder() {
   const { user } = useAuth();
   const [allComponents, setAllComponents] = useState<{ [key: string]: Component[] }>({});
   const [build, setBuild] = useState<BuildComponent[]>([
-    { id: '1', type: 'cpu', name: 'Procesador', component: null, compatible: true, compatibilityIssues: [] },
-    { id: '2', type: 'motherboard', name: 'Motherboard', component: null, compatible: true, compatibilityIssues: [] },
-    { id: '3', type: 'ram', name: 'Memoria RAM', component: null, compatible: true, compatibilityIssues: [] },
-    { id: '4', type: 'gpu', name: 'Tarjeta Grafica', component: null, compatible: true, compatibilityIssues: [] },
-    { id: '5', type: 'storage', name: 'Almacenamiento', component: null, compatible: true, compatibilityIssues: [] },
-    { id: '6', type: 'psu', name: 'Fuente de Poder', component: null, compatible: true, compatibilityIssues: [] },
-    { id: '7', type: 'case', name: 'Gabinete', component: null, compatible: true, compatibilityIssues: [] }
+    { id: '1', type: 'cpu', name: 'Procesador', component: null, components: [], compatible: true, compatibilityIssues: [], warnings: [] },
+    { id: '2', type: 'motherboard', name: 'Motherboard', component: null, components: [], compatible: true, compatibilityIssues: [], warnings: [] },
+    { id: '3', type: 'ram', name: 'Memoria RAM', component: null, components: [], compatible: true, compatibilityIssues: [], warnings: [] },
+    { id: '4', type: 'gpu', name: 'Tarjeta Grafica', component: null, components: [], compatible: true, compatibilityIssues: [], warnings: [] },
+    { id: '5', type: 'storage', name: 'Almacenamiento', component: null, components: [], compatible: true, compatibilityIssues: [], warnings: [] },
+    { id: '6', type: 'psu', name: 'Fuente de Poder', component: null, components: [], compatible: true, compatibilityIssues: [], warnings: [] },
+    { id: '7', type: 'case', name: 'Gabinete', component: null, components: [], compatible: true, compatibilityIssues: [], warnings: [] }
   ]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('cpu');
@@ -158,17 +161,18 @@ export default function PcBuilder() {
 
           if (result.success && result.data && result.data.length > 0) {
             componentsData[category.type] = result.data.map((comp: any) => ({
+              ...comp,
               id: comp.id,
               marca: comp.marca || 'Sin marca',
               modelo: comp.modelo || 'Sin modelo',
-              tipo: category.type,
+              tipo: category.type,  // Override the 'tipo' from API with the category type
               especificaciones: generateSpecifications(comp, category.type),
               socket: comp.socket,
               tipo_memoria: comp.tipo_memoria,
               imagen_url: comp.imagen_url,
-              ...comp
             }));
             console.log(`✅ ${category.name}: ${componentsData[category.type].length} componentes cargados`);
+            console.log(`First component of ${category.type}:`, componentsData[category.type][0]);
           } else {
             console.log(`❌ ${category.name}: No hay datos o error en la respuesta`, result.error);
             componentsData[category.type] = [];
@@ -195,6 +199,14 @@ export default function PcBuilder() {
   const generateSpecifications = (component: any, type: string): string => {
     const specs = [];
 
+    console.log(`Generating specs for ${type}:`, { 
+      type, 
+      capacidad: component.capacidad, 
+      tipo: component.tipo,
+      velocidad_mhz: component.velocidad_mhz,
+      interfaz: component.interfaz 
+    });
+
     switch (type) {
       case 'cpu':
         if (component.nucleos) specs.push(`${component.nucleos} nucleos`);
@@ -212,6 +224,7 @@ export default function PcBuilder() {
         if (component.capacidad) specs.push(`${component.capacidad}GB`);
         if (component.tipo) specs.push(component.tipo);
         if (component.velocidad_mhz) specs.push(`${component.velocidad_mhz}MHz`);
+        if (component.velocidad_mt) specs.push(`${component.velocidad_mt}MT/s`);
         if (component.latencia) specs.push(`CL${component.latencia}`);
         break;
       case 'gpu':
@@ -234,15 +247,31 @@ export default function PcBuilder() {
         break;
     }
 
-    return specs.join(' • ') || 'Especificaciones no disponibles';
+    const result = specs.join(' • ') || 'Especificaciones no disponibles';
+    console.log(`Generated specs for ${type}: ${result}`);
+    return result;
   };
 
   const handleAddComponent = (component: Component) => {
-    const updatedBuild = build.map(item =>
-      item.type === component.tipo
-        ? { ...item, component }
-        : item
-    );
+    console.log(`Agregando componente:`, { component, tipo: component.tipo });
+    
+    const updatedBuild = build.map(item => {
+      const shouldAdd = item.type === component.tipo || item.type === (component as any).type;
+      
+      if (!shouldAdd) return item;
+
+      // Para RAM y Storage, agregar a la lista de múltiples componentes
+      if (item.type === 'ram' || item.type === 'storage') {
+        return {
+          ...item,
+          components: [...item.components, component],
+          component: component // También guardar el último agregado
+        };
+      }
+
+      // Para otros componentes, reemplazar el actual
+      return { ...item, component, components: [component] };
+    });
 
     setBuild(updatedBuild);
     toast.success(`${component.marca} ${component.modelo} agregado`);
@@ -250,73 +279,178 @@ export default function PcBuilder() {
     setTimeout(() => checkAllCompatibility(updatedBuild), 100);
   };
 
-  const handleRemoveComponent = (buildItem: BuildComponent) => {
-    const updatedBuild = build.map(item =>
-      item.id === buildItem.id
-        ? { ...item, component: null, compatible: true, compatibilityIssues: [] }
-        : item
-    );
+  const handleRemoveComponent = (buildItem: BuildComponent, componentIndex?: number) => {
+    const updatedBuild = build.map(item => {
+      if (item.id !== buildItem.id) return item;
+
+      // Si hay índice específico, es para eliminar de la lista de múltiples
+      if (componentIndex !== undefined && (item.type === 'ram' || item.type === 'storage')) {
+        const newComponents = item.components.filter((_, idx) => idx !== componentIndex);
+        return {
+          ...item,
+          components: newComponents,
+          component: newComponents.length > 0 ? newComponents[newComponents.length - 1] : null,
+          compatible: true,
+          compatibilityIssues: [],
+          warnings: []
+        };
+      }
+
+      // Si no hay índice, limpiar todo
+      return {
+        ...item,
+        component: null,
+        components: [],
+        compatible: true,
+        compatibilityIssues: [],
+        warnings: []
+      };
+    });
+
     setBuild(updatedBuild);
     toast.info('Componente removido');
     checkAllCompatibility(updatedBuild);
   };
 
-  const checkAllCompatibility = (currentBuild: BuildComponent[]) => {
-    const updatedBuild = currentBuild.map(item => {
-      const issues: string[] = [];
-      let compatible = true;
-
-      if (!item.component) {
-        return { ...item, compatible: true, compatibilityIssues: [] };
-      }
-
+  const checkAllCompatibility = async (currentBuild: BuildComponent[]) => {
+    try {
       const cpu = currentBuild.find(i => i.type === 'cpu')?.component;
       const motherboard = currentBuild.find(i => i.type === 'motherboard')?.component;
-      const ram = currentBuild.find(i => i.type === 'ram')?.component;
+      const rams = currentBuild.find(i => i.type === 'ram')?.components || [];
+      const gpu = currentBuild.find(i => i.type === 'gpu')?.component;
+      const storages = currentBuild.find(i => i.type === 'storage')?.components || [];
+      const psu = currentBuild.find(i => i.type === 'psu')?.component;
+      const caseComponent = currentBuild.find(i => i.type === 'case')?.component;
 
-      switch (item.type) {
-        case 'cpu':
-          if (motherboard && item.component.socket && motherboard.socket && item.component.socket !== motherboard.socket) {
-            issues.push(`Socket incompatible con motherboard (${item.component.socket} vs ${motherboard.socket})`);
-            compatible = false;
-          }
-          if (ram && item.component.tipo_memoria && ram.tipo_memoria && item.component.tipo_memoria !== ram.tipo_memoria) {
-            issues.push(`Tipo de memoria incompatible con RAM (${item.component.tipo_memoria} vs ${ram.tipo_memoria})`);
-            compatible = false;
-          }
-          break;
+      let compatibilityResults: { [key: string]: any } = {};
 
-        case 'motherboard':
-          if (cpu && item.component.socket && cpu.socket && item.component.socket !== cpu.socket) {
-            issues.push(`Socket incompatible con CPU (${item.component.socket} vs ${cpu.socket})`);
-            compatible = false;
-          }
-          if (ram && item.component.tipo_memoria && ram.tipo_memoria && item.component.tipo_memoria !== ram.tipo_memoria) {
-            issues.push(`Tipo de memoria incompatible con RAM (${item.component.tipo_memoria} vs ${ram.tipo_memoria})`);
-            compatible = false;
-          }
-          break;
-
-        case 'ram':
-          if (motherboard && item.component.tipo_memoria && motherboard.tipo_memoria && item.component.tipo_memoria !== motherboard.tipo_memoria) {
-            issues.push(`Tipo de memoria incompatible con motherboard (${item.component.tipo_memoria} vs ${motherboard.tipo_memoria})`);
-            compatible = false;
-          }
-          if (cpu && item.component.tipo_memoria && cpu.tipo_memoria && item.component.tipo_memoria !== cpu.tipo_memoria) {
-            issues.push(`Tipo de memoria incompatible con CPU (${item.component.tipo_memoria} vs ${cpu.tipo_memoria})`);
-            compatible = false;
-          }
-          break;
+      // Socket validation
+      if (cpu && motherboard && cpu.id && motherboard.id) {
+        const socketResult = await advancedCompatibility.validateSocketCompatibility(
+          cpu.id,
+          motherboard.id
+        );
+        compatibilityResults['socket'] = socketResult;
       }
 
-      if (issues.length === 0 && item.component) {
-        issues.push('Compatible');
+      // RAM validation
+      if (rams.length > 0 && motherboard && motherboard.id) {
+        const ramIds = rams.map(r => r.id);
+        const ramResult = await advancedCompatibility.validateRAMCompatibility(
+          ramIds,
+          motherboard.id
+        );
+        compatibilityResults['ram'] = ramResult;
       }
 
-      return { ...item, compatible, compatibilityIssues: issues };
-    });
+      // Storage validation
+      if (storages.length > 0 && motherboard && motherboard.id && caseComponent && caseComponent.id) {
+        const storageIds = storages.map(s => s.id);
+        const storageResult = await advancedCompatibility.validateStorageCompatibility(
+          storageIds,
+          motherboard.id,
+          caseComponent.id
+        );
+        compatibilityResults['storage'] = storageResult;
+      }
 
-    setBuild(updatedBuild);
+      // GPU validation
+      if (gpu && gpu.id && motherboard && motherboard.id && caseComponent && caseComponent.id) {
+        const gpuResult = await advancedCompatibility.validateGPUCompatibility(
+          gpu.id,
+          motherboard.id,
+          caseComponent.id
+        );
+        compatibilityResults['gpu'] = gpuResult;
+      }
+
+      // Power validation
+      if (psu && psu.id && cpu && cpu.id) {
+        const powerResult = await advancedCompatibility.validatePowerSupply(
+          cpu.id,
+          psu.id,
+          gpu?.id,
+          rams.map(r => r.id),
+          storages.map(s => s.id)
+        );
+        compatibilityResults['power'] = powerResult;
+      }
+
+      // Update build with compatibility info
+      const updatedBuild = currentBuild.map(item => {
+        let compatible = true;
+        const issues: string[] = [];
+        const warnings: string[] = [];
+
+        // Check compatibility results for this item type
+        for (const [key, result] of Object.entries(compatibilityResults)) {
+          if (result && !result.compatible) {
+            if (key === item.type || (item.type === 'ram' && key === 'ram') || (item.type === 'storage' && key === 'storage')) {
+              compatible = false;
+              if (result.issues) {
+                issues.push(...result.issues);
+              }
+            }
+          }
+          if (result && result.warnings) {
+            warnings.push(...result.warnings);
+          }
+        }
+
+        return {
+          ...item,
+          compatible,
+          compatibilityIssues: issues,
+          warnings
+        };
+      });
+
+      setBuild(updatedBuild);
+    } catch (error) {
+      console.error('Error checking compatibility:', error);
+      // Fallback to basic compatibility check
+      const updatedBuild = currentBuild.map(item => {
+        const issues: string[] = [];
+        let compatible = true;
+
+        if (!item.component && item.components.length === 0) {
+          return { ...item, compatible: true, compatibilityIssues: [], warnings: [] };
+        }
+
+        const cpu = currentBuild.find(i => i.type === 'cpu')?.component;
+        const motherboard = currentBuild.find(i => i.type === 'motherboard')?.component;
+        const ram = currentBuild.find(i => i.type === 'ram')?.component;
+
+        switch (item.type) {
+          case 'cpu':
+            if (motherboard && item.component?.socket && motherboard.socket && item.component.socket !== motherboard.socket) {
+              issues.push(`Socket incompatible (${item.component.socket} vs ${motherboard.socket})`);
+              compatible = false;
+            }
+            break;
+          case 'motherboard':
+            if (cpu && item.component?.socket && cpu.socket && item.component.socket !== cpu.socket) {
+              issues.push(`Socket incompatible (${item.component.socket} vs ${cpu.socket})`);
+              compatible = false;
+            }
+            break;
+          case 'ram':
+            if (motherboard && ram?.tipo_memoria && motherboard.tipo_memoria && ram.tipo_memoria !== motherboard.tipo_memoria) {
+              issues.push(`Tipo de memoria incompatible`);
+              compatible = false;
+            }
+            break;
+        }
+
+        if (issues.length === 0 && (item.component || item.components.length > 0)) {
+          compatible = true;
+        }
+
+        return { ...item, compatible, compatibilityIssues: issues, warnings: [] };
+      });
+
+      setBuild(updatedBuild);
+    }
   };
 
   const handleSaveBuild = () => {
@@ -347,7 +481,14 @@ export default function PcBuilder() {
   };
 
   const getCurrentCategoryComponents = (): Component[] => {
-    return allComponents[selectedCategory] || [];
+    const components = allComponents[selectedCategory] || [];
+    console.log(`getCurrentCategoryComponents for ${selectedCategory}:`, {
+      count: components.length,
+      firstComponent: components[0],
+      selectedCategory,
+      allComponentsKeys: Object.keys(allComponents)
+    });
+    return components;
   };
 
   if (loading) {

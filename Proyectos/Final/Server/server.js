@@ -15,6 +15,7 @@ import startupMonitor from './Components/startupMonitor.js';
 import componentController from './Components/componentController.js';
 import propertyController from './Components/propertyController.js';
 import projectController from './Components/projectController.js';
+import compatibilityController from './Components/compatibilityController.js';
 
 // Extraer middleware
 const { authenticateToken } = authController;
@@ -99,6 +100,18 @@ app.post("/components/gabinetes", (req, res) => componentController.createCase(r
 app.get("/components/gabinetes/:id", (req, res) => componentController.getCaseById(req, res));
 app.put("/components/gabinetes/:id", (req, res) => componentController.updateCase(req, res));
 app.delete("/components/gabinetes/:id", (req, res) => componentController.deleteCase(req, res));
+
+// ========== RUTAS DE COMPATIBILIDAD AVANZADA ==========
+
+app.post("/compatibility/socket", (req, res) => compatibilityController.validateSocket(req, res));
+app.post("/compatibility/ram", (req, res) => compatibilityController.validateRAM(req, res));
+app.post("/compatibility/storage", (req, res) => compatibilityController.validateStorage(req, res));
+app.post("/compatibility/gpu", (req, res) => compatibilityController.validateGPU(req, res));
+app.post("/compatibility/format", (req, res) => compatibilityController.validateFormat(req, res));
+app.post("/compatibility/power", (req, res) => compatibilityController.validatePower(req, res));
+app.post("/compatibility/complete-build", (req, res) => compatibilityController.validateCompleteBuild(req, res));
+
+// Ruta no encontrada
 
 // COMPATIBILIDAD
 app.post("/components/compatibility", (req, res) => componentController.checkCompatibility(req, res));

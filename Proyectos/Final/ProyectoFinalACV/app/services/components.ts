@@ -1,5 +1,7 @@
 // services/components.ts - COMPLETAMENTE ACTUALIZADO
-const API_URL = "http://localhost:5000";
+import apiConfig from '../config/apiConfig';
+
+const API_URL = apiConfig.apiUrl;
 
 export interface Componente {
   id?: number;
