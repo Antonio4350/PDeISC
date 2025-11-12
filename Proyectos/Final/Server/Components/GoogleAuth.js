@@ -1,6 +1,6 @@
 import { OAuth2Client } from 'google-auth-library';
 
-const CLIENT_ID = "58585220959-tu-nuevo-web-client-id.apps.googleusercontent.com";
+const CLIENT_ID = "58585220959-8capru7gmaertcnsvoervkm3vsef6q3l.apps.googleusercontent.com";
 const client = new OAuth2Client(CLIENT_ID);
 
 async function googleLogin(idToken, accessToken) {

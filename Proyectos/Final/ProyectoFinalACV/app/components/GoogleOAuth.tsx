@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, Alert, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, Text, Alert, ActivityIndicator, Platform } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import { makeRedirectUri } from 'expo-auth-session';
@@ -8,7 +8,10 @@ import { StyleSheet } from 'react-native';
 WebBrowser.maybeCompleteAuthSession();
 
 const API_URL = "http://192.168.100.156:5000";
-const GOOGLE_WEB_CLIENT_ID = "58585220959-tu-nuevo-web-client-id.apps.googleusercontent.com";
+
+const GOOGLE_ANDROID_CLIENT_ID = "58585220959-8capru7gmaertcnsvoervkm3vsef6q3l.apps.googleusercontent.com";
+
+const GOOGLE_WEB_CLIENT_ID = "58585220959-8capru7gmaertcnsvoervkm3vsef6q3l.apps.googleusercontent.com"; // Mismo por ahora
 
 interface GoogleOAuthProps {
   type: 'login' | 'register';
@@ -19,7 +22,11 @@ export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
   const [loading, setLoading] = React.useState(false);
   
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: GOOGLE_WEB_CLIENT_ID,
+    clientId: Platform.select({
+      android: GOOGLE_ANDROID_CLIENT_ID,
+      ios: GOOGLE_ANDROID_CLIENT_ID, // Usar el mismo temporalmente
+      default: GOOGLE_ANDROID_CLIENT_ID
+    }),
     redirectUri: makeRedirectUri({
       scheme: 'exp',
       path: 'oauth'
@@ -29,6 +36,12 @@ export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
 
   React.useEffect(() => {
     console.log('🔍 Google Auth Response:', response);
+    console.log('🔍 Platform:', Platform.OS);
+    console.log('🔍 Redirect URI:', makeRedirectUri({ 
+      scheme: 'exp', 
+      path: 'oauth'
+    }));
+    
     handleResponse();
   }, [response]);
 
@@ -37,6 +50,7 @@ export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
       setLoading(true);
       try {
         const { authentication } = response;
+        console.log('🔍 Authentication data:', authentication);
         
         if (authentication?.accessToken) {
           await handleGoogleAuth(authentication.accessToken);
@@ -51,9 +65,7 @@ export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
       }
     } else if (response?.type === "error") {
       console.error("Error en Google OAuth:", response.error);
-      if (response.error?.code !== 'ERR_REQUEST_CANCELED') {
-        Alert.alert("Error", "Autenticación con Google cancelada o fallida.");
-      }
+      Alert.alert("Error", `Autenticación fallida: ${response.error?.message || 'Error desconocido'}`);
     }
   };
 
@@ -94,7 +106,9 @@ export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
 
   const handlePress = async () => {
     try {
-      await promptAsync();
+      console.log('🔍 Iniciando OAuth flow...');
+      const result = await promptAsync();
+      console.log('🔍 Prompt result:', result);
     } catch (error) {
       console.error("Error iniciando OAuth:", error);
       Alert.alert("Error", "No se pudo iniciar la autenticación con Google");
