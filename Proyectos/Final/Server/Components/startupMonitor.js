@@ -42,7 +42,6 @@ class StartupMonitor {
   // Mostrar información del sistema
   async displayStartupInfo(port) {
     console.log('\n🚀 INICIANDO SERVIDOR ANTONIOPCBUILDER');
-    console.log('=========================================\n');
     
     // Verificar base de datos
     console.log('🔍 Verificando conexión a la base de datos...');
@@ -74,11 +73,9 @@ class StartupMonitor {
   // Mostrar información cuando el servidor esté listo
   displayServerReady(info) {
     console.log('✅ SERVIDOR INICIADO CORRECTAMENTE');
-    console.log('=========================================');
     console.log(`📍 URL Local: http://localhost:${info.port}`);
     console.log(`📍 URL Red: http://${info.localIP}:${info.port}`);
     console.log(`⏰ Iniciado: ${new Date().toLocaleString()}`);
-    console.log('=========================================\n');
     
     // Resumen final
     console.log('📋 RESUMEN INICIAL:');
@@ -87,12 +84,6 @@ class StartupMonitor {
     if (info.dbStatus.ping) {
       console.log(`   Tiempo respuesta BD: ${info.dbStatus.ping}`);
     }
-    console.log('\n🎯 Endpoints disponibles:');
-    console.log(`   GET  /health ✅`);
-    console.log(`   POST /login ✅`); 
-    console.log(`   POST /register ✅`);
-    console.log(`   POST /googleLogin ✅`);
-    console.log('=========================================\n');
   }
 }
 

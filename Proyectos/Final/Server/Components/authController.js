@@ -5,22 +5,44 @@ import jwt from 'jsonwebtoken';
 class AuthController {
   // Login con Google
   async googleLogin(req, res) {
-    const { idToken, accessToken } = req.body;
+    const { accessToken, idToken } = req.body;
     
     try {
-      console.log('Solicitud Google Login recibida');
+      console.log('Solicitud Google Login recibida', { 
+        hasAccessToken: !!accessToken, 
+        hasIdToken: !!idToken 
+      });
       
+      if (!accessToken && !idToken) {
+        return res.status(400).json({
+          success: false,
+          error: 'Token de acceso o ID token requerido'
+        });
+      }
+
       // Verificar tokens con Google
       const googleResult = await googleLogin(idToken, accessToken);
       
       if (!googleResult.success) {
-        return res.json(googleResult);
+        return res.status(401).json({
+          success: false,
+          error: googleResult.error || 'Error en autenticación con Google'
+        });
+      }
+
+      if (!googleResult.mail) {
+        return res.status(401).json({
+          success: false,
+          error: 'No se pudo obtener el email del usuario de Google'
+        });
       }
 
       // Buscar usuario por email
       const existingUser = await userService.findUserByEmail(googleResult.mail);
       
       if (existingUser) {
+        console.log('Usuario existente encontrado:', existingUser.email);
+        
         // Usuario existe - actualizar si es necesario
         if (!existingUser.google_id && googleResult.googleId) {
           await userService.updateGoogleId(existingUser.id, googleResult.googleId);
@@ -37,11 +59,13 @@ class AuthController {
             nombre: existingUser.nombre || googleResult.name,
             apellido: existingUser.apellido,
             rol: existingUser.rol,
-            avatar_url: existingUser.avatar_url
+            avatar_url: existingUser.avatar_url || googleResult.picture
           },
           token: token
         });
       } else {
+        console.log('Creando nuevo usuario para:', googleResult.mail);
+        
         // Crear nuevo usuario
         const newUser = await userService.createGoogleUser({
           email: googleResult.mail,
@@ -49,6 +73,10 @@ class AuthController {
           google_id: googleResult.googleId,
           avatar_url: googleResult.picture
         });
+
+        if (!newUser) {
+          throw new Error('No se pudo crear el usuario');
+        }
 
         // Generar token JWT
         const token = generateToken(newUser);
@@ -68,7 +96,7 @@ class AuthController {
       }
     } catch (err) {
       console.error('Error en Google login:', err);
-      res.json({ 
+      res.status(500).json({ 
         success: false, 
         error: err.message || 'Error interno del servidor' 
       });
@@ -83,7 +111,7 @@ class AuthController {
       console.log('Solicitud Login normal:', { email });
       
       if (!email || !password) {
-        return res.json({ 
+        return res.status(400).json({ 
           success: false, 
           error: 'Email y contraseña son requeridos' 
         });
@@ -93,7 +121,7 @@ class AuthController {
       const user = await userService.findUserByEmail(email);
       
       if (!user) {
-        return res.json({ 
+        return res.status(401).json({ 
           success: false, 
           error: 'Usuario no encontrado' 
         });
@@ -101,7 +129,7 @@ class AuthController {
 
       // Verificar si es usuario de Google
       if (user.google_id && !user.password) {
-        return res.json({ 
+        return res.status(401).json({ 
           success: false, 
           error: 'Este usuario está registrado con Google. Usá el login con Google.' 
         });
@@ -109,7 +137,7 @@ class AuthController {
 
       // Verificar contraseña
       if (!await userService.verifyPassword(password, user.password)) {
-        return res.json({ 
+        return res.status(401).json({ 
           success: false, 
           error: 'Contraseña incorrecta' 
         });
@@ -127,13 +155,14 @@ class AuthController {
           nombre: user.nombre,
           apellido: user.apellido,
           rol: user.rol,
-          telefono: user.telefono
+          telefono: user.telefono,
+          avatar_url: user.avatar_url
         },
         token: token
       });
     } catch (error) {
       console.error('Error en login normal:', error);
-      res.json({ 
+      res.status(500).json({ 
         success: false, 
         error: 'Error interno del servidor' 
       });
@@ -149,14 +178,14 @@ class AuthController {
       
       // Validaciones básicas
       if (!nombre || !apellido || !email || !password) {
-        return res.json({ 
+        return res.status(400).json({ 
           success: false, 
           error: 'Todos los campos obligatorios deben ser completados' 
         });
       }
 
       if (password.length < 6) {
-        return res.json({ 
+        return res.status(400).json({ 
           success: false, 
           error: 'La contraseña debe tener al menos 6 caracteres' 
         });
@@ -166,7 +195,7 @@ class AuthController {
       const existingUser = await userService.findUserByEmail(email);
       
       if (existingUser) {
-        return res.json({ 
+        return res.status(409).json({ 
           success: false, 
           error: 'Ya existe un usuario con este email' 
         });
@@ -184,7 +213,7 @@ class AuthController {
       // Generar token JWT
       const token = generateToken(newUser);
 
-      res.json({ 
+      res.status(201).json({ 
         success: true, 
         message: 'Usuario registrado exitosamente',
         user: {
@@ -193,13 +222,14 @@ class AuthController {
           nombre: newUser.nombre,
           apellido: newUser.apellido,
           telefono: newUser.telefono,
-          rol: newUser.rol
+          rol: newUser.rol,
+          avatar_url: newUser.avatar_url
         },
         token: token
       });
     } catch (error) {
       console.error('Error en registro:', error);
-      res.json({ 
+      res.status(500).json({ 
         success: false, 
         error: 'Error creando usuario' 
       });
@@ -213,7 +243,7 @@ class AuthController {
       const user = await userService.findUserById(userId);
       
       if (!user) {
-        return res.json({ 
+        return res.status(404).json({ 
           success: false, 
           error: 'Usuario no encontrado' 
         });
@@ -234,9 +264,42 @@ class AuthController {
       });
     } catch (error) {
       console.error('Error obteniendo usuario:', error);
-      res.json({ 
+      res.status(500).json({ 
         success: false, 
         error: 'Error interno del servidor' 
+      });
+    }
+  }
+
+  // Verificar token
+  async verifyToken(req, res) {
+    try {
+      const user = await userService.findUserById(req.user.id);
+      
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          error: 'Usuario no encontrado'
+        });
+      }
+
+      res.json({
+        success: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          nombre: user.nombre,
+          apellido: user.apellido,
+          rol: user.rol,
+          telefono: user.telefono,
+          avatar_url: user.avatar_url
+        }
+      });
+    } catch (error) {
+      console.error('Error verificando token:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Error interno del servidor'
       });
     }
   }
@@ -290,6 +353,7 @@ export default {
   normalLogin: authControllerInstance.normalLogin.bind(authControllerInstance),
   normalRegister: authControllerInstance.normalRegister.bind(authControllerInstance),
   getUserProfile: authControllerInstance.getUserProfile.bind(authControllerInstance),
+  verifyToken: authControllerInstance.verifyToken.bind(authControllerInstance),
   
   // Funciones adicionales
   authenticateToken,

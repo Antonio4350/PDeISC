@@ -1,4 +1,8 @@
 arreglar oath
+arreglar estilos
+arreglar entrada de datos
+arreglar compatibilidad
+arreglar edicion
 ultimo usuario con permiso
 hacer que los usuarios sigan con la sesion iniciada igual cuando la cierran 
     o que salgan solos de la sesion luego de horas (boton en el registro de permitir mantener la sesion abierta)
@@ -7,10 +11,3 @@ archivo apk
 Documentacion
 video
 ser feliz lpmqmrp
-
-donde cambiar la ip: 
-Server
-Api
-components
-GoogleOAuth 
-ManageProperties

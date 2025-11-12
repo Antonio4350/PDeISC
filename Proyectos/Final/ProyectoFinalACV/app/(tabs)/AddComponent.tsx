@@ -9,7 +9,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Modal,
-  FlatList
+  FlatList,
+  useWindowDimensions
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../AuthContext';
@@ -20,6 +21,8 @@ export default function AddComponent() {
   const { user, isAdmin } = useAuth();
   const params = useLocalSearchParams();
   const componentType = params.type as string;
+  const { width } = useWindowDimensions();
+  const isMobile = width < 400;
   
   const [formData, setFormData] = useState<any>({});
   const [loading, setLoading] = useState(false);
@@ -59,7 +62,30 @@ export default function AddComponent() {
     try {
       const result = await componentService.getFormOptions();
       if (result.success) {
-        setFormOptions(result.data);
+        // La estructura viene como:
+        // { procesadores: { marcas: [...], sockets: [...] }, ... }
+        // Necesitamos extraer solo las propiedades del tipo de componente actual
+        const componentTypeMap: any = {
+          'procesadores': 'procesadores',
+          'motherboards': 'motherboards',
+          'memorias_ram': 'memorias_ram',
+          'tarjetas_graficas': 'tarjetas_graficas',
+          'almacenamiento': 'almacenamiento',
+          'fuentes_poder': 'fuentes_poder',
+          'gabinetes': 'gabinetes'
+        };
+        
+        const typeKey = componentTypeMap[componentType] || 'procesadores';
+        const optionsForType = result.data[typeKey] || {};
+        
+        // Convertir de { marcas: [{id: 1, valor: 'AMD'}, ...] } 
+        // a { marcas: ['AMD', 'Intel', ...] }
+        const flattenedOptions: any = {};
+        Object.keys(optionsForType).forEach(key => {
+          flattenedOptions[key] = optionsForType[key].map((item: any) => item.valor);
+        });
+        
+        setFormOptions(flattenedOptions);
       }
     } catch (error) {
       console.error('Error cargando opciones:', error);
@@ -105,7 +131,7 @@ export default function AddComponent() {
           name: 'marca', 
           label: 'Marca', 
           required: true, 
-          placeholder: 'Seleccionar marca',
+          placeholder: 'Ej: AMD, Intel',
           type: 'select',
           optionsKey: 'marcas'
         },
@@ -113,19 +139,19 @@ export default function AddComponent() {
           name: 'modelo', 
           label: 'Modelo', 
           required: true, 
-          placeholder: 'i9-13900K, Ryzen 9 7950X'
+          placeholder: 'Ej: i9-13900K, Ryzen 9 7950X'
         },
         { 
           name: 'generacion', 
           label: 'Generación', 
-          placeholder: 'Seleccionar generación',
+          placeholder: 'Ej: 13th, Zen 4',
           type: 'select',
           optionsKey: 'generaciones'
         },
         { 
           name: 'año_lanzamiento', 
           label: 'Año Lanzamiento', 
-          placeholder: 'Seleccionar año',
+          placeholder: 'Ej: 2023, 2024',
           type: 'select',
           optionsKey: 'años'
         },
@@ -133,7 +159,7 @@ export default function AddComponent() {
           name: 'socket', 
           label: 'Socket', 
           required: true, 
-          placeholder: 'Seleccionar socket',
+          placeholder: 'Ej: AM5, LGA1700',
           type: 'select',
           optionsKey: 'sockets'
         },
@@ -141,41 +167,41 @@ export default function AddComponent() {
           name: 'nucleos', 
           label: 'Núcleos', 
           type: 'number', 
-          placeholder: '24'
+          placeholder: 'Ej: 24'
         },
         { 
           name: 'hilos', 
           label: 'Hilos', 
           type: 'number', 
-          placeholder: '32'
+          placeholder: 'Ej: 32'
         },
         { 
           name: 'frecuencia_base', 
           label: 'Frecuencia Base (GHz)', 
           type: 'number', 
-          placeholder: '3.5'
+          placeholder: 'Ej: 3.5'
         },
         { 
           name: 'frecuencia_turbo', 
           label: 'Frecuencia Turbo (GHz)', 
           type: 'number', 
-          placeholder: '5.8'
+          placeholder: 'Ej: 5.8'
         },
         { 
           name: 'cache', 
           label: 'Cache', 
-          placeholder: '36MB'
+          placeholder: 'Ej: 36MB'
         },
         { 
           name: 'tdp', 
           label: 'TDP (W)', 
           type: 'number', 
-          placeholder: '125'
+          placeholder: 'Ej: 125'
         },
         { 
           name: 'tipo_memoria', 
           label: 'Tipo Memoria', 
-          placeholder: 'Seleccionar tipo',
+          placeholder: 'Ej: DDR5, DDR4',
           type: 'select',
           optionsKey: 'memoryTypes'
         },
@@ -183,7 +209,7 @@ export default function AddComponent() {
           name: 'velocidad_memoria_max', 
           label: 'Velocidad Memoria Max (MHz)', 
           type: 'number', 
-          placeholder: '5600'
+          placeholder: 'Ej: 5600'
         },
         { 
           name: 'graficos_integrados', 
@@ -193,19 +219,15 @@ export default function AddComponent() {
         { 
           name: 'modelo_graficos', 
           label: 'Modelo Gráficos', 
-          placeholder: 'UHD Graphics, Radeon Graphics'
+          placeholder: 'Ej: UHD Graphics, Radeon'
         },
         { 
           name: 'tecnologia', 
           label: 'Tecnología (nm)', 
-          placeholder: 'Seleccionar tecnología',
+          placeholder: 'Ej: 5nm, 7nm',
           type: 'select',
-          optionsKey: 'tecnologias'
-        },
-        { 
-          name: 'imagen_url', 
-          label: 'URL Imagen', 
-          placeholder: 'https://...'
+          optionsKey: 'tecnologias',
+          required: true
         }
       ]
     },
@@ -216,7 +238,7 @@ export default function AddComponent() {
           name: 'marca', 
           label: 'Marca', 
           required: true, 
-          placeholder: 'Seleccionar marca',
+          placeholder: 'Ej: ASUS, MSI, Gigabyte',
           type: 'select',
           optionsKey: 'marcas'
         },
@@ -224,34 +246,34 @@ export default function AddComponent() {
           name: 'modelo', 
           label: 'Modelo', 
           required: true, 
-          placeholder: 'ROG STRIX Z790-E'
+          placeholder: 'Ej: ROG STRIX Z790-E'
         },
         { 
           name: 'socket', 
           label: 'Socket', 
           required: true, 
-          placeholder: 'Seleccionar socket',
+          placeholder: 'Ej: AM5, LGA1700',
           type: 'select',
           optionsKey: 'sockets'
         },
         { 
           name: 'chipset', 
           label: 'Chipset', 
-          placeholder: 'Seleccionar chipset',
+          placeholder: 'Ej: Z790, X870',
           type: 'select',
           optionsKey: 'chipsets'
         },
         { 
           name: 'formato', 
           label: 'Formato', 
-          placeholder: 'Seleccionar formato',
+          placeholder: 'Ej: ATX, Micro-ATX',
           type: 'select',
           optionsKey: 'formats'
         },
         { 
           name: 'tipo_memoria', 
           label: 'Tipo Memoria', 
-          placeholder: 'Seleccionar tipo',
+          placeholder: 'Ej: DDR5, DDR4',
           type: 'select',
           optionsKey: 'memoryTypes'
         },
@@ -259,30 +281,30 @@ export default function AddComponent() {
           name: 'slots_memoria', 
           label: 'Slots Memoria', 
           type: 'number', 
-          placeholder: '4'
+          placeholder: 'Ej: 4'
         },
         { 
           name: 'memoria_maxima', 
           label: 'Memoria Máxima (GB)', 
           type: 'number', 
-          placeholder: '128'
+          placeholder: 'Ej: 128'
         },
         { 
           name: 'velocidad_memoria_soportada', 
           label: 'Velocidad Memoria (MHz)', 
           type: 'number', 
-          placeholder: '6000'
+          placeholder: 'Ej: 6000'
         },
         { 
           name: 'slots_pcie', 
           label: 'Slots PCIe', 
           type: 'number', 
-          placeholder: '3'
+          placeholder: 'Ej: 3'
         },
         { 
           name: 'version_pcie', 
           label: 'Versión PCIe', 
-          placeholder: 'Seleccionar versión',
+          placeholder: 'Ej: 5.0, 4.0',
           type: 'select',
           optionsKey: 'versionesPCIe'
         },
@@ -290,33 +312,29 @@ export default function AddComponent() {
           name: 'puertos_sata', 
           label: 'Puertos SATA', 
           type: 'number', 
-          placeholder: '6'
+          placeholder: 'Ej: 6'
         },
         { 
           name: 'puertos_m2', 
           label: 'Puertos M.2', 
           type: 'number', 
-          placeholder: '4'
+          placeholder: 'Ej: 4'
         },
         { 
           name: 'conectividad_red', 
           label: 'Conectividad Red', 
-          placeholder: '2.5G LAN, WiFi 6E'
+          placeholder: 'Ej: 2.5G LAN, WiFi 6E'
         },
         { 
           name: 'audio', 
           label: 'Audio', 
-          placeholder: 'Realtek ALC4080'
+          placeholder: 'Ej: Realtek ALC4080'
         },
         { 
           name: 'usb_puertos', 
           label: 'USB Puertos', 
-          placeholder: 'USB 3.2, USB-C'
-        },
-        { 
-          name: 'imagen_url', 
-          label: 'URL Imagen', 
-          placeholder: 'https://...'
+          placeholder: 'Ej: USB 3.2, USB-C',
+          required: true
         }
       ]
     },
@@ -327,7 +345,7 @@ export default function AddComponent() {
           name: 'marca', 
           label: 'Marca', 
           required: true, 
-          placeholder: 'Seleccionar marca',
+          placeholder: 'Ej: Corsair, G.SKILL',
           type: 'select',
           optionsKey: 'marcas'
         },
@@ -335,13 +353,13 @@ export default function AddComponent() {
           name: 'modelo', 
           label: 'Modelo', 
           required: true, 
-          placeholder: 'Vengeance RGB, Trident Z5'
+          placeholder: 'Ej: Vengeance RGB, Trident Z5'
         },
         { 
           name: 'tipo', 
           label: 'Tipo', 
           required: true, 
-          placeholder: 'Seleccionar tipo',
+          placeholder: 'Ej: DDR5, DDR4',
           type: 'select',
           optionsKey: 'tiposRAM'
         },
@@ -350,45 +368,40 @@ export default function AddComponent() {
           label: 'Capacidad (GB)', 
           type: 'number', 
           required: true, 
-          placeholder: '16'
+          placeholder: 'Ej: 16'
         },
         { 
           name: 'velocidad_mhz', 
           label: 'Velocidad (MHz)', 
           type: 'number', 
-          placeholder: '6000'
+          placeholder: 'Ej: 6000'
         },
         { 
           name: 'velocidad_mt', 
           label: 'Velocidad (MT/s)', 
           type: 'number', 
-          placeholder: '12000'
+          placeholder: 'Ej: 12000'
         },
         { 
           name: 'latencia', 
           label: 'Latencia', 
-          placeholder: 'CL30, CL16-18-18-38'
+          placeholder: 'Ej: CL30, CL16-18-18-38'
         },
         { 
           name: 'voltaje', 
           label: 'Voltaje (V)', 
           type: 'number', 
-          placeholder: '1.35'
+          placeholder: 'Ej: 1.35'
         },
         { 
           name: 'formato', 
           label: 'Formato', 
-          placeholder: 'DIMM, SODIMM'
+          placeholder: 'Ej: DIMM, SODIMM'
         },
         { 
           name: 'rgb', 
           label: 'RGB', 
           type: 'boolean'
-        },
-        { 
-          name: 'imagen_url', 
-          label: 'URL Imagen', 
-          placeholder: 'https://...'
         }
       ]
     },
@@ -399,7 +412,7 @@ export default function AddComponent() {
           name: 'marca', 
           label: 'Marca', 
           required: true, 
-          placeholder: 'Seleccionar marca',
+          placeholder: 'Ej: NVIDIA, AMD',
           type: 'select',
           optionsKey: 'marcas'
         },
@@ -407,23 +420,23 @@ export default function AddComponent() {
           name: 'modelo', 
           label: 'Modelo', 
           required: true, 
-          placeholder: 'RTX 4090, RX 7900 XTX'
+          placeholder: 'Ej: RTX 4090, RX 7900 XTX'
         },
         { 
           name: 'fabricante', 
           label: 'Fabricante', 
-          placeholder: 'ASUS, Gigabyte, MSI'
+          placeholder: 'Ej: ASUS, Gigabyte, MSI'
         },
         { 
           name: 'memoria', 
           label: 'Memoria (GB)', 
           type: 'number', 
-          placeholder: '24'
+          placeholder: 'Ej: 24'
         },
         { 
           name: 'tipo_memoria', 
           label: 'Tipo Memoria', 
-          placeholder: 'GDDR6X, GDDR6',
+          placeholder: 'Ej: GDDR6X, GDDR6',
           type: 'select',
           optionsKey: 'tiposMemoriaGPU'
         },
@@ -431,76 +444,72 @@ export default function AddComponent() {
           name: 'bus_memoria', 
           label: 'Bus Memoria (bit)', 
           type: 'number', 
-          placeholder: '384'
+          placeholder: 'Ej: 384'
         },
         { 
           name: 'velocidad_memoria', 
           label: 'Velocidad Memoria (MHz)', 
           type: 'number', 
-          placeholder: '21000'
+          placeholder: 'Ej: 21000'
         },
         { 
           name: 'nucleos_cuda', 
           label: 'Núcleos CUDA', 
           type: 'number', 
-          placeholder: '16384'
+          placeholder: 'Ej: 16384'
         },
         { 
           name: 'frecuencia_base', 
           label: 'Frecuencia Base (MHz)', 
           type: 'number', 
-          placeholder: '2235'
+          placeholder: 'Ej: 2235'
         },
         { 
           name: 'frecuencia_boost', 
           label: 'Frecuencia Boost (MHz)', 
           type: 'number', 
-          placeholder: '2520'
+          placeholder: 'Ej: 2520'
         },
         { 
           name: 'tdp', 
           label: 'TDP (W)', 
           type: 'number', 
-          placeholder: '450'
+          placeholder: 'Ej: 450'
         },
         { 
           name: 'conectores_alimentacion', 
           label: 'Conectores Alimentación', 
-          placeholder: '16-pin, 2x8-pin'
+          placeholder: 'Ej: 16-pin, 2x8-pin'
         },
         { 
           name: 'salidas_video', 
           label: 'Salidas Video', 
-          placeholder: '3xDP, 1xHDMI'
+          placeholder: 'Ej: 3xDP, 1xHDMI'
         },
         { 
           name: 'longitud_mm', 
           label: 'Longitud (mm)', 
           type: 'number', 
-          placeholder: '304'
+          placeholder: 'Ej: 304'
         },
         { 
           name: 'altura_mm', 
           label: 'Altura (mm)', 
           type: 'number', 
-          placeholder: '137'
+          placeholder: 'Ej: 137'
         },
         { 
           name: 'slots_ocupados', 
           label: 'Slots Ocupados', 
           type: 'number', 
-          placeholder: '3'
+          placeholder: 'Ej: 3'
         },
         { 
           name: 'peso_kg', 
           label: 'Peso (kg)', 
           type: 'number', 
-          placeholder: '2.2'
-        },
-        { 
-          name: 'imagen_url', 
-          label: 'URL Imagen', 
-          placeholder: 'https://...'
+          placeholder: 'Ej: 2.2',
+          required: true
         }
       ]
     },
@@ -511,7 +520,7 @@ export default function AddComponent() {
           name: 'marca', 
           label: 'Marca', 
           required: true, 
-          placeholder: 'Seleccionar marca',
+          placeholder: 'Ej: Samsung, WD, Crucial',
           type: 'select',
           optionsKey: 'marcas'
         },
@@ -519,27 +528,27 @@ export default function AddComponent() {
           name: 'modelo', 
           label: 'Modelo', 
           required: true, 
-          placeholder: '990 Pro, SN850X'
+          placeholder: 'Ej: 990 Pro, SN850X'
         },
         { 
           name: 'capacidad', 
           label: 'Capacidad (GB)', 
           type: 'number', 
           required: true, 
-          placeholder: '2000'
+          placeholder: 'Ej: 2000'
         },
         { 
           name: 'tipo', 
           label: 'Tipo', 
           required: true, 
-          placeholder: 'SSD, HDD',
+          placeholder: 'Ej: SSD, HDD',
           type: 'select',
           optionsKey: 'tiposAlmacenamiento'
         },
         { 
           name: 'interfaz', 
           label: 'Interfaz', 
-          placeholder: 'PCIe 4.0, SATA III',
+          placeholder: 'Ej: PCIe 4.0, SATA III',
           type: 'select',
           optionsKey: 'interfacesAlmacenamiento'
         },
@@ -547,29 +556,25 @@ export default function AddComponent() {
           name: 'velocidad_lectura', 
           label: 'Velocidad Lectura (MB/s)', 
           type: 'number', 
-          placeholder: '7450'
+          placeholder: 'Ej: 7450'
         },
         { 
           name: 'velocidad_escritura', 
           label: 'Velocidad Escritura (MB/s)', 
           type: 'number', 
-          placeholder: '6900'
+          placeholder: 'Ej: 6900'
         },
         { 
           name: 'formato', 
           label: 'Formato', 
-          placeholder: 'M.2, 2.5", 3.5"'
+          placeholder: 'Ej: M.2, 2.5", 3.5"'
         },
         { 
           name: 'rpm', 
           label: 'RPM (solo HDD)', 
           type: 'number', 
-          placeholder: '7200'
-        },
-        { 
-          name: 'imagen_url', 
-          label: 'URL Imagen', 
-          placeholder: 'https://...'
+          placeholder: 'Ej: 7200',
+          required: true
         }
       ]
     },
@@ -580,7 +585,7 @@ export default function AddComponent() {
           name: 'marca', 
           label: 'Marca', 
           required: true, 
-          placeholder: 'Seleccionar marca',
+          placeholder: 'Ej: Corsair, EVGA',
           type: 'select',
           optionsKey: 'marcas'
         },
@@ -588,60 +593,56 @@ export default function AddComponent() {
           name: 'modelo', 
           label: 'Modelo', 
           required: true, 
-          placeholder: 'RM1000x, Prime TX-1000'
+          placeholder: 'Ej: RM1000x, Prime TX-1000'
         },
         { 
           name: 'potencia', 
           label: 'Potencia (W)', 
           type: 'number', 
           required: true, 
-          placeholder: '1000'
+          placeholder: 'Ej: 1000'
         },
         { 
           name: 'certificacion', 
           label: 'Certificación', 
-          placeholder: '80 Plus Gold, Platinum',
+          placeholder: 'Ej: 80 Plus Gold',
           type: 'select',
           optionsKey: 'certificacionesFuente'
         },
         { 
           name: 'modular', 
           label: 'Modular', 
-          placeholder: 'Full, Semi, No',
+          placeholder: 'Ej: Full, Semi',
           type: 'select',
           optionsKey: 'tiposModular'
         },
         { 
           name: 'conectores_pcie', 
           label: 'Conectores PCIe', 
-          placeholder: '6x8-pin, PCIe 5.0'
+          placeholder: 'Ej: 6x8-pin, PCIe 5.0'
         },
         { 
           name: 'conectores_sata', 
           label: 'Conectores SATA', 
           type: 'number', 
-          placeholder: '12'
+          placeholder: 'Ej: 12'
         },
         { 
           name: 'conectores_molex', 
           label: 'Conectores Molex', 
           type: 'number', 
-          placeholder: '4'
+          placeholder: 'Ej: 4'
         },
         { 
           name: 'formato', 
           label: 'Formato', 
-          placeholder: 'ATX'
+          placeholder: 'Ej: ATX'
         },
         { 
           name: 'protecciones', 
           label: 'Protecciones', 
-          placeholder: 'OPP, OVP, UVP'
-        },
-        { 
-          name: 'imagen_url', 
-          label: 'URL Imagen', 
-          placeholder: 'https://...'
+          placeholder: 'Ej: OPP, OVP, UVP',
+          required: true
         }
       ]
     },
@@ -652,7 +653,7 @@ export default function AddComponent() {
           name: 'marca', 
           label: 'Marca', 
           required: true, 
-          placeholder: 'Seleccionar marca',
+          placeholder: 'Ej: Corsair, Lian Li',
           type: 'select',
           optionsKey: 'marcas'
         },
@@ -660,79 +661,75 @@ export default function AddComponent() {
           name: 'modelo', 
           label: 'Modelo', 
           required: true, 
-          placeholder: 'O11 Dynamic, North'
+          placeholder: 'Ej: O11 Dynamic, North'
         },
         { 
           name: 'formato', 
           label: 'Formato', 
-          placeholder: 'Mid Tower, Full Tower',
+          placeholder: 'Ej: Mid Tower, Full Tower',
           type: 'select',
           optionsKey: 'formatosGabinete'
         },
         { 
           name: 'motherboards_soportadas', 
           label: 'Motherboards Soportadas', 
-          placeholder: 'ATX, Micro-ATX, Mini-ITX'
+          placeholder: 'Ej: ATX, Micro-ATX, Mini-ITX'
         },
         { 
           name: 'longitud_max_gpu', 
           label: 'Longitud Máx GPU (mm)', 
           type: 'number', 
-          placeholder: '455'
+          placeholder: 'Ej: 455'
         },
         { 
           name: 'altura_max_cooler', 
           label: 'Altura Máx Cooler (mm)', 
           type: 'number', 
-          placeholder: '185'
+          placeholder: 'Ej: 185'
         },
         { 
           name: 'bahias_35', 
           label: 'Bahías 3.5"', 
           type: 'number', 
-          placeholder: '2'
+          placeholder: 'Ej: 2'
         },
         { 
           name: 'bahias_25', 
           label: 'Bahías 2.5"', 
           type: 'number', 
-          placeholder: '4'
+          placeholder: 'Ej: 4'
         },
         { 
           name: 'slots_expansion', 
           label: 'Slots Expansión', 
           type: 'number', 
-          placeholder: '8'
+          placeholder: 'Ej: 8'
         },
         { 
           name: 'ventiladores_incluidos', 
           label: 'Ventiladores Incluidos', 
-          placeholder: '3x120mm'
+          placeholder: 'Ej: 3x120mm'
         },
         { 
           name: 'ventiladores_soportados', 
           label: 'Ventiladores Soportados', 
-          placeholder: '10'
+          placeholder: 'Ej: 10'
         },
         { 
           name: 'radiador_soportado', 
           label: 'Radiador Soportado', 
-          placeholder: '360mm'
+          placeholder: 'Ej: 360mm'
         },
         { 
           name: 'panel_frontal', 
           label: 'Panel Frontal', 
-          placeholder: 'Vidrio, Malla'
+          placeholder: 'Ej: Vidrio, Malla'
         },
         { 
           name: 'material', 
           label: 'Material', 
-          placeholder: 'Acero, Vidrio'
-        },
-        { 
-          name: 'imagen_url', 
-          label: 'URL Imagen', 
-          placeholder: 'https://...'
+          placeholder: 'Ej: Acero, Vidrio',
+          required: true
         }
       ]
     }
@@ -819,12 +816,16 @@ export default function AddComponent() {
 
   const renderSelectButton = (field: any) => {
     const value = formData[field.name];
-    const displayValue = value || field.placeholder;
+    const options = formOptions[field.optionsKey] || [];
+    
+    // Si no hay valor seleccionado, mostrar la primera opción como sugerencia
+    const displayValue = value || (options.length > 0 ? `${options[0]} (${options.length} opciones)` : 'Sin opciones disponibles');
 
     return (
       <TouchableOpacity
-        style={styles.selectButton}
-        onPress={() => openModal(field)}
+        style={[styles.selectButton, !options.length && styles.selectButtonDisabled]}
+        onPress={() => options.length > 0 && openModal(field)}
+        disabled={!options.length}
       >
         <Text style={[
           styles.selectButtonText,
@@ -1054,6 +1055,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  selectButtonDisabled: {
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderColor: 'rgba(255, 0, 0, 0.2)',
+    opacity: 0.6,
   },
   selectButtonText: {
     color: '#ffffff',

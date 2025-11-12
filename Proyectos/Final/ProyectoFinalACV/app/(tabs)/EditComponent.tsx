@@ -20,7 +20,8 @@ import toast from '../utils/toast';
 export default function EditComponent() {
   const { user, isAdmin } = useAuth();
   const params = useLocalSearchParams();
-  const { type, id } = params;
+  const componentType = (params.type || 'procesadores') as string;
+  const componentId = (params.id || '0') as string;
   
   const [formData, setFormData] = useState<any>({});
   const [loading, setLoading] = useState(false);
@@ -47,13 +48,36 @@ useEffect(() => {
     loadFormOptions();
     loadComponent();
   }
-}, [type, id]);
+}, [componentType, componentId]);
 
   const loadFormOptions = async () => {
     try {
       const result = await componentService.getFormOptions();
       if (result.success) {
-        setFormOptions(result.data);
+        // La estructura viene como:
+        // { procesadores: { marcas: [...], sockets: [...] }, ... }
+        // Necesitamos extraer solo las propiedades del tipo de componente actual
+        const componentTypeMap: any = {
+          'procesadores': 'procesadores',
+          'motherboards': 'motherboards',
+          'memorias_ram': 'memorias_ram',
+          'tarjetas_graficas': 'tarjetas_graficas',
+          'almacenamiento': 'almacenamiento',
+          'fuentes_poder': 'fuentes_poder',
+          'gabinetes': 'gabinetes'
+        };
+        
+        const typeKey = componentTypeMap[componentType] || 'procesadores';
+        const optionsForType = result.data[typeKey] || {};
+        
+        // Convertir de { marcas: [{id: 1, valor: 'AMD'}, ...] } 
+        // a { marcas: ['AMD', 'Intel', ...] }
+        const flattenedOptions: any = {};
+        Object.keys(optionsForType).forEach(key => {
+          flattenedOptions[key] = optionsForType[key].map((item: any) => item.valor);
+        });
+        
+        setFormOptions(flattenedOptions);
       }
     } catch (error) {
       console.error('Error cargando opciones:', error);
@@ -65,15 +89,15 @@ useEffect(() => {
   const loadComponent = async () => {
     try {
       let result;
-      switch (type) {
+      switch (componentType) {
         case 'procesadores':
-          result = await componentService.getProcessorById(Number(id));
+          result = await componentService.getProcessorById(Number(componentId));
           break;
         case 'motherboards':
-          result = await componentService.getMotherboardById(Number(id));
+          result = await componentService.getMotherboardById(Number(componentId));
           break;
         case 'memorias_ram':
-          result = await componentService.getRAMById(Number(id));
+          result = await componentService.getRAMById(Number(componentId));
           break;
         default:
           toast.error('Tipo de componente no soportado');
@@ -155,7 +179,7 @@ useEffect(() => {
     }
   };
 
-  const currentForm = componentForms[type as string];
+  const currentForm = componentForms[componentType as string];
 
   const handleInputChange = (field: string, value: string | boolean | number) => {
     setFormData((prev: any) => ({
@@ -189,15 +213,15 @@ useEffect(() => {
 
     try {
       let result;
-      switch (type) {
+      switch (componentType) {
         case 'procesadores':
-          result = await componentService.updateProcessor(Number(id), formData);
+          result = await componentService.updateProcessor(Number(componentId), formData);
           break;
         case 'motherboards':
-          result = await componentService.updateMotherboard(Number(id), formData);
+          result = await componentService.updateMotherboard(Number(componentId), formData);
           break;
         case 'memorias_ram':
-          result = await componentService.updateRAM(Number(id), formData);
+          result = await componentService.updateRAM(Number(componentId), formData);
           break;
         default:
           toast.error('Tipo de componente no soportado');
@@ -232,15 +256,15 @@ useEffect(() => {
     setLoading(true);
     try {
       let result;
-      switch (type) {
+      switch (componentType) {
         case 'procesadores':
-          result = await componentService.deleteProcessor(Number(id));
+          result = await componentService.deleteProcessor(Number(componentId));
           break;
         case 'motherboards':
-          result = await componentService.deleteMotherboard(Number(id));
+          result = await componentService.deleteMotherboard(Number(componentId));
           break;
         case 'memorias_ram':
-          result = await componentService.deleteRAM(Number(id));
+          result = await componentService.deleteRAM(Number(componentId));
           break;
         default:
           toast.error('Tipo de componente no soportado');
@@ -262,12 +286,16 @@ useEffect(() => {
 
   const renderSelectButton = (field: any) => {
     const value = formData[field.name];
-    const displayValue = value || `Seleccionar ${field.label.toLowerCase()}`;
+    const options = formOptions[field.optionsKey] || [];
+    
+    // Si no hay valor seleccionado, mostrar la primera opción como sugerencia
+    const displayValue = value || (options.length > 0 ? `${options[0]} (${options.length} opciones)` : 'Sin opciones disponibles');
 
     return (
       <TouchableOpacity
-        style={styles.selectButton}
-        onPress={() => openModal(field)}
+        style={[styles.selectButton, !options.length && styles.selectButtonDisabled]}
+        onPress={() => options.length > 0 && openModal(field)}
+        disabled={!options.length}
       >
         <Text style={[
           styles.selectButtonText,
@@ -519,6 +547,11 @@ const styles = StyleSheet.create({
   selectButtonIcon: {
     color: '#8b9cb3',
     fontSize: 12,
+  },
+  selectButtonDisabled: {
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderColor: 'rgba(255, 0, 0, 0.2)',
+    opacity: 0.6,
   },
   booleanField: {
     marginBottom: 20,

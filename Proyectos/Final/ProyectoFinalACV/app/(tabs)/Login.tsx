@@ -59,7 +59,6 @@ export default function Login() {
         await login(result.user, result.token);
         toast.success(`¡Bienvenido ${result.user.nombre || result.user.email}!`);
         
-        // ✅ REDIRECCIÓN AUTOMÁTICA después del login
         setTimeout(() => {
           router.replace('/');
         }, 1000);
@@ -68,23 +67,27 @@ export default function Login() {
         toast.error(result.error || 'Credenciales incorrectas');
       }
     } catch (error) {
+      console.error('Error en login:', error);
       toast.error('Error de conexión con el servidor. Verifica que el servidor esté ejecutándose.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSuccess = async (userData: any) => {
+  const handleGoogleSuccess = async (response: any) => {
     try {
-      await login(userData);
-      toast.success(`¡Bienvenido ${userData.nombre || userData.email}!`);
-      
-      // ✅ REDIRECCIÓN AUTOMÁTICA después del Google login
-      setTimeout(() => {
-        router.replace('/');
-      }, 1000);
-      
+      if (response.user && response.token) {
+        await login(response.user, response.token);
+        toast.success(`¡Bienvenido ${response.user.nombre || response.user.email}!`);
+        
+        setTimeout(() => {
+          router.replace('/');
+        }, 1000);
+      } else {
+        toast.error('Respuesta inválida del servidor');
+      }
     } catch (error) {
+      console.error('Error en handleGoogleSuccess:', error);
       toast.error('Error iniciando sesión con Google');
     }
   };

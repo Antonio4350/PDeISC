@@ -12,7 +12,7 @@ const pool = new Pool({
 async function testConnection() {
   try {
     const client = await pool.connect();
-    console.log('✅ Conectado a la base de datos PostgreSQL (Neon)');
+    console.log('✅ Conectado a la base de datos');
     client.release();
   } catch (error) {
     console.error('❌ Error conectando a la base de datos:', error.message);

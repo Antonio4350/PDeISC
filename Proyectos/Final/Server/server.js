@@ -111,8 +111,6 @@ app.post("/compatibility/format", (req, res) => compatibilityController.validate
 app.post("/compatibility/power", (req, res) => compatibilityController.validatePower(req, res));
 app.post("/compatibility/complete-build", (req, res) => compatibilityController.validateCompleteBuild(req, res));
 
-// Ruta no encontrada
-
 // COMPATIBILIDAD
 app.post("/components/compatibility", (req, res) => componentController.checkCompatibility(req, res));
 
@@ -220,29 +218,6 @@ async function startServer() {
       console.log(err);
       process.exit(1);
     });
-
-    // Loguear rutas registradas (diagnóstico)
-    try {
-      const routes = [];
-      app._router.stack.forEach((middleware) => {
-        if (middleware.route) {
-          // routes registered directly on the app
-          routes.push(Object.keys(middleware.route.methods).join(',').toUpperCase() + ' ' + middleware.route.path);
-        } else if (middleware.name === 'router') {
-          // router middleware 
-          middleware.handle.stack.forEach((handler) => {
-            const route = handler.route;
-            if (route) {
-              routes.push(Object.keys(route.methods).join(',').toUpperCase() + ' ' + route.path);
-            }
-          });
-        }
-      });
-      console.log('\n🔎 Rutas registradas:');
-      routes.forEach(r => console.log('   ' + r));
-    } catch (err) {
-      console.log('No se pudieron listar rutas:', err.message);
-    }
 
   } catch (error) {
     console.log('\n💥 ERROR AL INICIAR EL SERVIDOR:');

@@ -8,7 +8,9 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
-  Alert
+  Alert,
+  useWindowDimensions,
+  Dimensions
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../AuthContext';
@@ -28,6 +30,8 @@ export default function ComponentsList() {
   const params = useLocalSearchParams();
   const componentType = params.type as string;
   const componentName = params.name as string;
+  const { width } = useWindowDimensions();
+  const isMobile = width < 400;
   
   const [components, setComponents] = useState<Component[]>([]);
   const [filteredComponents, setFilteredComponents] = useState<Component[]>([]);
@@ -121,53 +125,73 @@ export default function ComponentsList() {
     } as any);
   };
 
-  const handleDelete = (component: Component) => {
+  const handleDelete = async (component: Component) => {
     Alert.alert(
-      'Confirmar Eliminación',
-      `¿Estás seguro de que querés eliminar ${component.marca} ${component.modelo}?`,
+      '🗑️ Eliminar Componente',
+      `¿Querés eliminar a ${component.marca} ${component.modelo}?\n\nEsta acción no se puede deshacer.`,
       [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Eliminar', 
-          style: 'destructive', 
-          onPress: () => deleteComponent(component.id) 
-        }
-      ]
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            await deleteComponent(component.id);
+          },
+        },
+      ],
     );
   };
 
-  const deleteComponent = async (id: number) => {
+  const deleteComponent = async (componentId: number) => {
     try {
-      console.log(`Eliminando componente ID: ${id}, Tipo: ${componentType}`);
+      console.log(`[DELETE] Tipo: ${componentType}, ID: ${componentId}`);
       
-      let result;
+      let result: any;
+      
       switch (componentType) {
         case 'procesadores':
-          result = await componentService.deleteProcessor(id);
+          result = await componentService.deleteProcessor(componentId);
           break;
         case 'motherboards':
-          result = await componentService.deleteMotherboard(id);
+          result = await componentService.deleteMotherboard(componentId);
           break;
         case 'memorias_ram':
-          result = await componentService.deleteRAM(id);
+          result = await componentService.deleteRAM(componentId);
+          break;
+        case 'tarjetas_graficas':
+          result = await componentService.deleteGPU(componentId);
+          break;
+        case 'almacenamiento':
+          result = await componentService.deleteStorage(componentId);
+          break;
+        case 'fuentes_poder':
+          result = await componentService.deletePSU(componentId);
+          break;
+        case 'gabinetes':
+          result = await componentService.deleteCase(componentId);
           break;
         default:
-          toast.error('Tipo de componente no soportado');
+          toast.error(`Tipo no soportado: ${componentType}`);
           return;
       }
 
-      console.log('Resultado de eliminación:', result);
+      console.log(`[DELETE RESULT]`, result);
 
-      if (result.success) {
-        toast.success('🗑️ Componente eliminado exitosamente');
-        // Recargar la lista
-        loadComponents();
+      if (result?.success) {
+        toast.success('✅ Eliminado!');
+        setLoading(true);
+        setTimeout(() => {
+          loadComponents();
+        }, 300);
       } else {
-        toast.error(result.error || 'Error al eliminar componente');
+        toast.error(`Error: ${result?.error || 'Desconocido'}`);
       }
-    } catch (error) {
-      console.error('Error eliminando componente:', error);
-      toast.error('Error de conexión');
+    } catch (err: any) {
+      console.error(`[DELETE ERROR]`, err);
+      toast.error(`Error de conexión`);
     }
   };
 
@@ -215,22 +239,22 @@ const handleBack = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, isMobile && styles.headerMobile]}>
         <TouchableOpacity 
-          style={styles.backButton} 
+          style={[styles.backButton, isMobile && styles.backButtonMobile]} 
           onPress={handleBack}
         >
-          <Text style={styles.backButtonText}>← Volver</Text>
+          <Text style={[styles.backButtonText, isMobile && styles.backButtonTextMobile]}>← Volver</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>
-          {getComponentIcon()} {componentName}
+        <Text style={[styles.title, isMobile && styles.titleMobile]}>
+          {getComponentIcon()} {isMobile ? componentName.substring(0, 10) : componentName}
         </Text>
       </View>
 
       {/* Barra de búsqueda */}
-      <View style={styles.searchContainer}>
+      <View style={[styles.searchContainer, isMobile && styles.searchContainerMobile]}>
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, isMobile && styles.searchInputMobile]}
           placeholder={`Buscar ${componentName.toLowerCase()}...`}
           placeholderTextColor="#8b9cb3"
           value={searchQuery}
@@ -241,8 +265,8 @@ const handleBack = () => {
 
       {/* Resultados */}
       <View style={styles.resultsHeader}>
-        <Text style={styles.resultsTitle}>
-          {filteredComponents.length} {componentName.toLowerCase()}{filteredComponents.length !== 1 ? 's' : ''} encontrado{filteredComponents.length !== 1 ? 's' : ''}
+        <Text style={[styles.resultsTitle, isMobile && styles.resultsTitleMobile]}>
+          {filteredComponents.length} encontrado{filteredComponents.length !== 1 ? 's' : ''}
         </Text>
       </View>
 
@@ -250,60 +274,60 @@ const handleBack = () => {
         {filteredComponents.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>🔍</Text>
-            <Text style={styles.emptyTitle}>No se encontraron {componentName.toLowerCase()}s</Text>
-            <Text style={styles.emptyText}>
+            <Text style={[styles.emptyTitle, isMobile && styles.emptyTitleMobile]}>No se encontraron</Text>
+            <Text style={[styles.emptyText, isMobile && styles.emptyTextMobile]}>
               {components.length === 0 
-                ? `No hay ${componentName.toLowerCase()}s en el sistema`
-                : 'Probá con otros términos de búsqueda'
+                ? `No hay ${componentName.toLowerCase()}s`
+                : 'Probá otros términos'
               }
             </Text>
           </View>
         ) : (
           filteredComponents.map((component) => (
-            <View key={component.id} style={styles.componentCard}>
-              <View style={styles.componentHeader}>
+            <View key={component.id} style={[styles.componentCard, isMobile && styles.componentCardMobile]}>
+              <View style={[styles.componentHeader, isMobile && styles.componentHeaderMobile]}>
                 <View style={styles.componentInfo}>
-                  <Text style={styles.componentBrand}>{component.marca}</Text>
-                  <Text style={styles.componentModel}>{component.modelo}</Text>
+                  <Text style={[styles.componentBrand, isMobile && styles.componentBrandMobile]}>{component.marca}</Text>
+                  <Text style={[styles.componentModel, isMobile && styles.componentModelMobile]}>{component.modelo}</Text>
                 </View>
-                <View style={styles.componentActions}>
+                <View style={[styles.componentActions, isMobile && styles.componentActionsMobile]}>
                   <TouchableOpacity
-                    style={styles.editButton}
+                    style={[styles.editButton, isMobile && styles.editButtonMobile]}
                     onPress={() => handleEdit(component)}
                   >
-                    <Text style={styles.editButtonText}>✏️ Editar</Text>
+                    <Text style={[styles.editButtonText, isMobile && styles.editButtonTextMobile]}>✏️</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={styles.deleteButton}
+                    style={[styles.deleteButton, isMobile && styles.deleteButtonMobile]}
                     onPress={() => handleDelete(component)}
                   >
-                    <Text style={styles.deleteButtonText}>🗑️ Eliminar</Text>
+                    <Text style={[styles.deleteButtonText, isMobile && styles.deleteButtonTextMobile]}>🗑️</Text>
                   </TouchableOpacity>
                 </View>
               </View>
               
               {/* Información adicional */}
-              <View style={styles.componentDetails}>
+              <View style={[styles.componentDetails, isMobile && styles.componentDetailsMobile]}>
                 {component.socket && (
-                  <Text style={styles.detailText}>Socket: {component.socket}</Text>
+                  <Text style={[styles.detailText, isMobile && styles.detailTextMobile]}>Socket: {component.socket}</Text>
                 )}
                 {component.tipo_memoria && (
-                  <Text style={styles.detailText}>Memoria: {component.tipo_memoria}</Text>
+                  <Text style={[styles.detailText, isMobile && styles.detailTextMobile]}>Memoria: {component.tipo_memoria}</Text>
                 )}
                 {component.nucleos && (
-                  <Text style={styles.detailText}>Núcleos: {component.nucleos}</Text>
+                  <Text style={[styles.detailText, isMobile && styles.detailTextMobile]}>Núcleos: {component.nucleos}</Text>
                 )}
                 {component.capacidad && (
-                  <Text style={styles.detailText}>Capacidad: {component.capacidad}GB</Text>
+                  <Text style={[styles.detailText, isMobile && styles.detailTextMobile]}>Cap: {component.capacidad}GB</Text>
                 )}
                 {component.tdp && (
-                  <Text style={styles.detailText}>TDP: {component.tdp}W</Text>
+                  <Text style={[styles.detailText, isMobile && styles.detailTextMobile]}>TDP: {component.tdp}W</Text>
                 )}
                 {component.chipset && (
-                  <Text style={styles.detailText}>Chipset: {component.chipset}</Text>
+                  <Text style={[styles.detailText, isMobile && styles.detailTextMobile]}>Chipset: {component.chipset}</Text>
                 )}
                 {component.formato && (
-                  <Text style={styles.detailText}>Formato: {component.formato}</Text>
+                  <Text style={[styles.detailText, isMobile && styles.detailTextMobile]}>Formato: {component.formato}</Text>
                 )}
               </View>
             </View>
@@ -336,6 +360,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 25,
   },
+  headerMobile: {
+    marginBottom: 15,
+    paddingHorizontal: 0,
+  },
   backButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 16,
@@ -343,10 +371,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 15,
   },
+  backButtonMobile: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginRight: 8,
+  },
   backButtonText: {
     color: '#667eea',
     fontSize: 14,
     fontWeight: '600',
+  },
+  backButtonTextMobile: {
+    fontSize: 12,
   },
   title: {
     fontSize: 24,
@@ -354,9 +390,16 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     flex: 1,
   },
+  titleMobile: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
   searchContainer: {
     position: 'relative',
     marginBottom: 20,
+  },
+  searchContainerMobile: {
+    marginBottom: 12,
   },
   searchInput: {
     backgroundColor: '#1a1b27',
@@ -367,6 +410,11 @@ const styles = StyleSheet.create({
     paddingLeft: 45,
     color: '#ffffff',
     fontSize: 16,
+  },
+  searchInputMobile: {
+    padding: 12,
+    paddingLeft: 40,
+    fontSize: 14,
   },
   searchIcon: {
     position: 'absolute',
@@ -381,6 +429,9 @@ const styles = StyleSheet.create({
     color: '#8b9cb3',
     fontSize: 14,
     fontWeight: '600',
+  },
+  resultsTitleMobile: {
+    fontSize: 12,
   },
   componentsList: {
     flex: 1,
@@ -400,11 +451,19 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: 'center',
   },
+  emptyTitleMobile: {
+    fontSize: 14,
+    marginBottom: 6,
+  },
   emptyText: {
     fontSize: 14,
     color: '#8b9cb3',
     textAlign: 'center',
     lineHeight: 20,
+  },
+  emptyTextMobile: {
+    fontSize: 12,
+    lineHeight: 16,
   },
   componentCard: {
     backgroundColor: '#1a1b27',
@@ -414,11 +473,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
+  componentCardMobile: {
+    padding: 12,
+    marginBottom: 10,
+    borderRadius: 8,
+  },
   componentHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 12,
+  },
+  componentHeaderMobile: {
+    marginBottom: 10,
+    flexWrap: 'wrap',
   },
   componentInfo: {
     flex: 1,
@@ -429,15 +497,26 @@ const styles = StyleSheet.create({
     color: '#667eea',
     marginBottom: 4,
   },
+  componentBrandMobile: {
+    fontSize: 12,
+    marginBottom: 2,
+  },
   componentModel: {
     fontSize: 18,
     fontWeight: '700',
     color: '#ffffff',
   },
+  componentModelMobile: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
   componentActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  componentActionsMobile: {
+    gap: 6,
   },
   editButton: {
     backgroundColor: 'rgba(59, 130, 246, 0.2)',
@@ -447,10 +526,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(59, 130, 246, 0.3)',
   },
+  editButtonMobile: {
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
   editButtonText: {
     color: '#3b82f6',
     fontSize: 12,
     fontWeight: '600',
+  },
+  editButtonTextMobile: {
+    fontSize: 16,
   },
   deleteButton: {
     backgroundColor: 'rgba(239, 68, 68, 0.2)',
@@ -460,19 +547,34 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(239, 68, 68, 0.3)',
   },
+  deleteButtonMobile: {
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
   deleteButtonText: {
     color: '#ef4444',
     fontSize: 12,
     fontWeight: '600',
+  },
+  deleteButtonTextMobile: {
+    fontSize: 16,
   },
   componentDetails: {
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
     paddingTop: 12,
   },
+  componentDetailsMobile: {
+    paddingTop: 8,
+  },
   detailText: {
     color: '#8b9cb3',
     fontSize: 12,
     marginBottom: 4,
+  },
+  detailTextMobile: {
+    fontSize: 10,
+    marginBottom: 2,
   },
 });

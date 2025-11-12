@@ -58,7 +58,7 @@ export default function TabsLayout() {
         <Stack.Screen 
           name="AdminPanel" 
           options={{ 
-            title: '👑 Panel Admin',
+            title: 'Panel Admin',
             headerBackTitle: 'Volver',
           }} 
         />
