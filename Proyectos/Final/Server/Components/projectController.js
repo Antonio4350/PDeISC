@@ -1,4 +1,4 @@
-const pool = require('./database');
+import pool from './database.js';
 
 class ProjectController {
   
@@ -362,4 +362,4 @@ function checkFormatoCompatibilidad(motherboardFormat, caseFormat) {
   return compatibility[motherboardFormat]?.includes(caseFormat) || false;
 }
 
-module.exports = new ProjectController();
+export default new ProjectController();

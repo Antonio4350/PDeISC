@@ -1,5 +1,5 @@
-const propertyService = require('./propertyService');
-const pool = require('./database');
+import propertyService from './propertyService.js';
+import pool from './database.js';
 
 class PropertyController {
 
@@ -193,4 +193,4 @@ class PropertyController {
     }
 }
 
-module.exports = new PropertyController();
+export default new PropertyController();

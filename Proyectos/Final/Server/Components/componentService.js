@@ -1,4 +1,4 @@
-const pool = require('./database');
+import pool from './database.js';
 
 class ComponentService {
 
@@ -290,6 +290,422 @@ class ComponentService {
         }
     }
 
+    // ========== TARJETAS GRÁFICAS ==========
+
+    async getAllGPUs() {
+        try {
+            const { rows } = await pool.query(
+                'SELECT * FROM tarjetas_graficas WHERE estado = $1 ORDER BY marca, modelo',
+                ['activo']
+            );
+            return rows;
+        } catch (error) {
+            console.error('Error obteniendo tarjetas gráficas:', error);
+            throw error;
+        }
+    }
+
+    async getGPUById(id) {
+        try {
+            const { rows } = await pool.query(
+                'SELECT * FROM tarjetas_graficas WHERE id = $1 AND estado = $2',
+                [id, 'activo']
+            );
+            return rows[0] || null;
+        } catch (error) {
+            console.error('Error obteniendo tarjeta gráfica:', error);
+            throw error;
+        }
+    }
+
+    async createGPU(gpuData) {
+        const {
+            marca, modelo, fabricante, memoria, tipo_memoria, bus_memoria,
+            velocidad_memoria, nucleos_cuda, frecuencia_base, frecuencia_boost,
+            tdp, conectores_alimentacion, salidas_video, longitud_mm, altura_mm,
+            slots_ocupados, peso_kg, imagen_url
+        } = gpuData;
+
+        try {
+            const { rows } = await pool.query(
+                `INSERT INTO tarjetas_graficas 
+                (marca, modelo, fabricante, memoria, tipo_memoria, bus_memoria,
+                 velocidad_memoria, nucleos_cuda, frecuencia_base, frecuencia_boost,
+                 tdp, conectores_alimentacion, salidas_video, longitud_mm, altura_mm,
+                 slots_ocupados, peso_kg, imagen_url) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+                RETURNING *`,
+                [
+                    marca, modelo, fabricante, memoria, tipo_memoria, bus_memoria,
+                    velocidad_memoria, nucleos_cuda, frecuencia_base, frecuencia_boost,
+                    tdp, conectores_alimentacion, salidas_video, longitud_mm, altura_mm,
+                    slots_ocupados, peso_kg, imagen_url
+                ]
+            );
+
+            return rows[0];
+        } catch (error) {
+            console.error('Error creando tarjeta gráfica:', error);
+            throw error;
+        }
+    }
+
+    async updateGPU(id, gpuData) {
+        const {
+            marca, modelo, fabricante, memoria, tipo_memoria, bus_memoria,
+            velocidad_memoria, nucleos_cuda, frecuencia_base, frecuencia_boost,
+            tdp, conectores_alimentacion, salidas_video, longitud_mm, altura_mm,
+            slots_ocupados, peso_kg, imagen_url
+        } = gpuData;
+
+        try {
+            const { rowCount, rows } = await pool.query(
+                `UPDATE tarjetas_graficas SET 
+                 marca = $1, modelo = $2, fabricante = $3, memoria = $4, tipo_memoria = $5, bus_memoria = $6,
+                 velocidad_memoria = $7, nucleos_cuda = $8, frecuencia_base = $9, frecuencia_boost = $10,
+                 tdp = $11, conectores_alimentacion = $12, salidas_video = $13, longitud_mm = $14, altura_mm = $15,
+                 slots_ocupados = $16, peso_kg = $17, imagen_url = $18
+                 WHERE id = $19 AND estado = $20
+                 RETURNING *`,
+                [
+                    marca, modelo, fabricante, memoria, tipo_memoria, bus_memoria,
+                    velocidad_memoria, nucleos_cuda, frecuencia_base, frecuencia_boost,
+                    tdp, conectores_alimentacion, salidas_video, longitud_mm, altura_mm,
+                    slots_ocupados, peso_kg, imagen_url, id, 'activo'
+                ]
+            );
+
+            if (rowCount === 0) {
+                return null;
+            }
+
+            return rows[0];
+        } catch (error) {
+            console.error('Error actualizando tarjeta gráfica:', error);
+            throw error;
+        }
+    }
+
+    async deleteGPU(id) {
+        try {
+            const { rowCount } = await pool.query(
+                'UPDATE tarjetas_graficas SET estado = $1 WHERE id = $2',
+                ['inactivo', id]
+            );
+
+            return rowCount > 0;
+        } catch (error) {
+            console.error('Error eliminando tarjeta gráfica:', error);
+            throw error;
+        }
+    }
+
+// ========== ALMACENAMIENTO ==========
+
+    async getAllStorage() {
+        try {
+            const { rows } = await pool.query(
+                'SELECT * FROM almacenamiento WHERE estado = $1 ORDER BY marca, modelo',
+                ['activo']
+            );
+            return rows;
+        } catch (error) {
+            console.error('Error obteniendo almacenamiento:', error);
+            throw error;
+        }
+    }
+
+    async getStorageById(id) {
+        try {
+            const { rows } = await pool.query(
+                'SELECT * FROM almacenamiento WHERE id = $1 AND estado = $2',
+                [id, 'activo']
+            );
+            return rows[0] || null;
+        } catch (error) {
+            console.error('Error obteniendo almacenamiento:', error);
+            throw error;
+        }
+    }
+
+    async createStorage(storageData) {
+        const {
+            marca, modelo, capacidad, tipo, interfaz, velocidad_lectura,
+            velocidad_escritura, formato, rpm, imagen_url
+        } = storageData;
+
+        try {
+            const { rows } = await pool.query(
+                `INSERT INTO almacenamiento 
+                (marca, modelo, capacidad, tipo, interfaz, velocidad_lectura,
+                 velocidad_escritura, formato, rpm, imagen_url) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                RETURNING *`,
+                [
+                    marca, modelo, capacidad, tipo, interfaz, velocidad_lectura,
+                    velocidad_escritura, formato, rpm, imagen_url
+                ]
+            );
+
+            return rows[0];
+        } catch (error) {
+            console.error('Error creando almacenamiento:', error);
+            throw error;
+        }
+    }
+
+    async updateStorage(id, storageData) {
+        const {
+            marca, modelo, capacidad, tipo, interfaz, velocidad_lectura,
+            velocidad_escritura, formato, rpm, imagen_url
+        } = storageData;
+
+        try {
+            const { rowCount, rows } = await pool.query(
+                `UPDATE almacenamiento SET 
+                 marca = $1, modelo = $2, capacidad = $3, tipo = $4, interfaz = $5, velocidad_lectura = $6,
+                 velocidad_escritura = $7, formato = $8, rpm = $9, imagen_url = $10
+                 WHERE id = $11 AND estado = $12
+                 RETURNING *`,
+                [
+                    marca, modelo, capacidad, tipo, interfaz, velocidad_lectura,
+                    velocidad_escritura, formato, rpm, imagen_url, id, 'activo'
+                ]
+            );
+
+            if (rowCount === 0) {
+                return null;
+            }
+
+            return rows[0];
+        } catch (error) {
+            console.error('Error actualizando almacenamiento:', error);
+            throw error;
+        }
+    }
+
+    async deleteStorage(id) {
+        try {
+            const { rowCount } = await pool.query(
+                'UPDATE almacenamiento SET estado = $1 WHERE id = $2',
+                ['inactivo', id]
+            );
+
+            return rowCount > 0;
+        } catch (error) {
+            console.error('Error eliminando almacenamiento:', error);
+            throw error;
+        }
+    }
+
+// ========== FUENTES DE PODER ==========
+
+    async getAllPSUs() {
+        try {
+            const { rows } = await pool.query(
+                'SELECT * FROM fuentes_poder WHERE estado = $1 ORDER BY marca, modelo',
+                ['activo']
+            );
+            return rows;
+        } catch (error) {
+            console.error('Error obteniendo fuentes de poder:', error);
+            throw error;
+        }
+    }
+
+    async getPSUById(id) {
+        try {
+            const { rows } = await pool.query(
+                'SELECT * FROM fuentes_poder WHERE id = $1 AND estado = $2',
+                [id, 'activo']
+            );
+            return rows[0] || null;
+        } catch (error) {
+            console.error('Error obteniendo fuente de poder:', error);
+            throw error;
+        }
+    }
+
+    async createPSU(psuData) {
+        const {
+            marca, modelo, potencia, certificacion, modular, conectores_pcie,
+            conectores_sata, conectores_molex, formato, protecciones, imagen_url
+        } = psuData;
+
+        try {
+            const { rows } = await pool.query(
+                `INSERT INTO fuentes_poder 
+                (marca, modelo, potencia, certificacion, modular, conectores_pcie,
+                 conectores_sata, conectores_molex, formato, protecciones, imagen_url) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                RETURNING *`,
+                [
+                    marca, modelo, potencia, certificacion, modular, conectores_pcie,
+                    conectores_sata, conectores_molex, formato, protecciones, imagen_url
+                ]
+            );
+
+            return rows[0];
+        } catch (error) {
+            console.error('Error creando fuente de poder:', error);
+            throw error;
+        }
+    }
+
+    async updatePSU(id, psuData) {
+        const {
+            marca, modelo, potencia, certificacion, modular, conectores_pcie,
+            conectores_sata, conectores_molex, formato, protecciones, imagen_url
+        } = psuData;
+
+        try {
+            const { rowCount, rows } = await pool.query(
+                `UPDATE fuentes_poder SET 
+                 marca = $1, modelo = $2, potencia = $3, certificacion = $4, modular = $5, conectores_pcie = $6,
+                 conectores_sata = $7, conectores_molex = $8, formato = $9, protecciones = $10, imagen_url = $11
+                 WHERE id = $12 AND estado = $13
+                 RETURNING *`,
+                [
+                    marca, modelo, potencia, certificacion, modular, conectores_pcie,
+                    conectores_sata, conectores_molex, formato, protecciones, imagen_url, id, 'activo'
+                ]
+            );
+
+            if (rowCount === 0) {
+                return null;
+            }
+
+            return rows[0];
+        } catch (error) {
+            console.error('Error actualizando fuente de poder:', error);
+            throw error;
+        }
+    }
+
+    async deletePSU(id) {
+        try {
+            const { rowCount } = await pool.query(
+                'UPDATE fuentes_poder SET estado = $1 WHERE id = $2',
+                ['inactivo', id]
+            );
+
+            return rowCount > 0;
+        } catch (error) {
+            console.error('Error eliminando fuente de poder:', error);
+            throw error;
+        }
+    }
+
+    // ========== GABINETES ==========
+
+    async createCase(caseData) {
+        const {
+            marca, modelo, formato, motherboards_soportadas, longitud_max_gpu,
+            altura_max_cooler, bahias_35, bahias_25, slots_expansion,
+            ventiladores_incluidos, ventiladores_soportados, radiador_soportado,
+            panel_frontal, material, imagen_url
+        } = caseData;
+
+        try {
+            const { rows } = await pool.query(
+                `INSERT INTO gabinetes 
+                (marca, modelo, formato, motherboards_soportadas, longitud_max_gpu,
+                 altura_max_cooler, bahias_35, bahias_25, slots_expansion,
+                 ventiladores_incluidos, ventiladores_soportados, radiador_soportado,
+                 panel_frontal, material, imagen_url) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                RETURNING *`,
+                [
+                    marca, modelo, formato, motherboards_soportadas, longitud_max_gpu,
+                    altura_max_cooler, bahias_35, bahias_25, slots_expansion,
+                    ventiladores_incluidos, ventiladores_soportados, radiador_soportado,
+                    panel_frontal, material, imagen_url
+                ]
+            );
+
+            return rows[0];
+        } catch (error) {
+            console.error('Error creando gabinete:', error);
+            throw error;
+        }
+    }
+
+    async getAllCases() {
+        try {
+            const { rows } = await pool.query(
+                'SELECT * FROM gabinetes WHERE estado = $1 ORDER BY marca, modelo',
+                ['activo']
+            );
+            return rows;
+        } catch (error) {
+            console.error('Error obteniendo gabinetes:', error);
+            throw error;
+        }
+    }
+
+    async getCaseById(id) {
+        try {
+            const { rows } = await pool.query(
+                'SELECT * FROM gabinetes WHERE id = $1 AND estado = $2',
+                [id, 'activo']
+            );
+            return rows[0] || null;
+        } catch (error) {
+            console.error('Error obteniendo gabinete:', error);
+            throw error;
+        }
+    }
+
+    async updateCase(id, caseData) {
+        const {
+            marca, modelo, formato, motherboards_soportadas, longitud_max_gpu,
+            altura_max_cooler, bahias_35, bahias_25, slots_expansion,
+            ventiladores_incluidos, ventiladores_soportados, radiador_soportado,
+            panel_frontal, material, imagen_url
+        } = caseData;
+
+        try {
+            const { rowCount, rows } = await pool.query(
+                `UPDATE gabinetes SET 
+                 marca = $1, modelo = $2, formato = $3, motherboards_soportadas = $4, longitud_max_gpu = $5,
+                 altura_max_cooler = $6, bahias_35 = $7, bahias_25 = $8, slots_expansion = $9,
+                 ventiladores_incluidos = $10, ventiladores_soportados = $11, radiador_soportado = $12,
+                 panel_frontal = $13, material = $14, imagen_url = $15
+                 WHERE id = $16 AND estado = $17
+                 RETURNING *`,
+                [
+                    marca, modelo, formato, motherboards_soportadas, longitud_max_gpu,
+                    altura_max_cooler, bahias_35, bahias_25, slots_expansion,
+                    ventiladores_incluidos, ventiladores_soportados, radiador_soportado,
+                    panel_frontal, material, imagen_url, id, 'activo'
+                ]
+            );
+
+            if (rowCount === 0) {
+                return null;
+            }
+
+            return rows[0];
+        } catch (error) {
+            console.error('Error actualizando gabinete:', error);
+            throw error;
+        }
+    }
+
+    async deleteCase(id) {
+        try {
+            const { rowCount } = await pool.query(
+                'UPDATE gabinetes SET estado = $1 WHERE id = $2',
+                ['inactivo', id]
+            );
+
+            return rowCount > 0;
+        } catch (error) {
+            console.error('Error eliminando gabinete:', error);
+            throw error;
+        }
+    }
+
     // ========== COMPATIBILIDAD ==========
 
     async checkCPUCompatibility(cpuId, motherboardId) {
@@ -388,4 +804,4 @@ class ComponentService {
     }
 }
 
-module.exports = new ComponentService();
+export default new ComponentService();

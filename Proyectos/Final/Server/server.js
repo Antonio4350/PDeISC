@@ -1,6 +1,7 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+
+import express from 'express';
+import cors from 'cors';
+import 'dotenv/config';
 
 const app = express();
 
@@ -9,11 +10,11 @@ app.use(cors());
 app.use(express.json());
 
 // Importar componentes
-const authController = require('./Components/authController');
-const startupMonitor = require('./Components/startupMonitor');
-const componentController = require('./Components/componentController');
-const propertyController = require('./Components/propertyController');
-const projectController = require('./Components/projectController');
+import authController from './Components/authController.js';
+import startupMonitor from './Components/startupMonitor.js';
+import componentController from './Components/componentController.js';
+import propertyController from './Components/propertyController.js';
+import projectController from './Components/projectController.js';
 
 // Extraer middleware
 const { authenticateToken } = authController;
@@ -71,11 +72,39 @@ app.post("/components/ram", (req, res) => componentController.createRAM(req, res
 app.put("/components/ram/:id", (req, res) => componentController.updateRAM(req, res));
 app.delete("/components/ram/:id", (req, res) => componentController.deleteRAM(req, res));
 
-// RUTAS DINÁMICAS PARA TIPOS DE COMPONENTES (DEBE IR AL FINAL)
-app.get("/components/:type", (req, res) => componentController.getComponentsByType(req, res));
+// TARJETAS GRÁFICAS - RUTAS ESPECÍFICAS
+app.get("/components/tarjetas_graficas", (req, res) => componentController.getGPUs(req, res));
+app.post("/components/tarjetas_graficas", (req, res) => componentController.createGPU(req, res));
+app.get("/components/tarjetas_graficas/:id", (req, res) => componentController.getGPUById(req, res));
+app.put("/components/tarjetas_graficas/:id", (req, res) => componentController.updateGPU(req, res));
+app.delete("/components/tarjetas_graficas/:id", (req, res) => componentController.deleteGPU(req, res));
+
+// ALMACENAMIENTO - RUTAS ESPECÍFICAS
+app.get("/components/almacenamiento", (req, res) => componentController.getStorage(req, res));
+app.post("/components/almacenamiento", (req, res) => componentController.createStorage(req, res));
+app.get("/components/almacenamiento/:id", (req, res) => componentController.getStorageById(req, res));
+app.put("/components/almacenamiento/:id", (req, res) => componentController.updateStorage(req, res));
+app.delete("/components/almacenamiento/:id", (req, res) => componentController.deleteStorage(req, res));
+
+// FUENTES DE PODER - RUTAS ESPECÍFICAS
+app.get("/components/fuentes_poder", (req, res) => componentController.getPSUs(req, res));
+app.post("/components/fuentes_poder", (req, res) => componentController.createPSU(req, res));
+app.get("/components/fuentes_poder/:id", (req, res) => componentController.getPSUById(req, res));
+app.put("/components/fuentes_poder/:id", (req, res) => componentController.updatePSU(req, res));
+app.delete("/components/fuentes_poder/:id", (req, res) => componentController.deletePSU(req, res));
+
+// GABINETES - RUTAS ESPECÍFICAS
+app.get("/components/gabinetes", (req, res) => componentController.getCases(req, res));
+app.post("/components/gabinetes", (req, res) => componentController.createCase(req, res));
+app.get("/components/gabinetes/:id", (req, res) => componentController.getCaseById(req, res));
+app.put("/components/gabinetes/:id", (req, res) => componentController.updateCase(req, res));
+app.delete("/components/gabinetes/:id", (req, res) => componentController.deleteCase(req, res));
 
 // COMPATIBILIDAD
 app.post("/components/compatibility", (req, res) => componentController.checkCompatibility(req, res));
+
+// RUTAS DINÁMICAS PARA TIPOS DE COMPONENTES (DEBE IR AL FINAL)
+app.get("/components/:type", (req, res) => componentController.getComponentsByType(req, res));
 
 // ========== RUTAS DE PROPIEDADES ==========
 app.get("/properties", (req, res) => propertyController.getAllProperties(req, res));
@@ -119,18 +148,89 @@ app.use('*', (req, res) => {
 // ========== INICIAR SERVIDOR ==========
 
 // Iniciar servidor
-const PORT = process.env.PORT || 5000;
+const PORT = parseInt(process.env.PORT, 10) || 5000;
+const PREFERRED_HOSTS = ["0.0.0.0", process.env.HOST_IP || '192.168.1.38', '127.0.0.1'];
+
+function listenOnce(host, port) {
+  return new Promise((resolve, reject) => {
+    const server = app.listen(port, host, () => resolve(server));
+    server.on('error', (err) => reject(err));
+  });
+}
 
 async function startServer() {
   try {
     // Mostrar información de inicio
     const startupInfo = await startupMonitor.displayStartupInfo(PORT);
-    
-    // Iniciar servidor - ESCUCHAR EN TODAS LAS INTERFACES
-    app.listen(PORT, '0.0.0.0', () => {
-      startupMonitor.displayServerReady(startupInfo);
+
+    let server = null;
+    let tried = [];
+    let portToTry = PORT;
+
+    for (const host of PREFERRED_HOSTS) {
+      try {
+        console.log(`Intentando bind en ${host}:${portToTry} ...`);
+        server = await listenOnce(host, portToTry);
+        console.log(`Bind correcto en ${host}:${portToTry}`);
+        break;
+      } catch (err) {
+        console.log(`No se pudo bind en ${host}:${portToTry}: ${err.code || err.message}`);
+        tried.push({ host, port: portToTry, error: err });
+      }
+    }
+
+    // If no host succeeded, try alternate port
+    if (!server) {
+      const altPort = PORT === 5000 ? 5001 : PORT + 1;
+      console.log(`Intentando puerto alternativo ${altPort} en 0.0.0.0 ...`);
+      try {
+        server = await listenOnce('0.0.0.0', altPort);
+        portToTry = altPort;
+        console.log(`Bind correcto en 0.0.0.0:${altPort}`);
+      } catch (err) {
+        console.log(`Fallo bind alternativo: ${err.code || err.message}`);
+      }
+    }
+
+    if (!server) {
+      console.log('\n💥 No se pudo iniciar el servidor en los hosts/puertos intentados:');
+      console.log(tried);
+      process.exit(1);
+    }
+
+    // Mostrar listo
+    startupMonitor.displayServerReady({ ...startupInfo, port: portToTry });
+
+    // Manejo de errores del servidor
+    server.on('error', (err) => {
+      console.log('\n💥 ERROR EN EL SERVIDOR:');
+      console.log(err);
+      process.exit(1);
     });
-    
+
+    // Loguear rutas registradas (diagnóstico)
+    try {
+      const routes = [];
+      app._router.stack.forEach((middleware) => {
+        if (middleware.route) {
+          // routes registered directly on the app
+          routes.push(Object.keys(middleware.route.methods).join(',').toUpperCase() + ' ' + middleware.route.path);
+        } else if (middleware.name === 'router') {
+          // router middleware 
+          middleware.handle.stack.forEach((handler) => {
+            const route = handler.route;
+            if (route) {
+              routes.push(Object.keys(route.methods).join(',').toUpperCase() + ' ' + route.path);
+            }
+          });
+        }
+      });
+      console.log('\n🔎 Rutas registradas:');
+      routes.forEach(r => console.log('   ' + r));
+    } catch (err) {
+      console.log('No se pudieron listar rutas:', err.message);
+    }
+
   } catch (error) {
     console.log('\n💥 ERROR AL INICIAR EL SERVIDOR:');
     console.log(error);
@@ -140,10 +240,20 @@ async function startServer() {
 
 // Manejo de errores global
 process.on('unhandledRejection', (err) => {
-  console.log('\n❌ ERROR CRÍTICO:');
+  console.log('\n❌ ERROR CRÍTICO (Rejection):');
+  console.log(err);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+  console.log('\n❌ ERROR CRÍTICO (Exception):');
   console.log(err);
   process.exit(1);
 });
 
 // Iniciar
-startServer();
+startServer().catch((err) => {
+  console.log('\n💥 ERROR EN startServer:');
+  console.log(err);
+  process.exit(1);
+});

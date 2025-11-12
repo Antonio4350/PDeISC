@@ -1,5 +1,5 @@
-const pool = require('./database');
-const bcrypt = require('bcryptjs');
+import pool from './database.js';
+import bcrypt from 'bcryptjs';
 
 class UserService {
   // Buscar usuario por email
@@ -116,4 +116,4 @@ class UserService {
   }
 }
 
-module.exports = new UserService();
+export default new UserService();

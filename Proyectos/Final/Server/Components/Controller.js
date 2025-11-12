@@ -1,5 +1,5 @@
-const userService = require('./userService');
-const { googleLogin } = require('./GoogleAuth');
+import userService from './userService.js';
+import { googleLogin } from './GoogleAuth.js';
 
 class AuthController {
   // Login con Google
@@ -243,4 +243,4 @@ class AuthController {
   }
 }
 
-module.exports = new AuthController();
+export default new AuthController();

@@ -1,4 +1,4 @@
-const { OAuth2Client } = require('google-auth-library');
+import { OAuth2Client } from 'google-auth-library';
 
 const client = new OAuth2Client(
   "58585220959-8capru7gmaertcnsvoervkm3vsef6q3l.apps.googleusercontent.com"
@@ -47,4 +47,4 @@ async function googleLogin(idToken, accessToken) {
   }
 }
 
-module.exports = { googleLogin };
+export { googleLogin };

@@ -1,4 +1,4 @@
-const pool = require('./database');
+import pool from './database.js';
 
 class PropertyService {
 
@@ -134,4 +134,4 @@ class PropertyService {
     }
 }
 
-module.exports = new PropertyService();
+export default new PropertyService();

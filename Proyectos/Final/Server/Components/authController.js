@@ -1,6 +1,6 @@
-const userService = require('./userService');
-const { googleLogin } = require('./GoogleAuth');
-const jwt = require('jsonwebtoken');
+import userService from './userService.js';
+import { googleLogin } from './GoogleAuth.js';
+import jwt from 'jsonwebtoken';
 
 class AuthController {
   // Login con Google
@@ -284,7 +284,7 @@ const generateToken = (user) => {
 const authControllerInstance = new AuthController();
 
 // Exportar una instancia de la clase Y las funciones adicionales
-module.exports = {
+export default {
   // Métodos del controlador
   googleLogin: authControllerInstance.googleLogin.bind(authControllerInstance),
   normalLogin: authControllerInstance.normalLogin.bind(authControllerInstance),

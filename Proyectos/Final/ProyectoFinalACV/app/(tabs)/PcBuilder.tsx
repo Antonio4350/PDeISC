@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   useWindowDimensions,
@@ -44,7 +44,7 @@ interface ComponentCategory {
 
 export default function PcBuilder() {
   const { user } = useAuth();
-  const [allComponents, setAllComponents] = useState<{[key: string]: Component[]}>({});
+  const [allComponents, setAllComponents] = useState<{ [key: string]: Component[] }>({});
   const [build, setBuild] = useState<BuildComponent[]>([
     { id: '1', type: 'cpu', name: 'Procesador', component: null, compatible: true, compatibilityIssues: [] },
     { id: '2', type: 'motherboard', name: 'Motherboard', component: null, compatible: true, compatibilityIssues: [] },
@@ -57,57 +57,57 @@ export default function PcBuilder() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('cpu');
   const [activeTab, setActiveTab] = useState<'build' | 'components'>('components');
-  
+
   const { width: screenWidth } = useWindowDimensions();
   const isMobile = screenWidth < 768;
 
   const componentCategories: ComponentCategory[] = [
-    { 
-      type: 'cpu', 
-      name: 'Procesadores', 
-      icon: '⚡', 
+    {
+      type: 'cpu',
+      name: 'Procesadores',
+      icon: '⚡',
       color: '#FF6B6B',
       endpoint: 'processors'
     },
-    { 
-      type: 'motherboard', 
-      name: 'Motherboards', 
-      icon: '🔌', 
+    {
+      type: 'motherboard',
+      name: 'Motherboards',
+      icon: '🔌',
       color: '#4ECDC4',
       endpoint: 'motherboards'
     },
-    { 
-      type: 'ram', 
-      name: 'Memoria RAM', 
-      icon: '💾', 
+    {
+      type: 'ram',
+      name: 'Memoria RAM',
+      icon: '💾',
       color: '#45B7D1',
       endpoint: 'ram'
     },
-    { 
-      type: 'gpu', 
-      name: 'Tarjetas Graficas', 
-      icon: '🎯', 
+    {
+      type: 'gpu',
+      name: 'Tarjetas Graficas',
+      icon: '🎯',
       color: '#F7DC6F',
       endpoint: 'tarjetas_graficas'
     },
-    { 
-      type: 'storage', 
-      name: 'Almacenamiento', 
-      icon: '💿', 
+    {
+      type: 'storage',
+      name: 'Almacenamiento',
+      icon: '💿',
       color: '#98D8C8',
       endpoint: 'almacenamiento'
     },
-    { 
-      type: 'psu', 
-      name: 'Fuentes', 
-      icon: '🔋', 
+    {
+      type: 'psu',
+      name: 'Fuentes',
+      icon: '🔋',
       color: '#FFEAA7',
       endpoint: 'fuentes_poder'
     },
-    { 
-      type: 'case', 
-      name: 'Gabinetes', 
-      icon: '🖥️', 
+    {
+      type: 'case',
+      name: 'Gabinetes',
+      icon: '🖥️',
       color: '#DDA0DD',
       endpoint: 'gabinetes'
     }
@@ -120,15 +120,42 @@ export default function PcBuilder() {
   const loadAllComponents = async () => {
     try {
       setLoading(true);
-      const componentsData: {[key: string]: Component[]} = {};
+      const componentsData: { [key: string]: Component[] } = {};
 
       for (const category of componentCategories) {
         try {
           console.log(`Cargando componentes de: ${category.endpoint}`);
-          const result: ApiResponse<any[]> = await componentService.getComponents(category.endpoint);
-          
+          let result: ApiResponse<any[]>;
+
+          // Usar los métodos específicos para cada tipo
+          switch (category.endpoint) {
+            case 'processors':
+              result = await componentService.getProcessors();
+              break;
+            case 'motherboards':
+              result = await componentService.getMotherboards();
+              break;
+            case 'ram':
+              result = await componentService.getRAM();
+              break;
+            case 'tarjetas_graficas':
+              result = await componentService.getGPUs();
+              break;
+            case 'almacenamiento':
+              result = await componentService.getStorage();
+              break;
+            case 'fuentes_poder':
+              result = await componentService.getPSUs();
+              break;
+            case 'gabinetes':
+              result = await componentService.getCases();
+              break;
+            default:
+              result = { success: false, error: 'Endpoint no válido' };
+          }
+
           console.log(`Resultado para ${category.endpoint}:`, result);
-          
+
           if (result.success && result.data && result.data.length > 0) {
             componentsData[category.type] = result.data.map((comp: any) => ({
               id: comp.id,
@@ -143,7 +170,7 @@ export default function PcBuilder() {
             }));
             console.log(`✅ ${category.name}: ${componentsData[category.type].length} componentes cargados`);
           } else {
-            console.log(`❌ ${category.name}: No hay datos o error en la respuesta`);
+            console.log(`❌ ${category.name}: No hay datos o error en la respuesta`, result.error);
             componentsData[category.type] = [];
           }
         } catch (error) {
@@ -155,7 +182,7 @@ export default function PcBuilder() {
       setAllComponents(componentsData);
     } catch (error) {
       console.error('Error general cargando componentes:', error);
-      const emptyData: {[key: string]: Component[]} = {};
+      const emptyData: { [key: string]: Component[] } = {};
       componentCategories.forEach(category => {
         emptyData[category.type] = [];
       });
@@ -167,7 +194,7 @@ export default function PcBuilder() {
 
   const generateSpecifications = (component: any, type: string): string => {
     const specs = [];
-    
+
     switch (type) {
       case 'cpu':
         if (component.nucleos) specs.push(`${component.nucleos} nucleos`);
@@ -206,26 +233,26 @@ export default function PcBuilder() {
         if (component.motherboards_soportadas) specs.push(component.motherboards_soportadas);
         break;
     }
-    
+
     return specs.join(' • ') || 'Especificaciones no disponibles';
   };
 
   const handleAddComponent = (component: Component) => {
-    const updatedBuild = build.map(item => 
-      item.type === component.tipo 
+    const updatedBuild = build.map(item =>
+      item.type === component.tipo
         ? { ...item, component }
         : item
     );
-    
+
     setBuild(updatedBuild);
     toast.success(`${component.marca} ${component.modelo} agregado`);
-    
+
     setTimeout(() => checkAllCompatibility(updatedBuild), 100);
   };
 
   const handleRemoveComponent = (buildItem: BuildComponent) => {
-    const updatedBuild = build.map(item => 
-      item.id === buildItem.id 
+    const updatedBuild = build.map(item =>
+      item.id === buildItem.id
         ? { ...item, component: null, compatible: true, compatibilityIssues: [] }
         : item
     );
@@ -306,8 +333,8 @@ export default function PcBuilder() {
         'Hay componentes incompatibles en tu build. ¿Estas seguro de querer guardar?',
         [
           { text: 'Cancelar', style: 'cancel' },
-          { 
-            text: 'Guardar', 
+          {
+            text: 'Guardar',
             onPress: () => {
               toast.success('Build guardado!');
             }
@@ -374,7 +401,7 @@ export default function PcBuilder() {
               </View>
               <View style={styles.summaryItem}>
                 <Text style={[
-                  styles.summaryNumber, 
+                  styles.summaryNumber,
                   incompatibleComponentsCount > 0 ? styles.summaryNumberError : styles.summaryNumberSuccess
                 ]}>
                   {incompatibleComponentsCount}
@@ -385,8 +412,8 @@ export default function PcBuilder() {
 
             <ScrollView style={styles.buildList}>
               {build.map((item) => (
-                <View 
-                  key={item.id} 
+                <View
+                  key={item.id}
                   style={[
                     styles.buildItem,
                     !item.compatible && styles.buildItemIncompatible,
@@ -406,10 +433,10 @@ export default function PcBuilder() {
                         </Text>
                       )}
                     </View>
-                    
+
                     <View style={styles.buildItemActions}>
                       {item.component && (
-                        <TouchableOpacity 
+                        <TouchableOpacity
                           style={styles.removeButton}
                           onPress={() => handleRemoveComponent(item)}
                         >
@@ -418,8 +445,8 @@ export default function PcBuilder() {
                       )}
                       <View style={[
                         styles.compatibilityCircle,
-                        item.component ? 
-                          (item.compatible ? styles.compatibleCircle : styles.incompatibleCircle) 
+                        item.component ?
+                          (item.compatible ? styles.compatibleCircle : styles.incompatibleCircle)
                           : styles.emptyCircle
                       ]} />
                     </View>
@@ -428,8 +455,8 @@ export default function PcBuilder() {
                   {item.component && item.compatibilityIssues.length > 0 && (
                     <View style={styles.compatibilityDetails}>
                       {item.compatibilityIssues.map((issue, index) => (
-                        <Text 
-                          key={index} 
+                        <Text
+                          key={index}
                           style={[
                             styles.compatibilityIssue,
                             issue.includes('Compatible') ? styles.compatibilitySuccess : styles.compatibilityError
@@ -450,7 +477,7 @@ export default function PcBuilder() {
               ))}
             </ScrollView>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
                 styles.saveButton,
                 selectedComponentsCount === 0 && styles.saveButtonDisabled
@@ -466,8 +493,8 @@ export default function PcBuilder() {
           <View style={styles.mobilePanel}>
             {/* CATEGORÍAS MÁS ARRIBA */}
             <View style={styles.categoriesContainer}>
-              <ScrollView 
-                horizontal 
+              <ScrollView
+                horizontal
                 showsHorizontalScrollIndicator={false}
                 style={styles.categoriesScroll}
               >
@@ -493,7 +520,7 @@ export default function PcBuilder() {
               <Text style={styles.componentsTitle}>
                 {componentCategories.find(cat => cat.type === selectedCategory)?.name} ({currentComponents.length})
               </Text>
-              
+
               <ScrollView style={styles.componentsList}>
                 {currentComponents.map((component) => (
                   <TouchableOpacity
@@ -504,16 +531,16 @@ export default function PcBuilder() {
                     <View style={styles.componentHeader}>
                       <Text style={styles.componentBrand}>{component.marca}</Text>
                     </View>
-                    
+
                     <Text style={styles.componentModel}>{component.modelo}</Text>
                     <Text style={styles.componentSpecs}>{component.especificaciones}</Text>
-                    
+
                     <View style={styles.componentFooter}>
                       <Text style={styles.addButton}>+ Agregar</Text>
                     </View>
                   </TouchableOpacity>
                 ))}
-                
+
                 {currentComponents.length === 0 && (
                   <View style={styles.noComponents}>
                     <Text style={styles.noComponentsText}>
@@ -543,7 +570,7 @@ export default function PcBuilder() {
         {/* PANEL IZQUIERDO - BUILD */}
         <View style={styles.buildPanel}>
           <Text style={styles.panelTitle}>Tu Build</Text>
-          
+
           <View style={styles.buildSummary}>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryNumber}>{selectedComponentsCount}</Text>
@@ -551,7 +578,7 @@ export default function PcBuilder() {
             </View>
             <View style={styles.summaryItem}>
               <Text style={[
-                styles.summaryNumber, 
+                styles.summaryNumber,
                 incompatibleComponentsCount > 0 ? styles.summaryNumberError : styles.summaryNumberSuccess
               ]}>
                 {incompatibleComponentsCount}
@@ -562,8 +589,8 @@ export default function PcBuilder() {
 
           <ScrollView style={styles.buildList}>
             {build.map((item) => (
-              <View 
-                key={item.id} 
+              <View
+                key={item.id}
                 style={[
                   styles.buildItem,
                   !item.compatible && styles.buildItemIncompatible,
@@ -583,10 +610,10 @@ export default function PcBuilder() {
                       </Text>
                     )}
                   </View>
-                  
+
                   <View style={styles.buildItemActions}>
                     {item.component && (
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         style={styles.removeButton}
                         onPress={() => handleRemoveComponent(item)}
                       >
@@ -595,8 +622,8 @@ export default function PcBuilder() {
                     )}
                     <View style={[
                       styles.compatibilityCircle,
-                      item.component ? 
-                        (item.compatible ? styles.compatibleCircle : styles.incompatibleCircle) 
+                      item.component ?
+                        (item.compatible ? styles.compatibleCircle : styles.incompatibleCircle)
                         : styles.emptyCircle
                     ]} />
                   </View>
@@ -605,8 +632,8 @@ export default function PcBuilder() {
                 {item.component && item.compatibilityIssues.length > 0 && (
                   <View style={styles.compatibilityDetails}>
                     {item.compatibilityIssues.map((issue, index) => (
-                      <Text 
-                        key={index} 
+                      <Text
+                        key={index}
                         style={[
                           styles.compatibilityIssue,
                           issue.includes('Compatible') ? styles.compatibilitySuccess : styles.compatibilityError
@@ -627,7 +654,7 @@ export default function PcBuilder() {
             ))}
           </ScrollView>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
               styles.saveButton,
               selectedComponentsCount === 0 && styles.saveButtonDisabled
@@ -644,8 +671,8 @@ export default function PcBuilder() {
           {/* CATEGORÍAS EN LA PARTE SUPERIOR */}
           <View style={styles.categoriesSection}>
             <Text style={styles.categoriesTitle}>Selecciona una categoria:</Text>
-            <ScrollView 
-              horizontal 
+            <ScrollView
+              horizontal
               showsHorizontalScrollIndicator={false}
               style={styles.categoriesScroll}
             >
@@ -671,27 +698,27 @@ export default function PcBuilder() {
             <Text style={styles.componentsTitle}>
               {componentCategories.find(cat => cat.type === selectedCategory)?.name} ({currentComponents.length})
             </Text>
-            
+
             <ScrollView style={styles.componentsList}>
               {currentComponents.map((component) => (
                 <TouchableOpacity
-                  key={component.id}
+                  key={`${component.tipo}-${component.id}`}
                   style={styles.componentCard}
                   onPress={() => handleAddComponent(component)}
                 >
                   <View style={styles.componentHeader}>
                     <Text style={styles.componentBrand}>{component.marca}</Text>
                   </View>
-                  
+
                   <Text style={styles.componentModel}>{component.modelo}</Text>
                   <Text style={styles.componentSpecs}>{component.especificaciones}</Text>
-                  
+
                   <View style={styles.componentFooter}>
                     <Text style={styles.addButton}>+ Agregar al Build</Text>
                   </View>
                 </TouchableOpacity>
               ))}
-              
+
               {currentComponents.length === 0 && (
                 <View style={styles.noComponents}>
                   <Text style={styles.noComponentsText}>

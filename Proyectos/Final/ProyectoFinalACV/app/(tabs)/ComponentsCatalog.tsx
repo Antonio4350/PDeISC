@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
   TouchableOpacity,
   TextInput,
   ActivityIndicator
@@ -51,55 +51,93 @@ export default function ComponentsCatalog() {
   const loadComponents = async () => {
     try {
       setLoading(true);
-      
+
       let result: ApiResponse<any[]>;
-      
+
       if (selectedCategory === 'all') {
         // Cargar todos los tipos de componentes
         const [
-          processorsRes, 
-          mothersRes, 
-          ramRes
+          processorsRes,
+          mothersRes,
+          ramRes,
+          gpuRes,
+          storageRes,
+          psuRes,
+          casesRes
         ] = await Promise.all([
           componentService.getProcessors(),
           componentService.getMotherboards(),
-          componentService.getRAM()
+          componentService.getRAM(),
+          componentService.getGPUs(),
+          componentService.getStorage(),
+          componentService.getPSUs(),
+          componentService.getCases()
         ]);
-        
+
         const allComponents = [
-          ...(processorsRes.data || []).map((comp: any) => ({ ...comp, tipo: 'procesadores' })),
-          ...(mothersRes.data || []).map((comp: any) => ({ ...comp, tipo: 'motherboards' })),
-          ...(ramRes.data || []).map((comp: any) => ({ ...comp, tipo: 'memorias_ram' }))
+          ...(processorsRes.success && processorsRes.data ? processorsRes.data.map((comp: any) => ({ ...comp, tipo: 'procesadores' })) : []),
+          ...(mothersRes.success && mothersRes.data ? mothersRes.data.map((comp: any) => ({ ...comp, tipo: 'motherboards' })) : []),
+          ...(ramRes.success && ramRes.data ? ramRes.data.map((comp: any) => ({ ...comp, tipo: 'memorias_ram' })) : []),
+          ...(gpuRes.success && gpuRes.data ? gpuRes.data.map((comp: any) => ({ ...comp, tipo: 'tarjetas_graficas' })) : []),
+          ...(storageRes.success && storageRes.data ? storageRes.data.map((comp: any) => ({ ...comp, tipo: 'almacenamiento' })) : []),
+          ...(psuRes.success && psuRes.data ? psuRes.data.map((comp: any) => ({ ...comp, tipo: 'fuentes_poder' })) : []),
+          ...(casesRes.success && casesRes.data ? casesRes.data.map((comp: any) => ({ ...comp, tipo: 'gabinetes' })) : [])
         ];
-        
+
         setComponents(allComponents);
         setFilteredComponents(allComponents);
         return;
       } else {
-        result = await componentService.getComponents(selectedCategory);
+        // Cargar componentes específicos por categoría
+        switch (selectedCategory) {
+          case 'procesadores':
+            result = await componentService.getProcessors();
+            break;
+          case 'motherboards':
+            result = await componentService.getMotherboards();
+            break;
+          case 'memorias_ram':
+            result = await componentService.getRAM();
+            break;
+          case 'tarjetas_graficas':
+            result = await componentService.getGPUs();
+            break;
+          case 'almacenamiento':
+            result = await componentService.getStorage();
+            break;
+          case 'fuentes_poder':
+            result = await componentService.getPSUs();
+            break;
+          case 'gabinetes':
+            result = await componentService.getCases();
+            break;
+          default:
+            result = { success: false, error: 'Categoría no válida' };
+        }
       }
-      
+
       if (result.success && result.data) {
         const mappedComponents = result.data.map((comp: any) => ({
           id: comp.id,
-          marca: comp.marca,
-          modelo: comp.modelo,
+          marca: comp.marca || 'Sin marca',
+          modelo: comp.modelo || 'Sin modelo',
           tipo: selectedCategory,
           especificaciones: generateSpecifications(comp, selectedCategory),
           // Agregar todos los datos originales para el detalle
           ...comp
         }));
-        
+
         setComponents(mappedComponents);
         setFilteredComponents(mappedComponents);
       } else {
-        toast.error(result.error || 'Error cargando componentes');
+        console.log(`Error cargando ${selectedCategory}:`, result.error);
+        toast.error(result.error || `Error cargando ${selectedCategory}`);
         setComponents([]);
         setFilteredComponents([]);
       }
     } catch (error) {
       console.error('Error cargando componentes:', error);
-      toast.error('Error de conexión');
+      toast.error('Error de conexión con el servidor');
       setComponents([]);
       setFilteredComponents([]);
     } finally {
@@ -108,24 +146,53 @@ export default function ComponentsCatalog() {
   };
 
   const generateSpecifications = (component: any, category: string): string => {
+    const specs = [];
+
     switch (category) {
       case 'procesadores':
-        return `${component.nucleos || 'N/A'} núcleos, ${component.socket || 'N/A'}, ${component.tipo_memoria || 'N/A'}`;
+        if (component.nucleos) specs.push(`${component.nucleos} núcleos`);
+        if (component.socket) specs.push(`Socket ${component.socket}`);
+        if (component.tipo_memoria) specs.push(component.tipo_memoria);
+        if (component.frecuencia_base) specs.push(`${component.frecuencia_base}GHz`);
+        if (component.tdp) specs.push(`${component.tdp}W`);
+        break;
       case 'motherboards':
-        return `${component.socket || 'N/A'}, ${component.tipo_memoria || 'N/A'}, ${component.formato || 'N/A'}`;
+        if (component.socket) specs.push(`Socket ${component.socket}`);
+        if (component.tipo_memoria) specs.push(component.tipo_memoria);
+        if (component.formato) specs.push(component.formato);
+        if (component.chipset) specs.push(component.chipset);
+        break;
       case 'memorias_ram':
-        return `${component.capacidad || 'N/A'}GB, ${component.velocidad_mhz || 'N/A'}MHz, ${component.tipo || 'N/A'}`;
+        if (component.capacidad) specs.push(`${component.capacidad}GB`);
+        if (component.tipo) specs.push(component.tipo);
+        if (component.velocidad_mhz) specs.push(`${component.velocidad_mhz}MHz`);
+        if (component.latencia) specs.push(component.latencia);
+        break;
       case 'tarjetas_graficas':
-        return `${component.memoria || 'N/A'}GB ${component.tipo_memoria || 'N/A'}, ${component.tdp || 'N/A'}W`;
+        if (component.memoria) specs.push(`${component.memoria}GB`);
+        if (component.tipo_memoria) specs.push(component.tipo_memoria);
+        if (component.tdp) specs.push(`${component.tdp}W`);
+        if (component.nucleos_cuda) specs.push(`${component.nucleos_cuda} núcleos`);
+        break;
       case 'almacenamiento':
-        return `${component.capacidad || 'N/A'}GB, ${component.tipo || 'N/A'}, ${component.interfaz || 'N/A'}`;
+        if (component.capacidad) specs.push(`${component.capacidad}GB`);
+        if (component.tipo) specs.push(component.tipo);
+        if (component.interfaz) specs.push(component.interfaz);
+        if (component.velocidad_lectura) specs.push(`${component.velocidad_lectura}MB/s`);
+        break;
       case 'fuentes_poder':
-        return `${component.potencia || 'N/A'}W, ${component.certificacion || 'N/A'}, ${component.modular || 'N/A'}`;
+        if (component.potencia) specs.push(`${component.potencia}W`);
+        if (component.certificacion) specs.push(component.certificacion);
+        if (component.modular) specs.push(component.modular);
+        break;
       case 'gabinetes':
-        return `${component.formato || 'N/A'}, GPU: ${component.longitud_max_gpu || 'N/A'}mm`;
-      default:
-        return 'Especificaciones técnicas disponibles';
+        if (component.formato) specs.push(component.formato);
+        if (component.longitud_max_gpu) specs.push(`GPU: ${component.longitud_max_gpu}mm`);
+        if (component.motherboards_soportadas) specs.push(component.motherboards_soportadas);
+        break;
     }
+
+    return specs.join(' • ') || 'Especificaciones técnicas disponibles';
   };
 
   const filterComponents = () => {
@@ -140,9 +207,9 @@ export default function ComponentsCatalog() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(comp =>
-        comp.marca.toLowerCase().includes(query) ||
-        comp.modelo.toLowerCase().includes(query) ||
-        comp.especificaciones.toLowerCase().includes(query)
+        comp.marca?.toLowerCase().includes(query) ||
+        comp.modelo?.toLowerCase().includes(query) ||
+        comp.especificaciones?.toLowerCase().includes(query)
       );
     }
 
@@ -151,23 +218,19 @@ export default function ComponentsCatalog() {
 
   const handleComponentPress = (component: Component) => {
     // Mostrar todos los detalles del componente
-    const detalles = `
-Marca: ${component.marca}
-Modelo: ${component.modelo}
-Tipo: ${component.tipo}
+    const detalles = Object.entries(component)
+      .filter(([key, value]) =>
+        !['id', 'marca', 'modelo', 'tipo', 'especificaciones', 'estado', 'fecha_creacion', 'imagen_url'].includes(key) &&
+        value !== null &&
+        value !== '' &&
+        value !== undefined
+      )
+      .map(([key, value]) => `${key.replace(/_/g, ' ').toUpperCase()}: ${value}`)
+      .join('\n');
 
-${Object.entries(component)
-  .filter(([key, value]) => 
-    !['id', 'marca', 'modelo', 'tipo', 'especificaciones', 'estado', 'fecha_creacion'].includes(key) && 
-    value !== null && 
-    value !== '' &&
-    value !== undefined
-  )
-  .map(([key, value]) => `${key.replace(/_/g, ' ').toUpperCase()}: ${value}`)
-  .join('\n')}
-    `.trim();
+    const mensaje = `Detalles de ${component.marca} ${component.modelo}${detalles ? '\n\n' + detalles : '\n\nNo hay detalles adicionales disponibles'}`;
 
-    toast.info(`Detalles de ${component.marca} ${component.modelo}\n\n${detalles}`);
+    toast.info(mensaje);
   };
 
   if (loading) {
@@ -201,8 +264,8 @@ ${Object.entries(component)
       </View>
 
       {/* Categorías */}
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.categoriesContainer}
       >
@@ -230,6 +293,7 @@ ${Object.entries(component)
       <View style={styles.resultsHeader}>
         <Text style={styles.resultsTitle}>
           {filteredComponents.length} componente{filteredComponents.length !== 1 ? 's' : ''} encontrado{filteredComponents.length !== 1 ? 's' : ''}
+          {selectedCategory !== 'all' && ` en ${categories.find(cat => cat.id === selectedCategory)?.name}`}
         </Text>
       </View>
 
@@ -239,13 +303,22 @@ ${Object.entries(component)
             <Text style={styles.emptyIcon}>🔍</Text>
             <Text style={styles.emptyTitle}>No se encontraron componentes</Text>
             <Text style={styles.emptyText}>
-              Probá con otros términos de búsqueda o otra categoría
+              {selectedCategory === 'all'
+                ? 'No hay componentes en el inventario'
+                : 'Probá con otros términos de búsqueda o seleccioná otra categoría'
+              }
             </Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={loadComponents}
+            >
+              <Text style={styles.retryButtonText}>Reintentar carga</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           filteredComponents.map((component) => (
             <TouchableOpacity
-              key={component.id}
+              key={`${component.tipo}-${component.id}`}
               style={styles.componentCard}
               onPress={() => handleComponentPress(component)}
             >
@@ -257,15 +330,12 @@ ${Object.entries(component)
                   </Text>
                 </View>
               </View>
-              
+
               <Text style={styles.componentModel}>{component.modelo}</Text>
               <Text style={styles.componentSpecs}>{component.especificaciones}</Text>
-              
+
               <View style={styles.componentFooter}>
-                <TouchableOpacity style={styles.addButton}>
-                  <Text style={styles.addButtonText}>+ Agregar a Build</Text>
-                </TouchableOpacity>
-                <Text style={styles.viewDetails}>Tocar para detalles →</Text>
+                <Text style={styles.viewDetails}>Tocar para ver detalles completos →</Text>
               </View>
             </TouchableOpacity>
           ))
@@ -376,6 +446,7 @@ const styles = StyleSheet.create({
   emptyIcon: {
     fontSize: 48,
     marginBottom: 16,
+    opacity: 0.7,
   },
   emptyTitle: {
     fontSize: 18,
@@ -389,6 +460,18 @@ const styles = StyleSheet.create({
     color: '#8b9cb3',
     textAlign: 'center',
     lineHeight: 20,
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#667eea',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   componentCard: {
     backgroundColor: '#1a1b27',
@@ -408,12 +491,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#667eea',
+    flex: 1,
   },
   componentTypeBadge: {
     backgroundColor: 'rgba(102, 126, 234, 0.1)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
+    marginLeft: 8,
   },
   componentTypeText: {
     fontSize: 12,
@@ -432,19 +517,8 @@ const styles = StyleSheet.create({
   },
   componentFooter: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-  },
-  addButton: {
-    backgroundColor: '#667eea',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  addButtonText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '600',
   },
   viewDetails: {
     color: '#667eea',

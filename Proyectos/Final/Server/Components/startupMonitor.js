@@ -1,4 +1,5 @@
-const pool = require('./database');
+import pool from './database.js';
+import { networkInterfaces } from 'os';
 
 class StartupMonitor {
   // Verificar conexión a la base de datos
@@ -26,7 +27,6 @@ class StartupMonitor {
 
   // Obtener IP local
   getLocalIP() {
-    const { networkInterfaces } = require('os');
     const nets = networkInterfaces();
     
     for (const name of Object.keys(nets)) {
@@ -96,4 +96,4 @@ class StartupMonitor {
   }
 }
 
-module.exports = new StartupMonitor();
+export default new StartupMonitor();

@@ -35,7 +35,6 @@ export default function Index() {
     { name: 'Memorias RAM', icon: '💾', color: '#45B7D1' },
     { name: 'Gabinetes', icon: '🖥️', color: '#96CEB4' },
     { name: 'Fuentes', icon: '🔋', color: '#FFEAA7' },
-    { name: 'Periféricos', icon: '🎮', color: '#DDA0DD' },
     { name: 'Almacenamiento', icon: '💿', color: '#98D8C8' },
     { name: 'Tarjetas Gráficas', icon: '🎯', color: '#F7DC6F' }
   ];

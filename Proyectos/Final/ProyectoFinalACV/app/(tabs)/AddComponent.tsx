@@ -1,4 +1,4 @@
-// app/(tabs)/AddComponent.tsx - COMPLETAMENTE ACTUALIZADO CON LISTAS
+// app/(tabs)/AddComponent.tsx - COMPLETAMENTE ACTUALIZADO CON TODOS LOS COMPONENTES
 import React, { useState, useEffect } from 'react';
 import { 
   View, 
@@ -37,23 +37,23 @@ export default function AddComponent() {
     }
   }, []);
   
-React.useEffect(() => {
-  // Verificar permisos después del montaje
-  const checkPermissions = () => {
-    if (!isAdmin()) {
-      toast.error('No tenés permisos para acceder');
-      setTimeout(() => {
-        router.back();
-      }, 100);
-      return false;
-    }
-    return true;
-  };
+  React.useEffect(() => {
+    // Verificar permisos después del montaje
+    const checkPermissions = () => {
+      if (!isAdmin()) {
+        toast.error('No tenés permisos para acceder');
+        setTimeout(() => {
+          router.back();
+        }, 100);
+        return false;
+      }
+      return true;
+    };
 
-  if (checkPermissions()) {
-    loadFormOptions();
-  }
-}, []);
+    if (checkPermissions()) {
+      loadFormOptions();
+    }
+  }, []);
 
   const loadFormOptions = async () => {
     try {
@@ -66,6 +66,35 @@ React.useEffect(() => {
     } finally {
       setOptionsLoading(false);
     }
+  };
+
+  // Función para mapear y convertir datos
+  const mapFormDataToAPI = (formData: any, componentType: string) => {
+    const mappedData: any = { ...formData };
+    
+    // Convertir strings a números donde sea necesario
+    const numericFields = [
+      'nucleos', 'hilos', 'tdp', 'año_lanzamiento', 'velocidad_memoria_max',
+      'frecuencia_base', 'frecuencia_turbo', 'capacidad', 'velocidad_mhz',
+      'velocidad_mt', 'voltaje', 'slots_memoria', 'memoria_maxima',
+      'velocidad_memoria_soportada', 'slots_pcie', 'puertos_sata', 'puertos_m2',
+      'memoria', 'bus_memoria', 'velocidad_memoria', 'nucleos_cuda',
+      'frecuencia_base', 'frecuencia_boost', 'longitud_mm', 'altura_mm',
+      'slots_ocupados', 'peso_kg', 'potencia', 'conectores_sata', 'conectores_molex',
+      'longitud_max_gpu', 'altura_max_cooler', 'bahias_35', 'bahias_25', 'slots_expansion'
+    ];
+
+    numericFields.forEach(field => {
+      if (mappedData[field] && typeof mappedData[field] === 'string') {
+        if (field.includes('frecuencia') || field === 'voltaje') {
+          mappedData[field] = parseFloat(mappedData[field]);
+        } else {
+          mappedData[field] = parseInt(mappedData[field]);
+        }
+      }
+    });
+
+    return mappedData;
   };
 
   const componentForms: { [key: string]: any } = {
@@ -362,6 +391,350 @@ React.useEffect(() => {
           placeholder: 'https://...'
         }
       ]
+    },
+    tarjetas_graficas: {
+      title: '🎯 Agregar Tarjeta Gráfica',
+      fields: [
+        { 
+          name: 'marca', 
+          label: 'Marca', 
+          required: true, 
+          placeholder: 'Seleccionar marca',
+          type: 'select',
+          optionsKey: 'marcas'
+        },
+        { 
+          name: 'modelo', 
+          label: 'Modelo', 
+          required: true, 
+          placeholder: 'RTX 4090, RX 7900 XTX'
+        },
+        { 
+          name: 'fabricante', 
+          label: 'Fabricante', 
+          placeholder: 'ASUS, Gigabyte, MSI'
+        },
+        { 
+          name: 'memoria', 
+          label: 'Memoria (GB)', 
+          type: 'number', 
+          placeholder: '24'
+        },
+        { 
+          name: 'tipo_memoria', 
+          label: 'Tipo Memoria', 
+          placeholder: 'GDDR6X, GDDR6',
+          type: 'select',
+          optionsKey: 'tiposMemoriaGPU'
+        },
+        { 
+          name: 'bus_memoria', 
+          label: 'Bus Memoria (bit)', 
+          type: 'number', 
+          placeholder: '384'
+        },
+        { 
+          name: 'velocidad_memoria', 
+          label: 'Velocidad Memoria (MHz)', 
+          type: 'number', 
+          placeholder: '21000'
+        },
+        { 
+          name: 'nucleos_cuda', 
+          label: 'Núcleos CUDA', 
+          type: 'number', 
+          placeholder: '16384'
+        },
+        { 
+          name: 'frecuencia_base', 
+          label: 'Frecuencia Base (MHz)', 
+          type: 'number', 
+          placeholder: '2235'
+        },
+        { 
+          name: 'frecuencia_boost', 
+          label: 'Frecuencia Boost (MHz)', 
+          type: 'number', 
+          placeholder: '2520'
+        },
+        { 
+          name: 'tdp', 
+          label: 'TDP (W)', 
+          type: 'number', 
+          placeholder: '450'
+        },
+        { 
+          name: 'conectores_alimentacion', 
+          label: 'Conectores Alimentación', 
+          placeholder: '16-pin, 2x8-pin'
+        },
+        { 
+          name: 'salidas_video', 
+          label: 'Salidas Video', 
+          placeholder: '3xDP, 1xHDMI'
+        },
+        { 
+          name: 'longitud_mm', 
+          label: 'Longitud (mm)', 
+          type: 'number', 
+          placeholder: '304'
+        },
+        { 
+          name: 'altura_mm', 
+          label: 'Altura (mm)', 
+          type: 'number', 
+          placeholder: '137'
+        },
+        { 
+          name: 'slots_ocupados', 
+          label: 'Slots Ocupados', 
+          type: 'number', 
+          placeholder: '3'
+        },
+        { 
+          name: 'peso_kg', 
+          label: 'Peso (kg)', 
+          type: 'number', 
+          placeholder: '2.2'
+        },
+        { 
+          name: 'imagen_url', 
+          label: 'URL Imagen', 
+          placeholder: 'https://...'
+        }
+      ]
+    },
+    almacenamiento: {
+      title: '💿 Agregar Almacenamiento',
+      fields: [
+        { 
+          name: 'marca', 
+          label: 'Marca', 
+          required: true, 
+          placeholder: 'Seleccionar marca',
+          type: 'select',
+          optionsKey: 'marcas'
+        },
+        { 
+          name: 'modelo', 
+          label: 'Modelo', 
+          required: true, 
+          placeholder: '990 Pro, SN850X'
+        },
+        { 
+          name: 'capacidad', 
+          label: 'Capacidad (GB)', 
+          type: 'number', 
+          required: true, 
+          placeholder: '2000'
+        },
+        { 
+          name: 'tipo', 
+          label: 'Tipo', 
+          required: true, 
+          placeholder: 'SSD, HDD',
+          type: 'select',
+          optionsKey: 'tiposAlmacenamiento'
+        },
+        { 
+          name: 'interfaz', 
+          label: 'Interfaz', 
+          placeholder: 'PCIe 4.0, SATA III',
+          type: 'select',
+          optionsKey: 'interfacesAlmacenamiento'
+        },
+        { 
+          name: 'velocidad_lectura', 
+          label: 'Velocidad Lectura (MB/s)', 
+          type: 'number', 
+          placeholder: '7450'
+        },
+        { 
+          name: 'velocidad_escritura', 
+          label: 'Velocidad Escritura (MB/s)', 
+          type: 'number', 
+          placeholder: '6900'
+        },
+        { 
+          name: 'formato', 
+          label: 'Formato', 
+          placeholder: 'M.2, 2.5", 3.5"'
+        },
+        { 
+          name: 'rpm', 
+          label: 'RPM (solo HDD)', 
+          type: 'number', 
+          placeholder: '7200'
+        },
+        { 
+          name: 'imagen_url', 
+          label: 'URL Imagen', 
+          placeholder: 'https://...'
+        }
+      ]
+    },
+    fuentes_poder: {
+      title: '🔋 Agregar Fuente de Poder',
+      fields: [
+        { 
+          name: 'marca', 
+          label: 'Marca', 
+          required: true, 
+          placeholder: 'Seleccionar marca',
+          type: 'select',
+          optionsKey: 'marcas'
+        },
+        { 
+          name: 'modelo', 
+          label: 'Modelo', 
+          required: true, 
+          placeholder: 'RM1000x, Prime TX-1000'
+        },
+        { 
+          name: 'potencia', 
+          label: 'Potencia (W)', 
+          type: 'number', 
+          required: true, 
+          placeholder: '1000'
+        },
+        { 
+          name: 'certificacion', 
+          label: 'Certificación', 
+          placeholder: '80 Plus Gold, Platinum',
+          type: 'select',
+          optionsKey: 'certificacionesFuente'
+        },
+        { 
+          name: 'modular', 
+          label: 'Modular', 
+          placeholder: 'Full, Semi, No',
+          type: 'select',
+          optionsKey: 'tiposModular'
+        },
+        { 
+          name: 'conectores_pcie', 
+          label: 'Conectores PCIe', 
+          placeholder: '6x8-pin, PCIe 5.0'
+        },
+        { 
+          name: 'conectores_sata', 
+          label: 'Conectores SATA', 
+          type: 'number', 
+          placeholder: '12'
+        },
+        { 
+          name: 'conectores_molex', 
+          label: 'Conectores Molex', 
+          type: 'number', 
+          placeholder: '4'
+        },
+        { 
+          name: 'formato', 
+          label: 'Formato', 
+          placeholder: 'ATX'
+        },
+        { 
+          name: 'protecciones', 
+          label: 'Protecciones', 
+          placeholder: 'OPP, OVP, UVP'
+        },
+        { 
+          name: 'imagen_url', 
+          label: 'URL Imagen', 
+          placeholder: 'https://...'
+        }
+      ]
+    },
+    gabinetes: {
+      title: '🖥️ Agregar Gabinete',
+      fields: [
+        { 
+          name: 'marca', 
+          label: 'Marca', 
+          required: true, 
+          placeholder: 'Seleccionar marca',
+          type: 'select',
+          optionsKey: 'marcas'
+        },
+        { 
+          name: 'modelo', 
+          label: 'Modelo', 
+          required: true, 
+          placeholder: 'O11 Dynamic, North'
+        },
+        { 
+          name: 'formato', 
+          label: 'Formato', 
+          placeholder: 'Mid Tower, Full Tower',
+          type: 'select',
+          optionsKey: 'formatosGabinete'
+        },
+        { 
+          name: 'motherboards_soportadas', 
+          label: 'Motherboards Soportadas', 
+          placeholder: 'ATX, Micro-ATX, Mini-ITX'
+        },
+        { 
+          name: 'longitud_max_gpu', 
+          label: 'Longitud Máx GPU (mm)', 
+          type: 'number', 
+          placeholder: '455'
+        },
+        { 
+          name: 'altura_max_cooler', 
+          label: 'Altura Máx Cooler (mm)', 
+          type: 'number', 
+          placeholder: '185'
+        },
+        { 
+          name: 'bahias_35', 
+          label: 'Bahías 3.5"', 
+          type: 'number', 
+          placeholder: '2'
+        },
+        { 
+          name: 'bahias_25', 
+          label: 'Bahías 2.5"', 
+          type: 'number', 
+          placeholder: '4'
+        },
+        { 
+          name: 'slots_expansion', 
+          label: 'Slots Expansión', 
+          type: 'number', 
+          placeholder: '8'
+        },
+        { 
+          name: 'ventiladores_incluidos', 
+          label: 'Ventiladores Incluidos', 
+          placeholder: '3x120mm'
+        },
+        { 
+          name: 'ventiladores_soportados', 
+          label: 'Ventiladores Soportados', 
+          placeholder: '10'
+        },
+        { 
+          name: 'radiador_soportado', 
+          label: 'Radiador Soportado', 
+          placeholder: '360mm'
+        },
+        { 
+          name: 'panel_frontal', 
+          label: 'Panel Frontal', 
+          placeholder: 'Vidrio, Malla'
+        },
+        { 
+          name: 'material', 
+          label: 'Material', 
+          placeholder: 'Acero, Vidrio'
+        },
+        { 
+          name: 'imagen_url', 
+          label: 'URL Imagen', 
+          placeholder: 'https://...'
+        }
+      ]
     }
   };
 
@@ -399,17 +772,30 @@ React.useEffect(() => {
     setLoading(true);
 
     try {
+      const apiData = mapFormDataToAPI(formData, componentType);
       let result;
       
       switch (componentType) {
         case 'procesadores':
-          result = await componentService.createProcessor(formData);
+          result = await componentService.createProcessor(apiData);
           break;
         case 'motherboards':
-          result = await componentService.createMotherboard(formData);
+          result = await componentService.createMotherboard(apiData);
           break;
         case 'memorias_ram':
-          result = await componentService.createRAM(formData);
+          result = await componentService.createRAM(apiData);
+          break;
+        case 'tarjetas_graficas':
+          result = await componentService.createGPU(apiData);
+          break;
+        case 'almacenamiento':
+          result = await componentService.createStorage(apiData);
+          break;
+        case 'fuentes_poder':
+          result = await componentService.createPSU(apiData);
+          break;
+        case 'gabinetes':
+          result = await componentService.createCase(apiData);
           break;
         default:
           toast.error('Tipo de componente no soportado aún');
@@ -418,12 +804,14 @@ React.useEffect(() => {
 
       if (result.success) {
         toast.success('✅ Componente agregado exitosamente');
+        setFormData({});
         router.back();
       } else {
         toast.error(result.error || 'Error al agregar componente');
       }
     } catch (error) {
-      toast.error('Error de conexión');
+      console.error('Error completo:', error);
+      toast.error('Error de conexión con el servidor');
     } finally {
       setLoading(false);
     }

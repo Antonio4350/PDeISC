@@ -483,6 +483,27 @@ class ComponentService {
       return await response.json();
     } catch (error) {
       console.error('Error obteniendo GPUs:', error);
+      return { 
+        success: false, 
+        error: 'Error de conexión. Verifica que el servidor esté ejecutándose.' 
+      };
+    }
+  }
+
+  async getGPUById(id: number): Promise<ApiResponse<GPU>> {
+    try {
+      const response = await fetch(`${API_URL}/components/tarjetas_graficas/${id}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error obteniendo GPU:', error);
       return { success: false, error: 'Error de conexión' };
     }
   }
@@ -548,6 +569,27 @@ class ComponentService {
   async getStorage(): Promise<ApiResponse<Almacenamiento[]>> {
     try {
       const response = await fetch(`${API_URL}/components/almacenamiento`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error obteniendo almacenamiento:', error);
+      return { 
+        success: false, 
+        error: 'Error de conexión. Verifica que el servidor esté ejecutándose.' 
+      };
+    }
+  }
+
+  async getStorageById(id: number): Promise<ApiResponse<Almacenamiento>> {
+    try {
+      const response = await fetch(`${API_URL}/components/almacenamiento/${id}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -635,6 +677,27 @@ class ComponentService {
       return await response.json();
     } catch (error) {
       console.error('Error obteniendo fuentes de poder:', error);
+      return { 
+        success: false, 
+        error: 'Error de conexión. Verifica que el servidor esté ejecutándose.' 
+      };
+    }
+  }
+
+  async getPSUById(id: number): Promise<ApiResponse<FuentePoder>> {
+    try {
+      const response = await fetch(`${API_URL}/components/fuentes_poder/${id}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error obteniendo fuente de poder:', error);
       return { success: false, error: 'Error de conexión' };
     }
   }
@@ -711,6 +774,27 @@ class ComponentService {
       return await response.json();
     } catch (error) {
       console.error('Error obteniendo gabinetes:', error);
+      return { 
+        success: false, 
+        error: 'Error de conexión. Verifica que el servidor esté ejecutándose.' 
+      };
+    }
+  }
+
+  async getCaseById(id: number): Promise<ApiResponse<Gabinete>> {
+    try {
+      const response = await fetch(`${API_URL}/components/gabinetes/${id}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error obteniendo gabinete:', error);
       return { success: false, error: 'Error de conexión' };
     }
   }
