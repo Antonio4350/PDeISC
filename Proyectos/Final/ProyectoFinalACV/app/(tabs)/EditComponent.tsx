@@ -229,7 +229,7 @@ useEffect(() => {
       }
 
       if (result.success) {
-        toast.success('✅ Componente actualizado exitosamente');
+        toast.success('Componente actualizado exitosamente');
         router.back();
       } else {
         toast.error(result.error || 'Error al actualizar componente');

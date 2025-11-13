@@ -43,16 +43,16 @@ class ApiService {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`❌ HTTP error! status: ${response.status}, body: ${errorText}`);
+        console.error(`HTTP error! status: ${response.status}, body: ${errorText}`);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log(`✅ Response success:`, data);
+      console.log(`Response success:`, data);
       return data;
       
     } catch (error) {
-      console.error('❌ Error en la request:', error);
+      console.error('Error en la request:', error);
       throw error;
     }
   }

@@ -10,14 +10,14 @@ class StartupMonitor {
       const ping = Date.now() - startTime;
       
       return {
-        status: '✅ CONECTADA',
+        status: 'CONECTADA',
         ping: `${ping}ms`,
         message: 'Conexión exitosa a PostgreSQL (Neon)',
         success: true
       };
     } catch (error) {
       return {
-        status: '❌ DESCONECTADA',
+        status: 'DESCONECTADA',
         ping: null,
         message: `Error: ${error.message}`,
         success: false
@@ -72,14 +72,14 @@ class StartupMonitor {
 
   // Mostrar información cuando el servidor esté listo
   displayServerReady(info) {
-    console.log('✅ SERVIDOR INICIADO CORRECTAMENTE');
+    console.log('SERVIDOR INICIADO CORRECTAMENTE');
     console.log(`📍 URL Local: http://localhost:${info.port}`);
     console.log(`📍 URL Red: http://${info.localIP}:${info.port}`);
     console.log(`⏰ Iniciado: ${new Date().toLocaleString()}`);
     
     // Resumen final
     console.log('📋 RESUMEN INICIAL:');
-    console.log(`   Backend: ✅ ACTIVO`);
+    console.log(`   Backend: ACTIVO`);
     console.log(`   Base de Datos: ${info.dbStatus.status}`);
     if (info.dbStatus.ping) {
       console.log(`   Tiempo respuesta BD: ${info.dbStatus.ping}`);

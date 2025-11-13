@@ -800,7 +800,7 @@ export default function AddComponent() {
       }
 
       if (result.success) {
-        toast.success('✅ Componente agregado exitosamente');
+        toast.success('Componente agregado exitosamente');
         setFormData({});
         router.back();
       } else {

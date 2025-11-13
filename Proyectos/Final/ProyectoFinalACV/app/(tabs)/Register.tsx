@@ -90,7 +90,6 @@ export default function Register() {
         await login(result.user, result.token);
         toast.success(`¡Cuenta creada para ${result.user.nombre}!`);
         
-        // ✅ REDIRECCIÓN AUTOMÁTICA después del registro
         setTimeout(() => {
           router.replace('/');
         }, 1000);
@@ -109,8 +108,6 @@ export default function Register() {
     try {
       await login(userData);
       toast.success(`¡Bienvenido ${userData.nombre || userData.email}!`);
-      
-      // ✅ REDIRECCIÓN AUTOMÁTICA después del Google registro
       setTimeout(() => {
         router.replace('/');
       }, 1000);
@@ -227,7 +224,7 @@ export default function Register() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>✅ Confirmar Contraseña *</Text>
+              <Text style={styles.label}>Confirmar Contraseña *</Text>
               <TextInput
                 style={[styles.input, dynamicStyles.input]}
                 placeholder="Repetí tu contraseña"

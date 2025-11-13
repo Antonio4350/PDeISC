@@ -272,13 +272,13 @@ class AdvancedCompatibilityService {
     const { compatible, summary, issues, warnings } = validation;
 
     if (compatible) {
-      return `✅ ¡Build Compatible! Todas las verificaciones pasaron (${summary.totalChecks}/${summary.totalChecks})`;
+      return `¡Build Compatible! Todas las verificaciones pasaron (${summary.totalChecks}/${summary.totalChecks})`;
     }
 
     const issuesText = summary.critical > 0 ? `${summary.critical} error(es) crítico(s)` : '';
     const warningsText = summary.warnings > 0 ? `${summary.warnings} advertencia(s)` : '';
     
-    return `❌ Build Incompatible | ${issuesText} ${warningsText}`.trim();
+    return `Build Incompatible | ${issuesText} ${warningsText}`.trim();
   }
 }
 

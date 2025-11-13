@@ -171,7 +171,7 @@ export default function PcBuilder() {
               tipo_memoria: comp.tipo_memoria,
               imagen_url: comp.imagen_url,
             }));
-            console.log(`✅ ${category.name}: ${componentsData[category.type].length} componentes cargados`);
+            console.log(`${category.name}: ${componentsData[category.type].length} componentes cargados`);
             console.log(`First component of ${category.type}:`, componentsData[category.type][0]);
           } else {
             console.log(`❌ ${category.name}: No hay datos o error en la respuesta`, result.error);

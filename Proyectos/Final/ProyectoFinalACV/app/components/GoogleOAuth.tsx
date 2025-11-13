@@ -7,7 +7,7 @@ import { StyleSheet } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const API_URL = "http://192.168.100.156:5000";
+const API_URL = "http://192.168.1.38:5000";
 
 const GOOGLE_ANDROID_CLIENT_ID = "58585220959-8capru7gmaertcnsvoervkm3vsef6q3l.apps.googleusercontent.com";
 

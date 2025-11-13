@@ -181,7 +181,7 @@ export default function ComponentsList() {
       console.log(`[DELETE RESULT]`, result);
 
       if (result?.success) {
-        toast.success('✅ Eliminado!');
+        toast.success('Eliminado!');
         setLoading(true);
         setTimeout(() => {
           loadComponents();
