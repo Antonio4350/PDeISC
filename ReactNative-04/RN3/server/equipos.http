@@ -1,0 +1,21 @@
+GET http://localhost:3000/api/equipos
+###
+GET http://localhost:3000/api/equipos/2
+###
+POST http://localhost:3000/api/equipos
+Content-Type: application/json
+
+{
+    "nombre": "Boca",
+    "escudo": "Escudo",
+    "jugadores": "Jugador,Cavani,Malo"
+}
+###
+PUT http://localhost:3000/api/equipos/2
+Content-Type: application/json
+
+{
+    "nombre": "Boca Juniors"
+}
+###
+DELETE http://localhost:3000/api/equipos/2

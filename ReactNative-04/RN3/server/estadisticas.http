@@ -1,0 +1,23 @@
+###
+GET http://localhost:3000/api/estadisticas
+###
+GET http://localhost:3000/api/estadisticas/1
+###
+POST http://localhost:3000/api/estadisticas
+Content-Type: application/json
+
+{
+    "partido_id": 1,
+    "jugador_id": 1,
+    "goles": 2,
+    "tarjetas": 1
+}
+###
+PUT http://localhost:3000/api/estadisticas/1
+Content-Type: application/json
+
+{
+    "goles": 4
+}
+###
+DELETE http://localhost:3000/api/estadisticas/1
