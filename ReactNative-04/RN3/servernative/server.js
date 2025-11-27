@@ -224,26 +224,6 @@ async function addDirector(email, imagen, nombre, apellido)
     }
 }
 
-async function addEquipo(nombre, director_id, escudo)
-{
-    let db;
-    try
-    {
-        db = await connectBD();
-        if(!db) return;
-
-        let sql = 'INSERT INTO equipos (nombre, director, escudo) VALUES (?,?,?)'
-        console.log(nombre + ',' + director_id + ',' + escudo);
-        await db.execute(sql, [nombre, director_id, escudo]);
-
-        db.end();
-        return 0;
-    } catch(error)
-    {
-        console.error(error);
-    }
-}
-
 async function addPartido(equipo1, equipo2, fecha)
 {
     let db;
@@ -558,6 +538,338 @@ async function cambiarEquipo(id_jugador, id_equipo)
         console.error(error);
     }
 }
+async function makeAdmin(email) {
+    let db;
+    try {
+        db = await connectBD();
+        if(!db) return;
+        
+        let sql = 'UPDATE usuarios SET es_administrador=TRUE, tipo=3 WHERE email=?';
+        await db.execute(sql, [email]);
+        
+        db.end();
+        return 0;
+    } catch(error) {
+        console.error(error);
+        return 1;
+    }
+}
+
+async function removeAdmin(email) {
+    let db;
+    try {
+        db = await connectBD();
+        if(!db) return;
+        
+        let sql = 'UPDATE usuarios SET es_administrador=FALSE, tipo=0 WHERE email=?';
+        await db.execute(sql, [email]);
+        
+        db.end();
+        return 0;
+    } catch(error) {
+        console.error(error);
+        return 1;
+    }
+}
+
+async function getAdmins() {
+    let db;
+    try {
+        db = await connectBD();
+        if(!db) return;
+        
+        let sql = 'SELECT id, email, tipo FROM usuarios WHERE es_administrador=TRUE';
+        const [result] = await db.execute(sql);
+        
+        db.end();
+        return result;
+    } catch(error) {
+        console.error(error);
+    }
+}
+
+async function isAdmin(email) {
+    let db;
+    try {
+        db = await connectBD();
+        if(!db) return false;
+        
+        let sql = 'SELECT es_administrador FROM usuarios WHERE email=?';
+        const [result] = await db.execute(sql, [email]);
+        
+        db.end();
+        return result.length > 0 && result[0].es_administrador === 1;
+    } catch(error) {
+        console.error(error);
+        return false;
+    }
+}
+
+// ================== ENDPOINTS PARTIDOS ==================
+
+async function updatePartido(id, equipo1, equipo2, goles1, goles2, terminado, fecha) {
+    let db;
+    try {
+        db = await connectBD();
+        if(!db) return;
+        
+        let sql = 'UPDATE partidos SET equipo1=?, equipo2=?, goles1=?, goles2=?, terminado=?, fecha=? WHERE id=?';
+        await db.execute(sql, [equipo1, equipo2, goles1, goles2, terminado, fecha, id]);
+        
+        db.end();
+        return 0;
+    } catch(error) {
+        console.error(error);
+        return 1;
+    }
+}
+
+async function deletePartido(id) {
+    let db;
+    try {
+        db = await connectBD();
+        if(!db) return;
+        
+        let sql = 'DELETE FROM partidos WHERE id=?';
+        await db.execute(sql, [id]);
+        
+        db.end();
+        return 0;
+    } catch(error) {
+        console.error(error);
+        return 1;
+    }
+}
+
+async function getPartido(id) {
+    let db;
+    try {
+        db = await connectBD();
+        if(!db) return;
+        
+        let sql = 'SELECT * FROM partidos WHERE id=?';
+        const [result] = await db.execute(sql, [id]);
+        
+        db.end();
+        return result;
+    } catch(error) {
+        console.error(error);
+    }
+}
+
+async function deleteJugador(id) {
+    let db;
+    try {
+        db = await connectBD();
+        if(!db) return;
+        
+        // Primero actualizar usuarios que referencian este jugador
+        let sql = 'UPDATE usuarios SET tipo=0, id_tabla=NULL WHERE id_tabla=? AND tipo=1';
+        await db.execute(sql, [id]);
+        
+        // Luego eliminar el jugador
+        sql = 'DELETE FROM jugadores WHERE id=?';
+        await db.execute(sql, [id]);
+        
+        db.end();
+        return 0;
+    } catch(error) {
+        console.error(error);
+        return 1;
+    }
+}
+
+async function deleteDirector(id) {
+    let db;
+    try {
+        db = await connectBD();
+        if(!db) return;
+        
+        // Primero eliminar equipos del director
+        let sql = 'DELETE FROM equipos WHERE director=?';
+        await db.execute(sql, [id]);
+        
+        // Actualizar usuarios que referencian este director
+        sql = 'UPDATE usuarios SET tipo=0, id_tabla=NULL WHERE id_tabla=? AND tipo=2';
+        await db.execute(sql, [id]);
+        
+        // Luego eliminar el director
+        sql = 'DELETE FROM directores WHERE id=?';
+        await db.execute(sql, [id]);
+        
+        db.end();
+        return 0;
+    } catch(error) {
+        console.error(error);
+        return 1;
+    }
+}
+
+async function deleteEquipo(id) {
+    let db;
+    try {
+        db = await connectBD();
+        if(!db) return;
+        
+        // Primero quitar jugadores del equipo
+        let sql = 'UPDATE jugadores SET equipo=NULL WHERE equipo=?';
+        await db.execute(sql, [id]);
+        
+        // Luego eliminar el equipo
+        sql = 'DELETE FROM equipos WHERE id=?';
+        await db.execute(sql, [id]);
+        
+        db.end();
+        return 0;
+    } catch(error) {
+        console.error(error);
+        return 1;
+    }
+}
+
+async function equipoExiste(nombre) {
+    let db;
+    try {
+        db = await connectBD();
+        if(!db) return false;
+        
+        let sql = 'SELECT id FROM equipos WHERE nombre = ?';
+        const [result] = await db.execute(sql, [nombre]);
+        
+        db.end();
+        return result.length > 0;
+    } catch(error) {
+        console.error(error);
+        return false;
+    }
+}
+
+// Función addEquipo con validación (ÚNICA DEFINICIÓN)
+async function addEquipo(nombre, director_id, escudo) {
+    let db;
+    try {
+        db = await connectBD();
+        if(!db) return;
+
+        // Verificar si el equipo ya existe
+        const existe = await equipoExiste(nombre);
+        if (existe) {
+            db.end();
+            return 2; // Código para equipo existente
+        }
+
+        let sql = 'INSERT INTO equipos (nombre, director, escudo) VALUES (?,?,?)';
+        console.log(nombre + ',' + director_id + ',' + escudo);
+        await db.execute(sql, [nombre, director_id, escudo]);
+
+        db.end();
+        return 0;
+    } catch(error) {
+        console.error(error);
+        return 1;
+    }
+}
+
+// ================== ENDPOINTS ELIMINACIÓN ==================
+
+app.post('/deleteJugador', express.json(), async function(req,res){
+    const { id } = req.body;
+    
+    await deleteJugador(id)
+    .then(async result => {
+        res.json(result);
+    })
+    .catch(err => res.status(500).send(err));
+});
+
+app.post('/deleteDirector', express.json(), async function(req,res){
+    const { id } = req.body;
+    
+    await deleteDirector(id)
+    .then(async result => {
+        res.json(result);
+    })
+    .catch(err => res.status(500).send(err));
+});
+
+app.post('/deleteEquipo', express.json(), async function(req,res){
+    const { id } = req.body;
+    
+    await deleteEquipo(id)
+    .then(async result => {
+        res.json(result);
+    })
+    .catch(err => res.status(500).send(err));
+});
+
+// ================== ENDPOINTS ==================
+
+// Endpoints Administrador
+app.post('/makeAdmin', express.json(), async function(req,res){
+    const { email } = req.body;
+    
+    await makeAdmin(email)
+    .then(async result => {
+        res.json(result);
+    })
+    .catch(err => res.status(500).send(err));
+});
+
+app.post('/removeAdmin', express.json(), async function(req,res){
+    const { email } = req.body;
+    
+    await removeAdmin(email)
+    .then(async result => {
+        res.json(result);
+    })
+    .catch(err => res.status(500).send(err));
+});
+
+app.get('/getAdmins', async (req, res) => {
+    let admins = await getAdmins();
+    res.json(admins);
+});
+
+app.post('/isAdmin', express.json(), async function(req,res){
+    const { email } = req.body;
+    
+    await isAdmin(email)
+    .then(async result => {
+        res.json(result);
+    })
+    .catch(err => res.status(500).send(err));
+});
+
+// Endpoints Partidos
+app.post('/updatePartido', express.json(), async function(req,res){
+    const { id, equipo1, equipo2, goles1, goles2, terminado, fecha } = req.body;
+    
+    await updatePartido(id, equipo1, equipo2, goles1, goles2, terminado, fecha)
+    .then(async result => {
+        res.json(result);
+    })
+    .catch(err => res.status(500).send(err));
+});
+
+app.post('/deletePartido', express.json(), async function(req,res){
+    const { id } = req.body;
+    
+    await deletePartido(id)
+    .then(async result => {
+        res.json(result);
+    })
+    .catch(err => res.status(500).send(err));
+});
+
+app.post('/getPartido', express.json(), async function(req,res){
+    const { id } = req.body;
+    
+    await getPartido(id)
+    .then(async result => {
+        res.json(result);
+    })
+    .catch(err => res.status(500).send(err));
+});
   
 app.post('/editJugador', upload.none(), async function(req,res){
     const { email, password, oldmail, oldpassword, image, isGoogleUser, nombre, apellido, posicion } = req.body; //Valores del usuario
