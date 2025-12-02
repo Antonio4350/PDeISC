@@ -29,8 +29,13 @@ export default function Projects() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadProjects();
-  }, []);
+    if (user) {
+      loadProjects();
+    } else {
+      setLoading(false);
+      setProjects([]);
+    }
+  }, [user]);
 
   const loadProjects = async () => {
     try {
@@ -53,10 +58,19 @@ export default function Projects() {
   };
 
   const handleCreateProject = () => {
+    if (!user) {
+      router.push('/(tabs)/Login');
+      toast.info('Iniciá sesión para crear proyectos');
+      return;
+    }
     router.push('/(tabs)/PcBuilder');
   };
 
   const handleOpenProject = (projectId: number) => {
+    if (!user) {
+      router.push('/(tabs)/Login');
+      return;
+    }
     router.push(`/(tabs)/PcBuilder?project=${projectId}`);
   };
 
@@ -92,6 +106,40 @@ export default function Projects() {
     return date.toLocaleDateString('es-AR');
   };
 
+  // Si no hay usuario logueado
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>📂 Mis Proyectos</Text>
+          <Text style={styles.subtitle}>
+            Iniciá sesión para ver tus proyectos guardados
+          </Text>
+        </View>
+
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyIcon}>🔒</Text>
+          <Text style={styles.emptyTitle}>Acceso restringido</Text>
+          <Text style={styles.emptyText}>
+            Necesitás iniciar sesión para ver y guardar tus proyectos
+          </Text>
+          <TouchableOpacity 
+            style={styles.createButton}
+            onPress={() => router.push('/(tabs)/Login')}
+          >
+            <Text style={styles.createButtonText}>🚀 Iniciar Sesión</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.createButton, styles.armarPcButton]}
+            onPress={() => router.push('/(tabs)/PcBuilder')}
+          >
+            <Text style={styles.armarPcButtonText}>🔧 Armar PC</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -106,7 +154,7 @@ export default function Projects() {
       <View style={styles.header}>
         <Text style={styles.title}>📂 Mis Proyectos</Text>
         <Text style={styles.subtitle}>
-          Hola {user?.nombre}, gestioná tus builds de PC
+          Hola {user?.nombre || user?.email?.split('@')[0]}, gestioná tus builds de PC
         </Text>
       </View>
 
@@ -243,9 +291,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderRadius: 12,
+    marginBottom: 12,
+    width: '100%',
+    alignItems: 'center',
   },
   createButtonText: {
     color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  armarPcButton: {
+    backgroundColor: '#1a1b27',
+    borderWidth: 2,
+    borderColor: '#667eea',
+  },
+  armarPcButtonText: {
+    color: '#667eea',
     fontSize: 16,
     fontWeight: '700',
   },

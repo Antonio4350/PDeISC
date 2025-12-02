@@ -4,7 +4,7 @@
  * 
  * Casos:
  * 1. DEV LOCAL (localhost): http://localhost:5000
- * 2. DEV MOBILE (LAN): http://192.168.1.38:5000 (configurado en .env.local)
+ * 2. DEV MOBILE (LAN): http://192.168.0.151:5000 (configurado en .env.local)
  * 3. PRODUCTION (Vercel): https://tu-api.vercel.app
  */
 
@@ -35,7 +35,7 @@ function getApiConfig(): ApiConfig {
   
   if (debuggerHost && debuggerHost.includes(':')) {
     // Estamos en desarrollo con Expo
-    // Extraer la IP del debuggerHost (ej: "192.168.1.38:19000" → "192.168.1.38")
+    // Extraer la IP del debuggerHost (ej: "192.168.0.151:19000" → "192.168.0.151")
     const ipFromDebugger = debuggerHost.split(':')[0];
     
     // Si la IP es 127.0.0.1 o localhost, usar localhost

@@ -1,17 +1,12 @@
-import React from 'react';
-import { TouchableOpacity, Text, Alert, ActivityIndicator, Platform } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
-import { makeRedirectUri } from 'expo-auth-session';
+import React, { useEffect } from 'react';
+import { TouchableOpacity, Text, ActivityIndicator, Platform } from 'react-native';
 import { StyleSheet } from 'react-native';
+import * as AuthSession from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const API_URL = "http://192.168.1.38:5000";
-
-const GOOGLE_ANDROID_CLIENT_ID = "58585220959-8capru7gmaertcnsvoervkm3vsef6q3l.apps.googleusercontent.com";
-
-const GOOGLE_WEB_CLIENT_ID = "58585220959-8capru7gmaertcnsvoervkm3vsef6q3l.apps.googleusercontent.com"; // Mismo por ahora
+const API_URL = "http://192.168.0.151:5000";
 
 interface GoogleOAuthProps {
   type: 'login' | 'register';
@@ -21,97 +16,90 @@ interface GoogleOAuthProps {
 export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
   const [loading, setLoading] = React.useState(false);
   
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: Platform.select({
-      android: GOOGLE_ANDROID_CLIENT_ID,
-      ios: GOOGLE_ANDROID_CLIENT_ID, // Usar el mismo temporalmente
-      default: GOOGLE_ANDROID_CLIENT_ID
-    }),
-    redirectUri: makeRedirectUri({
-      scheme: 'exp',
-      path: 'oauth'
-    }),
-    scopes: ['openid', 'profile', 'email'],
-  });
-
-  React.useEffect(() => {
-    console.log('🔍 Google Auth Response:', response);
-    console.log('🔍 Platform:', Platform.OS);
-    console.log('🔍 Redirect URI:', makeRedirectUri({ 
-      scheme: 'exp', 
-      path: 'oauth'
-    }));
+  // Configurar la URI de redirección
+  const redirectUri = Platform.OS === 'web'
+    ? AuthSession.makeRedirectUri({ useProxy: false } as any)
+    : AuthSession.makeRedirectUri({ useProxy: true } as any);
     
-    handleResponse();
+  // Configurar la solicitud de autenticación (igual que en el proyecto que funciona)
+  const [request, response, promptAsync] = AuthSession.useAuthRequest(
+    Platform.OS === 'web'
+      ? {
+          clientId: "58585220959-fltgp46dkjjrcdo144gqeib2c5tqg58c",
+          redirectUri,
+          scopes: ['profile', 'email'],
+          responseType: 'token',
+          extraParams: { prompt: 'select_account' },
+          usePKCE: false,
+        }
+      : {
+          clientId: "58585220959-fltgp46dkjjrcdo144gqeib2c5tqg58c",
+          redirectUri,
+          scopes: ['profile', 'email'],
+          responseType: 'id_token',
+          extraParams: { nonce: 'random_string' },
+          usePKCE: false,
+        },
+    { authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth' }
+  );
+
+  useEffect(() => {
+    console.log('🔍 Respuesta de Google:', response);
+    
+    if (response?.type === 'success') {
+      const { id_token, access_token } = response.params;
+      console.log('🔍 Tokens recibidos:', { 
+        has_id_token: !!id_token, 
+        has_access_token: !!access_token 
+      });
+      
+      if (id_token || access_token) {
+        handleGoogleLogin({ idToken: id_token, accessToken: access_token });
+      }
+    }
   }, [response]);
 
-  const handleResponse = async () => {
-    if (response?.type === "success") {
-      setLoading(true);
-      try {
-        const { authentication } = response;
-        console.log('🔍 Authentication data:', authentication);
-        
-        if (authentication?.accessToken) {
-          await handleGoogleAuth(authentication.accessToken);
-        } else {
-          Alert.alert("Error", "No se pudo obtener el token de acceso");
-        }
-      } catch (error) {
-        console.error("Error manejando respuesta:", error);
-        Alert.alert("Error", "Ocurrió un error inesperado");
-      } finally {
-        setLoading(false);
-      }
-    } else if (response?.type === "error") {
-      console.error("Error en Google OAuth:", response.error);
-      Alert.alert("Error", `Autenticación fallida: ${response.error?.message || 'Error desconocido'}`);
-    }
-  };
-
-  const handleGoogleAuth = async (accessToken: string) => {
+  async function handleGoogleLogin(tokens: any) {
     try {
-      console.log("Enviando token al servidor...");
+      setLoading(true);
+      console.log('🔍 Enviando tokens al backend...', tokens);
       
       const res = await fetch(`${API_URL}/googleLogin`, {
-        method: "POST",
+        method: 'POST',
         headers: { 
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify({ 
-          accessToken,
-          type: type
-        }),
+        body: JSON.stringify(tokens),
       });
 
+      console.log('🔍 Respuesta del servidor status:', res.status);
+      
       const data = await res.json();
-      console.log("Respuesta del servidor:", data);
+      console.log('🔍 Respuesta del servidor:', data);
 
-      if (data.success && data.user) {
-        Alert.alert("Éxito", `${type === 'login' ? 'Login' : 'Registro'} con Google exitoso!`);
+      if (data.success) {
+        console.log('✅ Login Google exitoso');
         
-        if (onSuccess) {
+        if (onSuccess && data.user) {
           onSuccess(data);
         }
-        
       } else {
-        const errorMsg = data.error || `Error al ${type === 'login' ? 'iniciar sesión' : 'registrarse'} con Google`;
-        Alert.alert("Error", errorMsg);
+        console.error('❌ Error del servidor:', data.error);
       }
-    } catch (err) {
-      console.error("Error en handleGoogleAuth:", err);
-      Alert.alert("Error", "Error de conexión con el servidor");
+    } catch (e) {
+      console.error('❌ Error en handleGoogleLogin:', e);
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
   const handlePress = async () => {
     try {
-      console.log('🔍 Iniciando OAuth flow...');
-      const result = await promptAsync();
-      console.log('🔍 Prompt result:', result);
+      console.log('🔍 Iniciando flujo de Google OAuth...');
+      await promptAsync();
     } catch (error) {
-      console.error("Error iniciando OAuth:", error);
-      Alert.alert("Error", "No se pudo iniciar la autenticación con Google");
+      console.error('❌ Error iniciando OAuth:', error);
     }
   };
 

@@ -1,14 +1,3 @@
-# 📡 Manual del Backend
-
-## Descripción General
-
-El backend es un servidor Node.js con Express.js que proporciona una API REST para gestionar componentes de PC y validaciones de compatibilidad.
-
-**Puerto**: 5000  
-**Base de Datos**: PostgreSQL (Neon)  
-**Lenguaje**: JavaScript (módulos ESM)
-
----
 
 ## Estructura de Carpetas
 
@@ -470,8 +459,3 @@ async validateMiValidacion(param1, param2) {
   };
 }
 ```
-
----
-
-**Última actualización**: 2025-11-12  
-**Versión**: 1.0

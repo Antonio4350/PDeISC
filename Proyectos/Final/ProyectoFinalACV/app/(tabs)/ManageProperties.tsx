@@ -1,285 +1,243 @@
-// app/(tabs)/ManageProperties.tsx - CORREGIDO SIN ERRORES
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
   TouchableOpacity,
   TextInput,
-  ActivityIndicator,
-  Modal,
-  Alert
+  ActivityIndicator
 } from 'react-native';
-import { router } from 'expo-router';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../AuthContext'; // Mantenemos pero usaremos diferente
+import componentService, { ApiResponse } from '../services/components';
 import toast from '../utils/toast';
 
-interface Property {
-  id?: number;
-  tipo_componente: string;
-  propiedad: string;
-  valor: string;
+interface Component {
+  id: number;
+  marca: string;
+  modelo: string;
+  tipo: string;
+  especificaciones: string;
+  [key: string]: any;
 }
 
-interface OrganizedProperties {
-  [componentType: string]: {
-    [property: string]: string[];
-  };
-}
-
-interface AllPropertiesData {
-  [componentType: string]: {
-    [property: string]: Array<{ id: number; valor: string }>;
-  };
-}
-
-export default function ManageProperties() {
-  const { user, isAdmin } = useAuth();
-  const [properties, setProperties] = useState<OrganizedProperties>({});
-  const [allProperties, setAllProperties] = useState<AllPropertiesData>({});
+export default function ComponentsCatalog() {
+  const { user } = useAuth();
+  const [components, setComponents] = useState<Component[]>([]);
+  const [filteredComponents, setFilteredComponents] = useState<Component[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [newProperty, setNewProperty] = useState<Property>({
-    tipo_componente: 'procesadores',
-    propiedad: 'marca',
-    valor: ''
-  });
-  const [permissionChecked, setPermissionChecked] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
-  const componentTypes = [
-    { value: 'procesadores', label: 'Procesadores', icon: '⚡' },
-    { value: 'motherboards', label: 'Motherboards', icon: '🔌' },
-    { value: 'memorias_ram', label: 'Memorias RAM', icon: '💾' },
-    { value: 'tarjetas_graficas', label: 'Tarjetas Gráficas', icon: '🎯' },
-    { value: 'almacenamiento', label: 'Almacenamiento', icon: '💿' },
-    { value: 'fuentes_poder', label: 'Fuentes de Poder', icon: '🔋' },
-    { value: 'gabinetes', label: 'Gabinetes', icon: '🖥️' }
+  const categories = [
+    { id: 'all', name: 'Todos', icon: '🔍' },
+    { id: 'procesadores', name: 'Procesadores', icon: '⚡' },
+    { id: 'motherboards', name: 'Motherboards', icon: '🔌' },
+    { id: 'memorias_ram', name: 'Memorias RAM', icon: '💾' },
+    { id: 'tarjetas_graficas', name: 'Gráficas', icon: '🎯' },
+    { id: 'almacenamiento', name: 'Almacenamiento', icon: '💿' },
+    { id: 'fuentes_poder', name: 'Fuentes', icon: '🔋' },
+    { id: 'gabinetes', name: 'Gabinetes', icon: '🖥️' },
   ];
 
-  const propertyTypes: {[key: string]: string[]} = {
-    procesadores: ['marca', 'socket', 'generacion', 'tecnologia'],
-    motherboards: ['marca', 'socket', 'chipset', 'formato'],
-    memorias_ram: ['marca', 'tipo', 'capacidad'],
-    tarjetas_graficas: ['marca', 'fabricante'],
-    almacenamiento: ['marca', 'tipo'],
-    fuentes_poder: ['marca', 'certificacion'],
-    gabinetes: ['marca', 'formato']
-  };
+  useEffect(() => {
+    loadComponents();
+  }, [selectedCategory]);
 
   useEffect(() => {
-    // Verificar permisos después del montaje
-    const checkPermissions = () => {
-      if (!isAdmin()) {
-        toast.error('No tenés permisos para acceder');
-        setTimeout(() => {
-          if (router.canGoBack()) {
-            router.back();
-          } else {
-            router.push('/(tabs)/AdminPanel' as any);
-          }
-        }, 100);
-        return false;
-      }
-      setPermissionChecked(true);
-      return true;
-    };
+    filterComponents();
+  }, [searchQuery, components]);
 
-    if (checkPermissions()) {
-      loadAllProperties();
-    }
-  }, []);
-
-  const loadAllProperties = async () => {
+  const loadComponents = async () => {
     try {
       setLoading(true);
-      console.log('🔄 Cargando todas las propiedades...');
-      
-      // Cargar propiedades
-      const response = await fetch('http://192.168.1.38:5000/properties');
-      const result = await response.json();
-      
-      console.log('📊 Respuesta del servidor:', result);
+
+      let result: ApiResponse<any[]>;
+
+      if (selectedCategory === 'all') {
+        // Cargar todos los tipos de componentes
+        const [
+          processorsRes,
+          mothersRes,
+          ramRes,
+          gpuRes,
+          storageRes,
+          psuRes,
+          casesRes
+        ] = await Promise.all([
+          componentService.getProcessors(),
+          componentService.getMotherboards(),
+          componentService.getRAM(),
+          componentService.getGPUs(),
+          componentService.getStorage(),
+          componentService.getPSUs(),
+          componentService.getCases()
+        ]);
+
+        const allComponents = [
+          ...(processorsRes.success && processorsRes.data ? processorsRes.data.map((comp: any) => ({ ...comp, tipo: 'procesadores' })) : []),
+          ...(mothersRes.success && mothersRes.data ? mothersRes.data.map((comp: any) => ({ ...comp, tipo: 'motherboards' })) : []),
+          ...(ramRes.success && ramRes.data ? ramRes.data.map((comp: any) => ({ ...comp, tipo: 'memorias_ram' })) : []),
+          ...(gpuRes.success && gpuRes.data ? gpuRes.data.map((comp: any) => ({ ...comp, tipo: 'tarjetas_graficas' })) : []),
+          ...(storageRes.success && storageRes.data ? storageRes.data.map((comp: any) => ({ ...comp, tipo: 'almacenamiento' })) : []),
+          ...(psuRes.success && psuRes.data ? psuRes.data.map((comp: any) => ({ ...comp, tipo: 'fuentes_poder' })) : []),
+          ...(casesRes.success && casesRes.data ? casesRes.data.map((comp: any) => ({ ...comp, tipo: 'gabinetes' })) : [])
+        ];
+
+        setComponents(allComponents);
+        setFilteredComponents(allComponents);
+        return;
+      } else {
+        // Cargar componentes específicos por categoría
+        switch (selectedCategory) {
+          case 'procesadores':
+            result = await componentService.getProcessors();
+            break;
+          case 'motherboards':
+            result = await componentService.getMotherboards();
+            break;
+          case 'memorias_ram':
+            result = await componentService.getRAM();
+            break;
+          case 'tarjetas_graficas':
+            result = await componentService.getGPUs();
+            break;
+          case 'almacenamiento':
+            result = await componentService.getStorage();
+            break;
+          case 'fuentes_poder':
+            result = await componentService.getPSUs();
+            break;
+          case 'gabinetes':
+            result = await componentService.getCases();
+            break;
+          default:
+            result = { success: false, error: 'Categoría no válida' };
+        }
+      }
 
       if (result.success && result.data) {
-        // El backend está devolviendo solo valores, no IDs
-        setProperties(result.data);
-        // Para la eliminación, necesitamos crear un mapeo temporal
-        createIdMapping(result.data);
+        const mappedComponents = result.data.map((comp: any) => ({
+          id: comp.id,
+          marca: comp.marca || 'Sin marca',
+          modelo: comp.modelo || 'Sin modelo',
+          tipo: selectedCategory,
+          especificaciones: generateSpecifications(comp, selectedCategory),
+          // Agregar todos los datos originales para el detalle
+          ...comp
+        }));
+
+        setComponents(mappedComponents);
+        setFilteredComponents(mappedComponents);
       } else {
-        toast.error('Error cargando propiedades');
+        console.log(`Error cargando ${selectedCategory}:`, result.error);
+        toast.error(result.error || `Error cargando ${selectedCategory}`);
+        setComponents([]);
+        setFilteredComponents([]);
       }
     } catch (error) {
-      console.error('💥 Error cargando propiedades:', error);
-      toast.error('Error de conexión');
+      console.error('Error cargando componentes:', error);
+      toast.error('Error de conexión con el servidor');
+      setComponents([]);
+      setFilteredComponents([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const createIdMapping = (props: OrganizedProperties) => {
-    // Crear un mapeo temporal ya que el backend no devuelve IDs
-    const mapping: AllPropertiesData = {};
-    
-    Object.keys(props).forEach(componentType => {
-      mapping[componentType] = {};
-      Object.keys(props[componentType]).forEach(property => {
-        mapping[componentType][property] = props[componentType][property].map((valor, index) => ({
-          id: index + 1, // ID temporal - necesitamos el backend real
-          valor: valor
-        }));
-      });
-    });
-    
-    setAllProperties(mapping);
+  const generateSpecifications = (component: any, category: string): string => {
+    const specs = [];
+
+    switch (category) {
+      case 'procesadores':
+        if (component.nucleos) specs.push(`${component.nucleos} núcleos`);
+        if (component.socket) specs.push(`Socket ${component.socket}`);
+        if (component.tipo_memoria) specs.push(component.tipo_memoria);
+        if (component.frecuencia_base) specs.push(`${component.frecuencia_base}GHz`);
+        if (component.tdp) specs.push(`${component.tdp}W`);
+        break;
+      case 'motherboards':
+        if (component.socket) specs.push(`Socket ${component.socket}`);
+        if (component.tipo_memoria) specs.push(component.tipo_memoria);
+        if (component.formato) specs.push(component.formato);
+        if (component.chipset) specs.push(component.chipset);
+        break;
+      case 'memorias_ram':
+        if (component.capacidad) specs.push(`${component.capacidad}GB`);
+        if (component.tipo) specs.push(component.tipo);
+        if (component.velocidad_mhz) specs.push(`${component.velocidad_mhz}MHz`);
+        if (component.latencia) specs.push(component.latencia);
+        break;
+      case 'tarjetas_graficas':
+        if (component.memoria) specs.push(`${component.memoria}GB`);
+        if (component.tipo_memoria) specs.push(component.tipo_memoria);
+        if (component.tdp) specs.push(`${component.tdp}W`);
+        if (component.nucleos_cuda) specs.push(`${component.nucleos_cuda} núcleos`);
+        break;
+      case 'almacenamiento':
+        if (component.capacidad) specs.push(`${component.capacidad}GB`);
+        if (component.tipo) specs.push(component.tipo);
+        if (component.interfaz) specs.push(component.interfaz);
+        if (component.velocidad_lectura) specs.push(`${component.velocidad_lectura}MB/s`);
+        break;
+      case 'fuentes_poder':
+        if (component.potencia) specs.push(`${component.potencia}W`);
+        if (component.certificacion) specs.push(component.certificacion);
+        if (component.modular) specs.push(component.modular);
+        break;
+      case 'gabinetes':
+        if (component.formato) specs.push(component.formato);
+        if (component.longitud_max_gpu) specs.push(`GPU: ${component.longitud_max_gpu}mm`);
+        if (component.motherboards_soportadas) specs.push(component.motherboards_soportadas);
+        break;
+    }
+
+    return specs.join(' • ') || 'Especificaciones técnicas disponibles';
   };
 
-  const handleAddProperty = async () => {
-    if (!newProperty.valor.trim()) {
-      toast.error('El valor es requerido');
+  const filterComponents = () => {
+    if (!components.length) {
+      setFilteredComponents([]);
       return;
     }
 
-    try {
-      console.log('🔄 Agregando propiedad:', newProperty);
-      
-      const response = await fetch('http://192.168.1.38:5000/properties', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProperty)
-      });
+    let filtered = [...components];
 
-      const result = await response.json();
-      console.log('📊 Respuesta del servidor:', result);
-
-      if (result.success) {
-        toast.success('Propiedad agregada exitosamente');
-        setNewProperty({
-          tipo_componente: 'procesadores',
-          propiedad: 'marca',
-          valor: ''
-        });
-        setModalVisible(false);
-        loadAllProperties(); // Recargar la lista
-      } else {
-        toast.error(result.error || 'Error al agregar propiedad');
-      }
-    } catch (error) {
-      console.error('💥 Error agregando propiedad:', error);
-      toast.error('Error de conexión');
-    }
-  };
-
-  const findPropertyId = (componentType: string, property: string, value: string): number | null => {
-    try {
-      // Buscar el ID en allProperties
-      if (allProperties[componentType] && allProperties[componentType][property]) {
-        const found = allProperties[componentType][property].find((item) => item.valor === value);
-        console.log(`🔍 Buscando: ${componentType}.${property} = ${value}, Encontrado:`, found);
-        return found ? found.id : null;
-      }
-      return null;
-    } catch (error) {
-      console.error('💥 Error en findPropertyId:', error);
-      return null;
-    }
-  };
-
-  const handleDeleteProperty = async (componentType: string, property: string, value: string) => {
-    try {
-      console.log(`🗑️ Intentando eliminar: ${componentType}.${property} = ${value}`);
-      
-      // Buscar el ID
-      const propertyId = findPropertyId(componentType, property, value);
-      
-      console.log(`🔍 ID encontrado: ${propertyId}`);
-
-      if (!propertyId) {
-        console.log('❌ No se encontró ID para la propiedad');
-        toast.error('No se puede eliminar esta propiedad. El backend no está devolviendo IDs.');
-        return;
-      }
-
-      Alert.alert(
-        'Confirmar Eliminación',
-        `¿Estás seguro de que querés eliminar "${value}"?`,
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          { 
-            text: 'Eliminar', 
-            style: 'destructive', 
-            onPress: async () => {
-              try {
-                console.log(`🎯 Enviando DELETE para ID: ${propertyId}`);
-                
-                const response = await fetch(`http://192.168.1.38:5000/properties/${propertyId}`, {
-                  method: 'DELETE',
-                  headers: { 'Content-Type': 'application/json' },
-                });
-
-                const result = await response.json();
-                console.log('📊 Respuesta de eliminación:', result);
-
-                if (result.success) {
-                  toast.success('🗑️ Propiedad eliminada exitosamente');
-                  loadAllProperties(); // Recargar la lista
-                } else {
-                  toast.error(result.error || 'Error al eliminar propiedad');
-                }
-              } catch (error) {
-                console.error('💥 Error eliminando propiedad:', error);
-                toast.error('Error de conexión');
-              }
-            }
-          }
-        ]
+    // Filtrar por búsqueda
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(comp =>
+        comp.marca?.toLowerCase().includes(query) ||
+        comp.modelo?.toLowerCase().includes(query) ||
+        comp.especificaciones?.toLowerCase().includes(query)
       );
-    } catch (error) {
-      console.error('💥 Error en handleDeleteProperty:', error);
-      toast.error('Error al procesar la eliminación');
     }
+
+    setFilteredComponents(filtered);
   };
 
-  const getPropertyDisplayName = (prop: string) => {
-    const names: {[key: string]: string} = {
-      marca: 'Marca',
-      socket: 'Socket',
-      generacion: 'Generación',
-      tecnologia: 'Tecnología',
-      chipset: 'Chipset',
-      formato: 'Formato',
-      tipo: 'Tipo',
-      capacidad: 'Capacidad',
-      fabricante: 'Fabricante',
-      certificacion: 'Certificación'
-    };
-    return names[prop] || prop;
-  };
+  const handleComponentPress = (component: Component) => {
+    // Mostrar todos los detalles del componente
+    const detalles = Object.entries(component)
+      .filter(([key, value]) =>
+        !['id', 'marca', 'modelo', 'tipo', 'especificaciones', 'estado', 'fecha_creacion', 'imagen_url'].includes(key) &&
+        value !== null &&
+        value !== '' &&
+        value !== undefined
+      )
+      .map(([key, value]) => `${key.replace(/_/g, ' ').toUpperCase()}: ${value}`)
+      .join('\n');
 
-  const handleBack = () => {
-    console.log('Navegando hacia atrás desde ManageProperties...');
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.push('/(tabs)/AdminPanel' as any);
-    }
-  };
+    const mensaje = `Detalles de ${component.marca} ${component.modelo}${detalles ? '\n\n' + detalles : '\n\nNo hay detalles adicionales disponibles'}`;
 
-  // Si no tiene permisos, mostrar loading
-  if (!permissionChecked) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#667eea" />
-        <Text style={styles.loadingText}>Verificando permisos...</Text>
-      </View>
-    );
-  }
+    toast.info(mensaje);
+  };
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#667eea" />
-        <Text style={styles.loadingText}>Cargando propiedades...</Text>
+        <Text style={styles.loadingText}>Cargando catálogo...</Text>
       </View>
     );
   }
@@ -287,145 +245,111 @@ export default function ManageProperties() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Text style={styles.backButtonText}>← Volver</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>🏷️ Gestor de Propiedades</Text>
+        <Text style={styles.title}>🔧 Catálogo de Componentes</Text>
+        <Text style={styles.subtitle}>
+          {user ? `Hola ${user.nombre}, explorá nuestro inventario completo` : 'Explorá nuestro catálogo completo de componentes'}
+        </Text>
       </View>
 
-      <Text style={styles.subtitle}>
-        Gestioná las opciones disponibles para cada tipo de componente
-      </Text>
+      {/* Barra de búsqueda */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar componentes..."
+          placeholderTextColor="#8b9cb3"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        <Text style={styles.searchIcon}>🔍</Text>
+      </View>
 
-      <TouchableOpacity 
-        style={styles.addButton}
-        onPress={() => setModalVisible(true)}
+      {/* Categorías */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoriesContainer}
       >
-        <Text style={styles.addButtonText}>➕ Agregar Nueva Propiedad</Text>
-      </TouchableOpacity>
-
-      <ScrollView style={styles.propertiesList}>
-        {Object.keys(properties).length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>📝</Text>
-            <Text style={styles.emptyTitle}>No hay propiedades cargadas</Text>
-            <Text style={styles.emptyText}>
-              Agregá propiedades usando el botón de arriba
+        {categories.map((category) => (
+          <TouchableOpacity
+            key={category.id}
+            style={[
+              styles.categoryButton,
+              selectedCategory === category.id && styles.categoryButtonActive
+            ]}
+            onPress={() => setSelectedCategory(category.id)}
+          >
+            <Text style={styles.categoryIcon}>{category.icon}</Text>
+            <Text style={[
+              styles.categoryText,
+              selectedCategory === category.id && styles.categoryTextActive
+            ]}>
+              {category.name}
             </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Resultados */}
+      <View style={styles.resultsHeader}>
+        <Text style={styles.resultsTitle}>
+          {filteredComponents.length} componente{filteredComponents.length !== 1 ? 's' : ''} encontrado{filteredComponents.length !== 1 ? 's' : ''}
+          {selectedCategory !== 'all' && ` en ${categories.find(cat => cat.id === selectedCategory)?.name}`}
+        </Text>
+        {!user && (
+          <Text style={styles.guestWarning}>
+            ⚠️ Modo invitado: Solo lectura
+          </Text>
+        )}
+      </View>
+
+      <ScrollView style={styles.componentsList}>
+        {filteredComponents.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyIcon}>🔍</Text>
+            <Text style={styles.emptyTitle}>No se encontraron componentes</Text>
+            <Text style={styles.emptyText}>
+              {selectedCategory === 'all'
+                ? 'No hay componentes en el inventario'
+                : 'Probá con otros términos de búsqueda o seleccioná otra categoría'
+              }
+            </Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={loadComponents}
+            >
+              <Text style={styles.retryButtonText}>Reintentar carga</Text>
+            </TouchableOpacity>
           </View>
         ) : (
-          Object.keys(properties).map(componentType => (
-            <View key={componentType} style={styles.componentSection}>
-              <Text style={styles.componentTitle}>
-                {componentTypes.find(c => c.value === componentType)?.icon} {componentTypes.find(c => c.value === componentType)?.label}
-              </Text>
-              
-              {Object.keys(properties[componentType] || {}).map(property => (
-                <View key={property} style={styles.propertyGroup}>
-                  <Text style={styles.propertyName}>
-                    {getPropertyDisplayName(property)}:
+          filteredComponents.map((component) => (
+            <TouchableOpacity
+              key={`${component.tipo}-${component.id}`}
+              style={styles.componentCard}
+              onPress={() => handleComponentPress(component)}
+            >
+              <View style={styles.componentHeader}>
+                <Text style={styles.componentBrand}>{component.marca}</Text>
+                <View style={styles.componentTypeBadge}>
+                  <Text style={styles.componentTypeText}>
+                    {categories.find(cat => cat.id === component.tipo)?.icon}
                   </Text>
-                  <View style={styles.valuesContainer}>
-                    {(properties[componentType][property] || []).map((value: string, index: number) => (
-                      <View key={index} style={styles.valueItem}>
-                        <Text style={styles.valueText}>{value}</Text>
-                        <TouchableOpacity 
-                          style={styles.deleteValueButton}
-                          onPress={() => handleDeleteProperty(componentType, property, value)}
-                        >
-                          <Text style={styles.deleteValueText}>🗑️</Text>
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </View>
                 </View>
-              ))}
-            </View>
+              </View>
+
+              <Text style={styles.componentModel}>{component.modelo}</Text>
+              <Text style={styles.componentSpecs}>{component.especificaciones}</Text>
+
+              <View style={styles.componentFooter}>
+                <Text style={styles.viewDetails}>Tocar para ver detalles completos →</Text>
+              </View>
+            </TouchableOpacity>
           ))
         )}
       </ScrollView>
-
-      {/* Modal para agregar propiedad */}
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Agregar Nueva Propiedad</Text>
-            
-            <Text style={styles.label}>Tipo de Componente</Text>
-            <ScrollView horizontal style={styles.typeSelector}>
-              {componentTypes.map(type => (
-                <TouchableOpacity
-                  key={type.value}
-                  style={[
-                    styles.typeButton,
-                    newProperty.tipo_componente === type.value && styles.typeButtonSelected
-                  ]}
-                  onPress={() => setNewProperty(prev => ({ 
-                    ...prev, 
-                    tipo_componente: type.value,
-                    propiedad: propertyTypes[type.value]?.[0] || 'marca'
-                  }))}
-                >
-                  <Text style={styles.typeButtonText}>{type.icon}</Text>
-                  <Text style={styles.typeButtonLabel}>{type.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            <Text style={styles.label}>Propiedad</Text>
-            <ScrollView horizontal style={styles.propertySelector}>
-              {(propertyTypes[newProperty.tipo_componente] || []).map(prop => (
-                <TouchableOpacity
-                  key={prop}
-                  style={[
-                    styles.propertyButton,
-                    newProperty.propiedad === prop && styles.propertyButtonSelected
-                  ]}
-                  onPress={() => setNewProperty(prev => ({ ...prev, propiedad: prop }))}
-                >
-                  <Text style={styles.propertyButtonText}>
-                    {getPropertyDisplayName(prop)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            <Text style={styles.label}>Valor</Text>
-            <TextInput
-              style={styles.valueInput}
-              placeholder="Ingresar valor..."
-              placeholderTextColor="#8b9cb3"
-              value={newProperty.valor}
-              onChangeText={(value) => setNewProperty(prev => ({ ...prev, valor: value }))}
-            />
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity 
-                style={styles.cancelButton}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.cancelButtonText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.confirmButton}
-                onPress={handleAddProperty}
-              >
-                <Text style={styles.confirmButtonText}>Agregar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }
 
-// Los estilos se mantienen igual que antes...
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -439,52 +363,98 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f1117',
   },
   loadingText: {
-    color: '#8b9cb3',
-    fontSize: 16,
     marginTop: 16,
+    fontSize: 16,
+    color: '#8b9cb3',
   },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
-  },
-  backButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginRight: 15,
-  },
-  backButtonText: {
-    color: '#667eea',
-    fontSize: 14,
-    fontWeight: '600',
+    marginBottom: 25,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '800',
     color: '#ffffff',
-    flex: 1,
+    textAlign: 'center',
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
     color: '#8b9cb3',
-    marginBottom: 20,
     textAlign: 'center',
   },
-  addButton: {
-    backgroundColor: '#667eea',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
+  searchContainer: {
+    position: 'relative',
     marginBottom: 20,
   },
-  addButtonText: {
+  searchInput: {
+    backgroundColor: '#1a1b27',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    padding: 16,
+    paddingLeft: 45,
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '700',
   },
-  propertiesList: {
+  searchIcon: {
+    position: 'absolute',
+    left: 15,
+    top: 16,
+    fontSize: 16,
+  },
+  categoriesContainer: {
+    marginBottom: 25,
+  },
+  categoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a1b27',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 25,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  categoryButtonActive: {
+    backgroundColor: '#667eea',
+    borderColor: '#667eea',
+  },
+  categoryIcon: {
+    fontSize: 16,
+    marginRight: 6,
+  },
+  categoryText: {
+    color: '#8b9cb3',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  categoryTextActive: {
+    color: '#ffffff',
+  },
+  resultsHeader: {
+    marginBottom: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  resultsTitle: {
+    color: '#8b9cb3',
+    fontSize: 14,
+    fontWeight: '600',
+    flex: 1,
+  },
+  guestWarning: {
+    color: '#ffd700',
+    fontSize: 12,
+    fontWeight: '600',
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  componentsList: {
     flex: 1,
   },
   emptyState: {
@@ -494,6 +464,7 @@ const styles = StyleSheet.create({
   emptyIcon: {
     fontSize: 48,
     marginBottom: 16,
+    opacity: 0.7,
   },
   emptyTitle: {
     fontSize: 18,
@@ -507,166 +478,69 @@ const styles = StyleSheet.create({
     color: '#8b9cb3',
     textAlign: 'center',
     lineHeight: 20,
+    marginBottom: 20,
   },
-  componentSection: {
+  retryButton: {
+    backgroundColor: '#667eea',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  componentCard: {
     backgroundColor: '#1a1b27',
-    padding: 16,
+    padding: 20,
     borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  componentTitle: {
+  componentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  componentBrand: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#667eea',
+    flex: 1,
+  },
+  componentTypeBadge: {
+    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginLeft: 8,
+  },
+  componentTypeText: {
+    fontSize: 12,
+  },
+  componentModel: {
     fontSize: 18,
     fontWeight: '700',
     color: '#ffffff',
-    marginBottom: 12,
+    marginBottom: 8,
   },
-  propertyGroup: {
-    marginBottom: 12,
-  },
-  propertyName: {
+  componentSpecs: {
     fontSize: 14,
-    fontWeight: '600',
+    color: '#8b9cb3',
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  componentFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  viewDetails: {
     color: '#667eea',
-    marginBottom: 8,
-  },
-  valuesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  valueItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  valueText: {
-    color: '#ffffff',
     fontSize: 12,
-    marginRight: 8,
-  },
-  deleteValueButton: {
-    padding: 2,
-  },
-  deleteValueText: {
-    color: '#ef4444',
-    fontSize: 10,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    backgroundColor: '#1a1b27',
-    padding: 24,
-    borderRadius: 16,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#ffffff',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 8,
-    marginTop: 12,
-  },
-  typeSelector: {
-    marginBottom: 8,
-  },
-  typeButton: {
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    padding: 12,
-    borderRadius: 8,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    minWidth: 80,
-  },
-  typeButtonSelected: {
-    backgroundColor: '#667eea',
-    borderColor: '#667eea',
-  },
-  typeButtonText: {
-    fontSize: 20,
-    marginBottom: 4,
-  },
-  typeButtonLabel: {
-    color: '#8b9cb3',
-    fontSize: 10,
-    textAlign: 'center',
-  },
-  propertySelector: {
-    marginBottom: 8,
-  },
-  propertyButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  propertyButtonSelected: {
-    backgroundColor: '#667eea',
-    borderColor: '#667eea',
-  },
-  propertyButtonText: {
-    color: '#8b9cb3',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  valueInput: {
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    color: '#ffffff',
-    padding: 16,
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  cancelButton: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#8b9cb3',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  confirmButton: {
-    flex: 1,
-    backgroundColor: '#667eea',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  confirmButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
     fontWeight: '600',
   },
 });

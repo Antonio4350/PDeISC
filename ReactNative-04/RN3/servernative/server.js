@@ -8,7 +8,7 @@ import multer from 'multer';
 import path from 'path';
 import { connectBD } from './conectbd.js';
 
-const client = new OAuth2Client("58585220959-4oh9bhvaf728t0p1cfkgn2ueta80uvvp.apps.googleusercontent.com");
+const client = new OAuth2Client("58585220959-fltgp46dkjjrcdo144gqeib2c5tqg58c");
 
 const app = express();
 const port = 3031; //Puerto asignado
@@ -930,30 +930,72 @@ app.post('/debug-delete', express.json(), async (req, res) => {
     });
 });
 
-app.post('/loginGoogle', async (req, res) => {
-    const { email, name, googleId, photo, isGoogleUser } = req.body;
-    
-    try {
-        // Verificar si el usuario ya existe
-        const userExists = await checkUserExists(email);
-        
-        if (userExists) {
-            // Usuario existe, iniciar sesión
-            res.json({ success: true, message: 'Login exitoso' });
-        } else {
-            // Crear nuevo usuario
-            const newUser = await createUser({
-                email,
-                name, 
-                googleId,
-                photo,
-                isGoogleUser: true
+app.post('/googleLogin', express.json(), async (req, res) => {
+    const { idToken, accessToken } = req.body;
+    try 
+    {
+        let email, name, picture;
+  
+        if(idToken) 
+        {
+            const ticket = await client.verifyIdToken({
+                idToken,
+                audience: "58585220959-fltgp46dkjjrcdo144gqeib2c5tqg58c.apps.googleusercontent.com",
             });
-            res.json({ success: true, message: 'Usuario creado exitosamente' });
+            const payload = ticket.getPayload();
+            email = payload.email;
+            name = payload.name;
+            picture = payload.picture;
+        } 
+        else if(accessToken) 
+        {
+            const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            const userInfo = await userInfoRes.json();
+            email = userInfo.email;
+            name = userInfo.name;
+            picture = userInfo.picture;
+        } 
+        else 
+        {
+            return res.json({ success: false, message: 'Token faltante' });
         }
-    } catch (error) {
-        console.error('Error en login Google:', error);
-        res.json({ success: false, message: 'Error en el servidor' });
+  
+        const db = await connectBD();
+        const [existing] = await db.execute('SELECT * FROM usuarios WHERE email=?', [email]);
+  
+        let localImagePath = '';
+  
+        if(existing.length === 0) 
+        {
+            if(picture) 
+            {
+                const response = await fetch(picture);
+                const buffer = await response.arrayBuffer();
+                const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}.jpg`;
+                const imagePath = path.join(uploadPath, filename);
+  
+                fs.writeFileSync(imagePath, Buffer.from(buffer));
+                console.log(`Imagen de Google guardada en ${imagePath}`);
+  
+                localImagePath = `./uploads/${filename}`;
+            }
+  
+            const sql = 'INSERT INTO usuarios (email, password, isGoogleUser) VALUES (?, ?, ?)';
+            await db.execute(sql, [email, '', true]);
+            console.log(`Usuario Google creado: ${email}`);
+        } 
+        else 
+        {
+            console.log(`Usuario Google ya existe: ${email}`);
+        }
+        res.json({ success: true, mail: email });
+    } 
+    catch (error) 
+    {
+      console.error('Error en Google Login:', error);
+      res.json({ success: false, error: error.message });
     }
 });
 

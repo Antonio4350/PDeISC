@@ -1,11 +1,11 @@
 import { OAuth2Client } from 'google-auth-library';
 
-const CLIENT_ID = "58585220959-8capru7gmaertcnsvoervkm3vsef6q3l.apps.googleusercontent.com";
+const CLIENT_ID = "58585220959-fltgp46dkjjrcdo144gqeib2c5tqg58c.apps.googleusercontent.com";
 const client = new OAuth2Client(CLIENT_ID);
 
 async function googleLogin(idToken, accessToken) {
   try {
-    console.log('Verificando tokens de Google...', { 
+    console.log('🔍 Verificando tokens de Google...', { 
       hasIdToken: !!idToken, 
       hasAccessToken: !!accessToken 
     });
@@ -13,7 +13,7 @@ async function googleLogin(idToken, accessToken) {
     let email, name, googleId, picture;
     
     if (idToken) {
-      console.log('Usando ID Token para verificación...');
+      console.log('✅ Usando ID Token para verificación...');
       const ticket = await client.verifyIdToken({
         idToken,
         audience: CLIENT_ID,
@@ -29,10 +29,10 @@ async function googleLogin(idToken, accessToken) {
       googleId = payload.sub;
       picture = payload.picture;
       
-      console.log('Usuario verificado con ID Token:', email);
+      console.log('✅ Usuario verificado con ID Token:', email);
       
     } else if (accessToken) {
-      console.log('Usando Access Token para obtener información...');
+      console.log('✅ Usando Access Token para obtener información...');
       const userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
@@ -52,7 +52,7 @@ async function googleLogin(idToken, accessToken) {
       googleId = userInfo.sub;
       picture = userInfo.picture;
       
-      console.log('Usuario obtenido con Access Token:', email);
+      console.log('✅ Usuario obtenido con Access Token:', email);
     } else {
       return { 
         success: false, 
@@ -60,18 +60,19 @@ async function googleLogin(idToken, accessToken) {
       };
     }
 
-    console.log(`Usuario Google autenticado: ${email}, Nombre: ${name}`);
+    console.log(`✅ Usuario Google autenticado: ${email}, Nombre: ${name}`);
 
     return { 
       success: true, 
-      mail: email,
+      mail: email,  // Mantener 'mail' para compatibilidad con frontend
+      email: email, // Agregar también 'email'
       name: name,
       googleId: googleId,
       picture: picture
     };
     
   } catch (err) {
-    console.error('Error en googleLogin:', err);
+    console.error('❌ Error en googleLogin:', err);
     return { 
       success: false, 
       error: err.message || 'Error de autenticación con Google' 

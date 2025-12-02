@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from './AuthContext';
-import toast from './utils/toast';
+import { toast } from './core/utils';
 import HamburgerMenu from './components/HamburgerMenu';
 
 export default function Index() {
@@ -69,15 +69,11 @@ export default function Index() {
   }
 
   const handleStartBuilding = () => {
-    router.push('/(tabs)/PcBuilder');
-  };
-
-  const handleComponents = () => {
-    router.push('/(tabs)/ComponentsCatalog');
-  };
-
-  const handleProjects = () => {
-    router.push('/(tabs)/Projects');
+    if (!user) {
+      router.push('/(tabs)/Auth');
+    } else {
+      router.push('/(tabs)/PcBuilder');
+    }
   };
 
   const handleLogout = async () => {
@@ -92,19 +88,34 @@ export default function Index() {
     }
   };
 
-  const handleAdminPanel = () => {
-    if (!user || !isAdmin()) {
-      toast.error('Acceso restringido a administradores');
-      return;
+  const handleProjects = () => {
+    if (!user) {
+      router.push('/(tabs)/Auth');
+    } else {
+      router.push('/(tabs)/Projects');
     }
-    router.push('/(tabs)/AdminPanel');
+  };
+
+  const handleComponents = () => {
+    if (!user) {
+      router.push('/(tabs)/Auth');
+    } else {
+      router.push('/(tabs)/ComponentsCatalog');
+    }
+  };
+
+  const handleAdminPanel = () => {
+    router.push('/(tabs)/AdminDashboard');
   };
 
   const handleCategoryPress = (category: string) => {
-    router.push('/(tabs)/ComponentsCatalog');
+    if (!user) {
+      router.push('/(tabs)/Auth');
+    } else {
+      router.push('/(tabs)/ComponentsCatalog');
+    }
   };
 
-  // Estilos dinámicos con tipos correctos
   const getDynamicStyles = () => {
     const header: ViewStyle = {
       paddingTop: isDesktop ? 60 : isTablet ? 50 : Math.max(screenHeight * 0.06, 40),
@@ -169,7 +180,6 @@ export default function Index() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1b27" />
       
-      {/* HEADER */}
       <Animated.View 
         style={[
           styles.header,
@@ -186,7 +196,6 @@ export default function Index() {
             <Text style={styles.logoHighlight}>Builder</Text>
           </Text>
           
-          {/* MENU HAMBURGUESA PARA MÓVIL / NAVEGACIÓN NORMAL PARA DESKTOP */}
           {isMobile ? (
             <TouchableOpacity 
               style={styles.menuButton}
@@ -200,25 +209,13 @@ export default function Index() {
                 <View style={[styles.navGroup, dynamicStyles.navGroup]}>
                   <TouchableOpacity 
                     style={[styles.navButton, dynamicStyles.navButton]}
-                    onPress={handleComponents}
-                  >
-                    <Text style={styles.navButtonText}>Componentes</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.navButton, dynamicStyles.navButton]}
-                    onPress={handleProjects}
-                  >
-                    <Text style={styles.navButtonText}>Proyectos</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.navButton, dynamicStyles.navButton]}
-                    onPress={() => router.push('/(tabs)/Login')}
+                    onPress={() => router.push('/(tabs)/Auth')}
                   >
                     <Text style={styles.navButtonText}>Ingresar</Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
                     style={[styles.navButton, styles.registerButton, dynamicStyles.navButton]}
-                    onPress={() => router.push('/(tabs)/Register')}
+                    onPress={() => router.push('/(tabs)/Auth')}
                   >
                     <Text style={styles.navButtonText}>Crear Cuenta</Text>
                   </TouchableOpacity>
@@ -255,7 +252,7 @@ export default function Index() {
                   </TouchableOpacity>
                   <View style={styles.userInfo}>
                     <Text style={styles.userWelcome}>
-                      👋 {user.nombre || user.email?.split('@')[0] || 'Usuario'}
+                      👋 {user.nombre || user.email.split('@')[0]}
                     </Text>
                   </View>
                 </View>
@@ -265,19 +262,16 @@ export default function Index() {
         </View>
       </Animated.View>
 
-      {/* MENÚ HAMBURGUESA */}
       <HamburgerMenu 
         isVisible={showMenu} 
         onClose={() => setShowMenu(false)} 
       />
 
-      {/* CONTENIDO PRINCIPAL */}
       <ScrollView 
         style={styles.body}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* HERO SECTION */}
         <Animated.View 
           style={[
             styles.heroSection,
@@ -298,7 +292,6 @@ export default function Index() {
           </Text>
         </Animated.View>
 
-        {/* CATEGORÍAS */}
         <View style={styles.categoriesSection}>
           <Text style={styles.sectionTitle}>Explorar Componentes</Text>
           <ScrollView 
@@ -324,7 +317,6 @@ export default function Index() {
           </ScrollView>
         </View>
 
-        {/* CALL TO ACTION */}
         <Animated.View 
           style={[
             styles.ctaSection,
@@ -358,35 +350,36 @@ export default function Index() {
           </View>
         </Animated.View>
 
-        {/* FEATURES GRID */}
-        <Animated.View 
-          style={[
-            styles.featuresGrid,
-            dynamicStyles.featuresGrid,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }]
-            }
-          ]}
-        >
-          <View style={[styles.featureCard, dynamicStyles.featureCard]}>
-            <Text style={styles.featureIcon}>🔧</Text>
-            <Text style={styles.featureTitle}>Constructor Avanzado</Text>
-            <Text style={styles.featureDesc}>Herramientas profesionales de armado</Text>
-          </View>
-          
-          <View style={[styles.featureCard, dynamicStyles.featureCard]}>
-            <Text style={styles.featureIcon}>📊</Text>
-            <Text style={styles.featureTitle}>Compatibilidad</Text>
-            <Text style={styles.featureDesc}>Verificación automática de componentes</Text>
-          </View>
-          
-          <View style={[styles.featureCard, dynamicStyles.featureCard]}>
-            <Text style={styles.featureIcon}>💾</Text>
-            <Text style={styles.featureTitle}>Catálogo Completo</Text>
-            <Text style={styles.featureDesc}>Todos los componentes en un solo lugar</Text>
-          </View>
-        </Animated.View>
+        {user && (
+          <Animated.View 
+            style={[
+              styles.featuresGrid,
+              dynamicStyles.featuresGrid,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY: slideAnim }]
+              }
+            ]}
+          >
+            <View style={[styles.featureCard, dynamicStyles.featureCard]}>
+              <Text style={styles.featureIcon}>💾</Text>
+              <Text style={styles.featureTitle}>Tus Proyectos</Text>
+              <Text style={styles.featureDesc}>Accedé a todos tus builds guardados</Text>
+            </View>
+            
+            <View style={[styles.featureCard, dynamicStyles.featureCard]}>
+              <Text style={styles.featureIcon}>🔧</Text>
+              <Text style={styles.featureTitle}>Constructor Avanzado</Text>
+              <Text style={styles.featureDesc}>Herramientas profesionales de armado</Text>
+            </View>
+            
+            <View style={[styles.featureCard, dynamicStyles.featureCard]}>
+              <Text style={styles.featureIcon}>📊</Text>
+              <Text style={styles.featureTitle}>Comparar</Text>
+              <Text style={styles.featureDesc}>Analizá diferentes configuraciones</Text>
+            </View>
+          </Animated.View>
+        )}
       </ScrollView>
     </View>
   );

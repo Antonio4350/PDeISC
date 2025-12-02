@@ -5,8 +5,7 @@ import jwt from 'jsonwebtoken';
 class AuthController {
   // Login con Google
   async googleLogin(req, res) {
-    const { accessToken, idToken } = req.body;
-    
+    const { idToken, accessToken } = req.body;
     try {
       console.log('Solicitud Google Login recibida', { 
         hasAccessToken: !!accessToken, 

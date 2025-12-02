@@ -10,8 +10,8 @@ import {
   Alert
 } from 'react-native';
 import { useAuth } from '../AuthContext';
+import { router } from 'expo-router';
 import componentService, { ApiResponse } from '../services/components';
-import advancedCompatibility from '../services/advancedCompatibility';
 import toast from '../utils/toast';
 
 interface Component {
@@ -127,7 +127,6 @@ export default function PcBuilder() {
 
       for (const category of componentCategories) {
         try {
-          console.log(`Cargando componentes de: ${category.endpoint}`);
           let result: ApiResponse<any[]>;
 
           // Usar los métodos específicos para cada tipo
@@ -157,24 +156,19 @@ export default function PcBuilder() {
               result = { success: false, error: 'Endpoint no válido' };
           }
 
-          console.log(`Resultado para ${category.endpoint}:`, result);
-
           if (result.success && result.data && result.data.length > 0) {
             componentsData[category.type] = result.data.map((comp: any) => ({
               ...comp,
               id: comp.id,
               marca: comp.marca || 'Sin marca',
               modelo: comp.modelo || 'Sin modelo',
-              tipo: category.type,  // Override the 'tipo' from API with the category type
+              tipo: category.type,
               especificaciones: generateSpecifications(comp, category.type),
               socket: comp.socket,
               tipo_memoria: comp.tipo_memoria,
               imagen_url: comp.imagen_url,
             }));
-            console.log(`${category.name}: ${componentsData[category.type].length} componentes cargados`);
-            console.log(`First component of ${category.type}:`, componentsData[category.type][0]);
           } else {
-            console.log(`❌ ${category.name}: No hay datos o error en la respuesta`, result.error);
             componentsData[category.type] = [];
           }
         } catch (error) {
@@ -199,17 +193,9 @@ export default function PcBuilder() {
   const generateSpecifications = (component: any, type: string): string => {
     const specs = [];
 
-    console.log(`Generating specs for ${type}:`, { 
-      type, 
-      capacidad: component.capacidad, 
-      tipo: component.tipo,
-      velocidad_mhz: component.velocidad_mhz,
-      interfaz: component.interfaz 
-    });
-
     switch (type) {
       case 'cpu':
-        if (component.nucleos) specs.push(`${component.nucleos} nucleos`);
+        if (component.nucleos) specs.push(`${component.nucleos} núcleos`);
         if (component.socket) specs.push(`Socket ${component.socket}`);
         if (component.tipo_memoria) specs.push(component.tipo_memoria);
         if (component.frecuencia_base) specs.push(`${component.frecuencia_base}GHz`);
@@ -230,7 +216,7 @@ export default function PcBuilder() {
       case 'gpu':
         if (component.memoria) specs.push(`${component.memoria}GB`);
         if (component.tipo_memoria) specs.push(component.tipo_memoria);
-        if (component.nucleos_cuda) specs.push(`${component.nucleos_cuda} nucleos`);
+        if (component.nucleos_cuda) specs.push(`${component.nucleos_cuda} núcleos`);
         break;
       case 'storage':
         if (component.capacidad) specs.push(`${component.capacidad}GB`);
@@ -247,14 +233,10 @@ export default function PcBuilder() {
         break;
     }
 
-    const result = specs.join(' • ') || 'Especificaciones no disponibles';
-    console.log(`Generated specs for ${type}: ${result}`);
-    return result;
+    return specs.join(' • ') || 'Especificaciones no disponibles';
   };
 
   const handleAddComponent = (component: Component) => {
-    console.log(`Agregando componente:`, { component, tipo: component.tipo });
-    
     const updatedBuild = build.map(item => {
       const shouldAdd = item.type === component.tipo || item.type === (component as any).type;
       
@@ -265,7 +247,7 @@ export default function PcBuilder() {
         return {
           ...item,
           components: [...item.components, component],
-          component: component // También guardar el último agregado
+          component: component
         };
       }
 
@@ -314,104 +296,11 @@ export default function PcBuilder() {
 
   const checkAllCompatibility = async (currentBuild: BuildComponent[]) => {
     try {
-      const cpu = currentBuild.find(i => i.type === 'cpu')?.component;
-      const motherboard = currentBuild.find(i => i.type === 'motherboard')?.component;
-      const rams = currentBuild.find(i => i.type === 'ram')?.components || [];
-      const gpu = currentBuild.find(i => i.type === 'gpu')?.component;
-      const storages = currentBuild.find(i => i.type === 'storage')?.components || [];
-      const psu = currentBuild.find(i => i.type === 'psu')?.component;
-      const caseComponent = currentBuild.find(i => i.type === 'case')?.component;
-
-      let compatibilityResults: { [key: string]: any } = {};
-
-      // Socket validation
-      if (cpu && motherboard && cpu.id && motherboard.id) {
-        const socketResult = await advancedCompatibility.validateSocketCompatibility(
-          cpu.id,
-          motherboard.id
-        );
-        compatibilityResults['socket'] = socketResult;
-      }
-
-      // RAM validation
-      if (rams.length > 0 && motherboard && motherboard.id) {
-        const ramIds = rams.map(r => r.id);
-        const ramResult = await advancedCompatibility.validateRAMCompatibility(
-          ramIds,
-          motherboard.id
-        );
-        compatibilityResults['ram'] = ramResult;
-      }
-
-      // Storage validation
-      if (storages.length > 0 && motherboard && motherboard.id && caseComponent && caseComponent.id) {
-        const storageIds = storages.map(s => s.id);
-        const storageResult = await advancedCompatibility.validateStorageCompatibility(
-          storageIds,
-          motherboard.id,
-          caseComponent.id
-        );
-        compatibilityResults['storage'] = storageResult;
-      }
-
-      // GPU validation
-      if (gpu && gpu.id && motherboard && motherboard.id && caseComponent && caseComponent.id) {
-        const gpuResult = await advancedCompatibility.validateGPUCompatibility(
-          gpu.id,
-          motherboard.id,
-          caseComponent.id
-        );
-        compatibilityResults['gpu'] = gpuResult;
-      }
-
-      // Power validation
-      if (psu && psu.id && cpu && cpu.id) {
-        const powerResult = await advancedCompatibility.validatePowerSupply(
-          cpu.id,
-          psu.id,
-          gpu?.id,
-          rams.map(r => r.id),
-          storages.map(s => s.id)
-        );
-        compatibilityResults['power'] = powerResult;
-      }
-
       // Update build with compatibility info
       const updatedBuild = currentBuild.map(item => {
         let compatible = true;
         const issues: string[] = [];
         const warnings: string[] = [];
-
-        // Check compatibility results for this item type
-        for (const [key, result] of Object.entries(compatibilityResults)) {
-          if (result && !result.compatible) {
-            if (key === item.type || (item.type === 'ram' && key === 'ram') || (item.type === 'storage' && key === 'storage')) {
-              compatible = false;
-              if (result.issues) {
-                issues.push(...result.issues);
-              }
-            }
-          }
-          if (result && result.warnings) {
-            warnings.push(...result.warnings);
-          }
-        }
-
-        return {
-          ...item,
-          compatible,
-          compatibilityIssues: issues,
-          warnings
-        };
-      });
-
-      setBuild(updatedBuild);
-    } catch (error) {
-      console.error('Error checking compatibility:', error);
-      // Fallback to basic compatibility check
-      const updatedBuild = currentBuild.map(item => {
-        const issues: string[] = [];
-        let compatible = true;
 
         if (!item.component && item.components.length === 0) {
           return { ...item, compatible: true, compatibilityIssues: [], warnings: [] };
@@ -450,21 +339,41 @@ export default function PcBuilder() {
       });
 
       setBuild(updatedBuild);
+    } catch (error) {
+      console.error('Error checking compatibility:', error);
     }
   };
 
   const handleSaveBuild = () => {
-    const selectedComponents = build.filter(item => item.component);
+    if (!user) {
+      Alert.alert(
+        'Iniciar sesión requerido',
+        'Para guardar tu build necesitás iniciar sesión.\n\n¿Querés iniciar sesión ahora?',
+        [
+          { 
+            text: 'Cancelar', 
+            style: 'cancel' 
+          },
+          { 
+            text: 'Iniciar sesión', 
+            onPress: () => router.push('/(tabs)/Login') 
+          }
+        ]
+      );
+      return;
+    }
+
+    const selectedComponents = build.filter(item => item.component || item.components.length > 0);
     if (selectedComponents.length === 0) {
       toast.error('Agrega al menos un componente');
       return;
     }
 
-    const incompatibleComponents = build.filter(item => !item.compatible && item.component);
+    const incompatibleComponents = build.filter(item => !item.compatible && (item.component || item.components.length > 0));
     if (incompatibleComponents.length > 0) {
       Alert.alert(
         'Problemas de compatibilidad',
-        'Hay componentes incompatibles en tu build. ¿Estas seguro de querer guardar?',
+        'Hay componentes incompatibles en tu build. ¿Estás seguro de querer guardar?',
         [
           { text: 'Cancelar', style: 'cancel' },
           {
@@ -482,12 +391,6 @@ export default function PcBuilder() {
 
   const getCurrentCategoryComponents = (): Component[] => {
     const components = allComponents[selectedCategory] || [];
-    console.log(`getCurrentCategoryComponents for ${selectedCategory}:`, {
-      count: components.length,
-      firstComponent: components[0],
-      selectedCategory,
-      allComponentsKeys: Object.keys(allComponents)
-    });
     return components;
   };
 
@@ -501,8 +404,8 @@ export default function PcBuilder() {
   }
 
   const currentComponents = getCurrentCategoryComponents();
-  const selectedComponentsCount = build.filter(item => item.component).length;
-  const incompatibleComponentsCount = build.filter(item => !item.compatible && item.component).length;
+  const selectedComponentsCount = build.filter(item => item.component || item.components.length > 0).length;
+  const incompatibleComponentsCount = build.filter(item => !item.compatible && (item.component || item.components.length > 0)).length;
 
   // Render para móvil
   if (isMobile) {
@@ -510,9 +413,20 @@ export default function PcBuilder() {
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>Constructor de PC</Text>
+          {!user && (
+            <Text style={styles.guestMode}>👤 Modo Invitado</Text>
+          )}
         </View>
 
-        {/* TABS PARA MÓVIL - AHORA MÁS ARRIBA */}
+        {!user && (
+          <View style={styles.guestInfoBox}>
+            <Text style={styles.guestInfoText}>
+              ⚠️ <Text style={styles.guestInfoBold}>Modo invitado:</Text> Podés armar tu PC pero no se guardará automáticamente. Iniciá sesión para guardar tus builds.
+            </Text>
+          </View>
+        )}
+
+        {/* TABS PARA MÓVIL */}
         <View style={styles.tabsContainer}>
           <TouchableOpacity
             style={[styles.tab, activeTab === 'components' && styles.tabActive]}
@@ -533,7 +447,7 @@ export default function PcBuilder() {
         </View>
 
         {activeTab === 'build' ? (
-          /* PANEL BUILD PARA MÓVIL - CONTENIDO MÁS ARRIBA */
+          /* PANEL BUILD PARA MÓVIL */
           <View style={styles.mobilePanel}>
             <View style={styles.buildSummary}>
               <View style={styles.summaryItem}>
@@ -558,7 +472,7 @@ export default function PcBuilder() {
                   style={[
                     styles.buildItem,
                     !item.compatible && styles.buildItemIncompatible,
-                    !item.component && styles.buildItemEmpty
+                    !item.component && item.components.length === 0 && styles.buildItemEmpty
                   ]}
                 >
                   <View style={styles.buildItemHeader}>
@@ -568,6 +482,10 @@ export default function PcBuilder() {
                         <Text style={styles.buildItemModel}>
                           {item.component.marca} {item.component.modelo}
                         </Text>
+                      ) : item.components.length > 0 ? (
+                        <Text style={styles.buildItemModel}>
+                          {item.components.length} {item.name.toLowerCase()}
+                        </Text>
                       ) : (
                         <Text style={styles.buildItemEmptyText}>
                           Sin seleccionar
@@ -576,7 +494,7 @@ export default function PcBuilder() {
                     </View>
 
                     <View style={styles.buildItemActions}>
-                      {item.component && (
+                      {(item.component || item.components.length > 0) && (
                         <TouchableOpacity
                           style={styles.removeButton}
                           onPress={() => handleRemoveComponent(item)}
@@ -586,7 +504,7 @@ export default function PcBuilder() {
                       )}
                       <View style={[
                         styles.compatibilityCircle,
-                        item.component ?
+                        item.component || item.components.length > 0 ?
                           (item.compatible ? styles.compatibleCircle : styles.incompatibleCircle)
                           : styles.emptyCircle
                       ]} />
@@ -621,18 +539,21 @@ export default function PcBuilder() {
             <TouchableOpacity
               style={[
                 styles.saveButton,
-                selectedComponentsCount === 0 && styles.saveButtonDisabled
+                selectedComponentsCount === 0 && styles.saveButtonDisabled,
+                !user && styles.guestSaveButton
               ]}
               onPress={handleSaveBuild}
               disabled={selectedComponentsCount === 0}
             >
-              <Text style={styles.saveButtonText}>Guardar Build</Text>
+              <Text style={styles.saveButtonText}>
+                {user ? '💾 Guardar Build' : '🔒 Iniciar sesión para guardar'}
+              </Text>
             </TouchableOpacity>
           </View>
         ) : (
-          /* PANEL COMPONENTES PARA MÓVIL - CONTENIDO MÁS ARRIBA */
+          /* PANEL COMPONENTES PARA MÓVIL */
           <View style={styles.mobilePanel}>
-            {/* CATEGORÍAS MÁS ARRIBA */}
+            {/* CATEGORÍAS */}
             <View style={styles.categoriesContainer}>
               <ScrollView
                 horizontal
@@ -656,7 +577,7 @@ export default function PcBuilder() {
               </ScrollView>
             </View>
 
-            {/* COMPONENTES INMEDIATAMENTE DEBAJO DE LAS CATEGORÍAS */}
+            {/* COMPONENTES */}
             <View style={styles.componentsSection}>
               <Text style={styles.componentsTitle}>
                 {componentCategories.find(cat => cat.type === selectedCategory)?.name} ({currentComponents.length})
@@ -688,7 +609,7 @@ export default function PcBuilder() {
                       No hay componentes disponibles
                     </Text>
                     <Text style={styles.noComponentsSubtext}>
-                      Esta categoria esta vacia en la base de datos
+                      Esta categoría está vacía en la base de datos
                     </Text>
                   </View>
                 )}
@@ -700,12 +621,23 @@ export default function PcBuilder() {
     );
   }
 
-  // Render para Desktop/Tablet - ESTRUCTURA MEJORADA
+  // Render para Desktop/Tablet
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Constructor de PC</Text>
+        {!user && (
+          <Text style={styles.guestMode}>👤 Modo Invitado - Solo lectura</Text>
+        )}
       </View>
+
+      {!user && (
+        <View style={styles.guestInfoBox}>
+          <Text style={styles.guestInfoText}>
+            ⚠️ <Text style={styles.guestInfoBold}>Modo invitado:</Text> Podés armar tu PC pero no se guardará automáticamente. Iniciá sesión para guardar tus builds.
+          </Text>
+        </View>
+      )}
 
       <View style={styles.desktopContent}>
         {/* PANEL IZQUIERDO - BUILD */}
@@ -735,7 +667,7 @@ export default function PcBuilder() {
                 style={[
                   styles.buildItem,
                   !item.compatible && styles.buildItemIncompatible,
-                  !item.component && styles.buildItemEmpty
+                  !item.component && item.components.length === 0 && styles.buildItemEmpty
                 ]}
               >
                 <View style={styles.buildItemHeader}>
@@ -745,6 +677,10 @@ export default function PcBuilder() {
                       <Text style={styles.buildItemModel}>
                         {item.component.marca} {item.component.modelo}
                       </Text>
+                    ) : item.components.length > 0 ? (
+                      <Text style={styles.buildItemModel}>
+                        {item.components.length} {item.name.toLowerCase()}
+                      </Text>
                     ) : (
                       <Text style={styles.buildItemEmptyText}>
                         Sin seleccionar
@@ -753,7 +689,7 @@ export default function PcBuilder() {
                   </View>
 
                   <View style={styles.buildItemActions}>
-                    {item.component && (
+                    {(item.component || item.components.length > 0) && (
                       <TouchableOpacity
                         style={styles.removeButton}
                         onPress={() => handleRemoveComponent(item)}
@@ -763,7 +699,7 @@ export default function PcBuilder() {
                     )}
                     <View style={[
                       styles.compatibilityCircle,
-                      item.component ?
+                      item.component || item.components.length > 0 ?
                         (item.compatible ? styles.compatibleCircle : styles.incompatibleCircle)
                         : styles.emptyCircle
                     ]} />
@@ -798,20 +734,23 @@ export default function PcBuilder() {
           <TouchableOpacity
             style={[
               styles.saveButton,
-              selectedComponentsCount === 0 && styles.saveButtonDisabled
+              selectedComponentsCount === 0 && styles.saveButtonDisabled,
+              !user && styles.guestSaveButton
             ]}
             onPress={handleSaveBuild}
             disabled={selectedComponentsCount === 0}
           >
-            <Text style={styles.saveButtonText}>Guardar Build</Text>
+            <Text style={styles.saveButtonText}>
+              {user ? '💾 Guardar Build' : '🔒 Iniciar sesión para guardar'}
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {/* PANEL DERECHO - COMPONENTES CON MEJOR ESTRUCTURA */}
+        {/* PANEL DERECHO - COMPONENTES */}
         <View style={styles.componentsPanel}>
-          {/* CATEGORÍAS EN LA PARTE SUPERIOR */}
+          {/* CATEGORÍAS */}
           <View style={styles.categoriesSection}>
-            <Text style={styles.categoriesTitle}>Selecciona una categoria:</Text>
+            <Text style={styles.categoriesTitle}>Selecciona una categoría:</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -834,7 +773,7 @@ export default function PcBuilder() {
             </ScrollView>
           </View>
 
-          {/* COMPONENTES INMEDIATAMENTE DEBAJO */}
+          {/* COMPONENTES */}
           <View style={styles.componentsSection}>
             <Text style={styles.componentsTitle}>
               {componentCategories.find(cat => cat.type === selectedCategory)?.name} ({currentComponents.length})
@@ -866,7 +805,7 @@ export default function PcBuilder() {
                     No hay componentes disponibles
                   </Text>
                   <Text style={styles.noComponentsSubtext}>
-                    Esta categoria esta vacia en la base de datos
+                    Esta categoría está vacía en la base de datos
                   </Text>
                 </View>
               )}
@@ -900,12 +839,41 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1b27',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   title: {
     fontSize: 24,
     fontWeight: '800',
     color: '#ffffff',
+  },
+  guestMode: {
+    color: '#ffd700',
+    fontSize: 12,
+    fontWeight: '600',
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  guestInfoBox: {
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    padding: 12,
+    marginHorizontal: 20,
+    marginTop: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.3)',
+  },
+  guestInfoText: {
+    color: '#ffd700',
+    fontSize: 12,
     textAlign: 'center',
+    lineHeight: 16,
+  },
+  guestInfoBold: {
+    fontWeight: '700',
   },
   // Tabs para móvil
   tabsContainer: {
@@ -946,7 +914,7 @@ const styles = StyleSheet.create({
   componentsPanel: {
     flex: 2,
     backgroundColor: '#1a1b27',
-    padding: 0, // Eliminamos padding general para control específico
+    padding: 0,
   },
   mobilePanel: {
     flex: 1,
@@ -1095,12 +1063,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#8b9cb3',
     opacity: 0.6,
   },
+  guestSaveButton: {
+    backgroundColor: '#ff6b6b',
+  },
   saveButtonText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '700',
   },
-  // CATEGORÍAS MEJOR POSICIONADAS
+  // CATEGORÍAS
   categoriesContainer: {
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
@@ -1148,11 +1119,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
   },
-  // COMPONENTES MEJOR POSICIONADOS
+  // COMPONENTES
   componentsSection: {
     flex: 1,
     padding: 16,
-    paddingTop: 8, // Menos espacio arriba para estar más cerca de las categorías
+    paddingTop: 8,
   },
   componentsTitle: {
     fontSize: 20,
