@@ -32,7 +32,7 @@ export default function Profile() {
         setOldMail(savedMail);
 
         // Obtener datos del usuario
-        fetch('http://192.168.1.38:3031/getData',{
+        fetch('http://192.168.100.156:3031/getData',{
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ mail: savedMail })
@@ -44,7 +44,7 @@ export default function Profile() {
           setMail(data[0].mail);
           setGoogle(!!data[0].isGoogleUser);
 
-          const fullImageUrl = 'http://192.168.1.38:3031/' + data[0].foto.replace('./', '');
+          const fullImageUrl = 'http://192.168.100.156:3031/' + data[0].foto.replace('./', '');
 
           try 
           {
@@ -74,7 +74,7 @@ export default function Profile() {
         });
 
         // Obtener documentos del usuario
-        fetch('http://192.168.1.38:3031/getDocuments', {
+        fetch('http://192.168.100.156:3031/getDocuments', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ mail: savedMail })
@@ -91,7 +91,7 @@ export default function Profile() {
     {
       formData.append('oldmail', oldmail as string);
       formData.append('isGoogleUser', isGoogleUser + '');
-      const response = await fetch('http://192.168.1.38:3031/editUsuario',{
+      const response = await fetch('http://192.168.100.156:3031/editUsuario',{
         method: 'POST',
         body: formData,
       });
@@ -115,7 +115,7 @@ export default function Profile() {
                 <View style={styles.profileHeader}>
                   <Image
                     style={styles.imagen}
-                    source={{ uri: 'http://192.168.1.38:3031/' + imageurl.replace('./', '') }}
+                    source={{ uri: 'http://192.168.100.156:3031/' + imageurl.replace('./', '') }}
                   />
                   <View style={styles.profileInfo}>
                     <Text style={styles.nombre}>{nombre || 'Nombre'}</Text>
@@ -147,13 +147,13 @@ export default function Profile() {
                       {doc1 && (
                         <Image
                           style={styles.documentImage}
-                          source={{ uri: 'http://192.168.1.38:3031/' + doc1.replace('./', '') }}
+                          source={{ uri: 'http://192.168.100.156:3031/' + doc1.replace('./', '') }}
                         />
                       )}
                       {doc2 && (
                         <Image
                           style={styles.documentImage}
-                          source={{ uri: 'http://192.168.1.38:3031/' + doc2.replace('./', '') }}
+                          source={{ uri: 'http://192.168.100.156:3031/' + doc2.replace('./', '') }}
                         />
                       )}
                     </View>

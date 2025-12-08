@@ -87,7 +87,7 @@ export default function Documents() {
       formData.append('mail', savedMail);
 
       console.log('Guardando documentos...');
-      const response = await fetch('http://192.168.1.38:3031/saveDocuments', {
+      const response = await fetch('http://192.168.100.156:3031/saveDocuments', {
         method: 'POST',
         body: formData,
       });

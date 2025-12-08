@@ -2,8 +2,4 @@ arreglar entrada de datos
 arreglar compatibilidad
 arreglar edicion
 hostear
-archivo apk
-Documentacion
-video
 
-ser feliz lpmqmrp

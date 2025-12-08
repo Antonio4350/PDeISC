@@ -6,7 +6,7 @@ import * as WebBrowser from 'expo-web-browser';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const API_URL = "http://192.168.0.151:5000";
+const API_URL = "http://localhost:5000";
 
 interface GoogleOAuthProps {
   type: 'login' | 'register';

@@ -338,7 +338,7 @@ const generateToken = (user) => {
       rol: user.rol 
     },
     process.env.JWT_SECRET || 'fallback_secret',
-    { expiresIn: '24h' }
+    { expiresIn: '30d' }
   );
 };
 

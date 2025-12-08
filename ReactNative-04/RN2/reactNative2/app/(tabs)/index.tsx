@@ -56,7 +56,7 @@ export default function HomeScreen() {
 
   async function handleGoogleLogin(tokens: any) {
     try {
-      const res = await fetch('http://192.168.1.38:3031/googleLogin', {
+      const res = await fetch('http://192.168.100.156:3031/googleLogin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(tokens),
@@ -78,7 +78,7 @@ export default function HomeScreen() {
 
   async function inicio(formData: FormData): Promise<number> {
     try {
-      const response = await fetch('http://192.168.1.38:3031/getUsuario', {
+      const response = await fetch('http://192.168.100.156:3031/getUsuario', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -119,7 +119,7 @@ export default function HomeScreen() {
     try {
       console.log('Enviando datos de registro...');
 
-      const response = await fetch('http://192.168.1.38:3031/addUsuario', {
+      const response = await fetch('http://192.168.100.156:3031/addUsuario', {
         method: 'POST',
         body: formData,
       });

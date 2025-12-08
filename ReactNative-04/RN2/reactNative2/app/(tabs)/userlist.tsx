@@ -7,7 +7,7 @@ export default function UserList() {
   const [usuarios, setUsuarios] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('http://192.168.1.38:3031/getUsuarios')
+    fetch('http://192.168.100.156:3031/getUsuarios')
       .then(response => response.json())
       .then(data => setUsuarios(data));
   }, []);

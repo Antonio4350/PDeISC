@@ -6,7 +6,8 @@ import {
   ScrollView, 
   TouchableOpacity,
   ActivityIndicator,
-  Alert
+  RefreshControl,
+  Modal
 } from 'react-native';
 import { useAuth } from '../AuthContext';
 import { router } from 'expo-router';
@@ -27,6 +28,10 @@ export default function Projects() {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -49,12 +54,17 @@ export default function Projects() {
         setProjects([]);
       }
     } catch (error) {
-      console.error('Error:', error);
       toast.error('Error de conexión');
       setProjects([]);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadProjects();
   };
 
   const handleCreateProject = () => {
@@ -71,39 +81,65 @@ export default function Projects() {
       router.push('/(tabs)/Login');
       return;
     }
-    router.push(`/(tabs)/PcBuilder?project=${projectId}`);
+    router.push({
+      pathname: '/(tabs)/PcBuilder',
+      params: { projectId: projectId.toString() }
+    });
   };
 
-  const handleDeleteProject = (project: Project) => {
-    Alert.alert(
-      'Eliminar Proyecto',
-      `¿Estás seguro de eliminar "${project.nombre}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Eliminar', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const result = await projectService.deleteProject(project.id);
-              if (result.success) {
-                toast.success('Proyecto eliminado');
-                loadProjects();
-              } else {
-                toast.error(result.error || 'Error eliminando proyecto');
-              }
-            } catch (error) {
-              toast.error('Error eliminando proyecto');
-            }
-          }
-        }
-      ]
-    );
+  const handleDeleteClick = (project: Project, e: any) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    if (deletingId === project.id) return;
+    
+    setProjectToDelete(project);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!projectToDelete) return;
+    
+    const projectId = projectToDelete.id;
+    const projectName = projectToDelete.nombre;
+    
+    try {
+      setDeletingId(projectId);
+      setShowDeleteModal(false);
+      
+      const result = await projectService.deleteProject(projectId);
+      
+      if (result.success) {
+        toast.success(`"${projectName}" eliminado`);
+        setProjects(prev => prev.filter(p => p.id !== projectId));
+      } else {
+        toast.error(result.error || 'Error eliminando proyecto');
+      }
+    } catch (error: any) {
+      toast.error('Error: ' + (error.message || 'Error de conexión'));
+    } finally {
+      setDeletingId(null);
+      setProjectToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setProjectToDelete(null);
+    setDeletingId(null);
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-AR');
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch {
+      return 'Fecha inválida';
+    }
   };
 
   // Si no hay usuario logueado
@@ -140,7 +176,7 @@ export default function Projects() {
     );
   }
 
-  if (loading) {
+  if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#667eea" />
@@ -151,6 +187,55 @@ export default function Projects() {
 
   return (
     <View style={styles.container}>
+      {/* Modal de confirmación */}
+      <Modal
+        visible={showDeleteModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={cancelDelete}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>🗑️ Eliminar Proyecto</Text>
+            </View>
+            
+            <View style={styles.modalBody}>
+              <Text style={styles.modalText}>
+                ¿Estás seguro de eliminar{" "}
+                <Text style={styles.projectNameHighlight}>
+                  "{projectToDelete?.nombre}"
+                </Text>?
+              </Text>
+              <Text style={styles.modalWarning}>
+                Esta acción no se puede deshacer.
+              </Text>
+            </View>
+            
+            <View style={styles.modalFooter}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={cancelDelete}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.deleteModalButton]}
+                onPress={confirmDelete}
+                disabled={deletingId === projectToDelete?.id}
+              >
+                {deletingId === projectToDelete?.id ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <Text style={styles.deleteModalButtonText}>Eliminar</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.header}>
         <Text style={styles.title}>📂 Mis Proyectos</Text>
         <Text style={styles.subtitle}>
@@ -173,11 +258,31 @@ export default function Projects() {
           </TouchableOpacity>
         </View>
       ) : (
-        <ScrollView style={styles.projectsList}>
+        <ScrollView 
+          style={styles.projectsList}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#667eea']}
+              tintColor="#667eea"
+            />
+          }
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.statsCard}>
             <Text style={styles.statsText}>
               📊 Tenés {projects.length} proyecto{projects.length !== 1 ? 's' : ''} guardado{projects.length !== 1 ? 's' : ''}
             </Text>
+            <TouchableOpacity 
+              style={styles.refreshButton}
+              onPress={loadProjects}
+              disabled={refreshing}
+            >
+              <Text style={styles.refreshButtonText}>
+                {refreshing ? '🔄' : '🔄 Actualizar'}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {projects.map((project) => (
@@ -185,29 +290,54 @@ export default function Projects() {
               key={project.id}
               style={styles.projectCard}
               onPress={() => handleOpenProject(project.id)}
-              onLongPress={() => handleDeleteProject(project)}
+              disabled={deletingId === project.id}
             >
               <View style={styles.projectHeader}>
-                <Text style={styles.projectName}>{project.nombre}</Text>
+                <View style={styles.projectTitleContainer}>
+                  <Text style={styles.projectName} numberOfLines={1}>
+                    {project.nombre}
+                  </Text>
+                  {deletingId === project.id && (
+                    <View style={styles.deletingContainer}>
+                      <ActivityIndicator size="small" color="#EF4444" />
+                      <Text style={styles.deletingText}>Eliminando...</Text>
+                    </View>
+                  )}
+                </View>
+                
                 <TouchableOpacity 
-                  style={styles.deleteButton}
-                  onPress={() => handleDeleteProject(project)}
+                  style={[
+                    styles.deleteButton,
+                    deletingId === project.id && styles.deleteButtonDisabled
+                  ]}
+                  onPress={(e) => handleDeleteClick(project, e)}
+                  disabled={deletingId === project.id}
                 >
-                  <Text style={styles.deleteButtonText}>🗑️</Text>
+                  <Text style={styles.deleteButtonText}>
+                    {deletingId === project.id ? '⏳' : '🗑️'}
+                  </Text>
                 </TouchableOpacity>
               </View>
               
               {project.descripcion ? (
-                <Text style={styles.projectDescription}>{project.descripcion}</Text>
+                <Text style={styles.projectDescription} numberOfLines={2}>
+                  {project.descripcion}
+                </Text>
               ) : null}
               
               <View style={styles.projectInfo}>
-                <Text style={styles.projectDate}>
-                  📅 {formatDate(project.fecha_actualizacion || project.fecha_creacion)}
-                </Text>
-                <Text style={styles.componentsCount}>
-                  {project.componentes_count || 0} componente{project.componentes_count !== 1 ? 's' : ''}
-                </Text>
+                <View style={styles.projectDateContainer}>
+                  <Text style={styles.projectDateIcon}>📅</Text>
+                  <Text style={styles.projectDate}>
+                    {formatDate(project.fecha_actualizacion || project.fecha_creacion)}
+                  </Text>
+                </View>
+                
+                <View style={styles.componentsBadge}>
+                  <Text style={styles.componentsBadgeText}>
+                    {project.componentes_count || 0} componente{project.componentes_count !== 1 ? 's' : ''}
+                  </Text>
+                </View>
               </View>
               
               <View style={styles.projectFooter}>
@@ -223,6 +353,7 @@ export default function Projects() {
             <Text style={styles.addProjectIcon}>➕</Text>
             <Text style={styles.addProjectText}>Crear Nuevo Proyecto</Text>
           </TouchableOpacity>
+          
         </ScrollView>
       )}
     </View>
@@ -261,6 +392,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#8b9cb3',
     textAlign: 'center',
+    lineHeight: 22,
   },
   emptyState: {
     flex: 1,
@@ -294,6 +426,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     width: '100%',
     alignItems: 'center',
+    shadowColor: '#667eea',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   createButtonText: {
     color: '#ffffff',
@@ -318,11 +455,27 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   statsText: {
     color: '#8b9cb3',
     fontSize: 14,
+    fontWeight: '600',
+    flex: 1,
+  },
+  refreshButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+  },
+  refreshButtonText: {
+    color: '#667eea',
+    fontSize: 12,
     fontWeight: '600',
   },
   projectCard: {
@@ -339,36 +492,72 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 12,
   },
+  projectTitleContainer: {
+    flex: 1,
+  },
   projectName: {
     fontSize: 18,
     fontWeight: '700',
     color: '#ffffff',
     flex: 1,
   },
+  deletingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 8,
+  },
+  deletingText: {
+    fontSize: 12,
+    color: '#EF4444',
+    fontStyle: 'italic',
+  },
   deleteButton: {
-    padding: 4,
+    padding: 8,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderRadius: 6,
+    minWidth: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteButtonDisabled: {
+    opacity: 0.5,
   },
   deleteButtonText: {
     fontSize: 16,
-    opacity: 0.7,
+    color: '#EF4444',
   },
   projectDescription: {
     fontSize: 14,
     color: '#8b9cb3',
-    marginBottom: 12,
+    marginBottom: 16,
     lineHeight: 20,
   },
   projectInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
+  },
+  projectDateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  projectDateIcon: {
+    fontSize: 12,
   },
   projectDate: {
     fontSize: 12,
     color: '#8b9cb3',
   },
-  componentsCount: {
+  componentsBadge: {
+    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  componentsBadgeText: {
     fontSize: 12,
     color: '#667eea',
     fontWeight: '600',
@@ -377,6 +566,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
   },
   openProject: {
     fontSize: 14,
@@ -396,9 +588,110 @@ const styles = StyleSheet.create({
   addProjectIcon: {
     fontSize: 24,
     marginBottom: 8,
+    color: '#667eea',
   },
   addProjectText: {
     color: '#667eea',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  hintContainer: {
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.3)',
+    marginBottom: 40,
+  },
+  hintText: {
+    color: '#ffd700',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  // Estilos del Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#1a1b27',
+    borderRadius: 16,
+    width: '100%',
+    maxWidth: 400,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    padding: 24,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#ffffff',
+    textAlign: 'center',
+  },
+  modalBody: {
+    padding: 24,
+    paddingVertical: 20,
+  },
+  modalText: {
+    fontSize: 16,
+    color: '#8b9cb3',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 12,
+  },
+  projectNameHighlight: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontStyle: 'italic',
+  },
+  modalWarning: {
+    fontSize: 14,
+    color: '#EF4444',
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    padding: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  cancelButtonText: {
+    color: '#8b9cb3',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  deleteModalButton: {
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+  },
+  deleteModalButtonText: {
+    color: '#EF4444',
     fontSize: 16,
     fontWeight: '700',
   },

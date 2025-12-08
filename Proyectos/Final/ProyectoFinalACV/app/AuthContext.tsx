@@ -30,39 +30,77 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Guardar usuario en AsyncStorage
+  // Guardar usuario en storage (AMBOS: AsyncStorage y localStorage)
   const saveUserToStorage = async (userData: User) => {
     try {
+      // Para React Native/AsyncStorage
       await AsyncStorage.setItem('user', JSON.stringify(userData));
       if (userData.token) {
         await AsyncStorage.setItem('token', userData.token);
+      }
+      
+      // Para web - localStorage (IMPORTANTE PARA QUE FUNCIONE EN WEB)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(userData));
+        if (userData.token) {
+          localStorage.setItem('token', userData.token);
+        }
+        console.log('✅ Token guardado en localStorage para web');
       }
     } catch (error) {
       console.error('Error guardando usuario:', error);
     }
   };
 
-  // Remover usuario de AsyncStorage
+  // Remover usuario de storage (AMBOS)
   const removeUserFromStorage = async () => {
     try {
+      // AsyncStorage
       await AsyncStorage.multiRemove(['user', 'token']);
-      console.log('✅ Usuario y token removidos de AsyncStorage');
+      
+      // localStorage (web)
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
+      
+      console.log('✅ Usuario y token removidos de storage');
     } catch (error) {
       console.error('Error removiendo usuario:', error);
     }
   };
 
-  // Cargar usuario desde AsyncStorage
+  // Cargar usuario desde storage (PRIMERO localStorage, LUEGO AsyncStorage)
   const loadUserFromStorage = async (): Promise<User | null> => {
     try {
-      const [userString, token] = await AsyncStorage.multiGet(['user', 'token']);
-      const userData = userString[1] ? JSON.parse(userString[1]) : null;
+      let userString: string | null = null;
+      let token: string | null = null;
       
-      if (userData && token[1]) {
-        userData.token = token[1];
+      // PRIMERO: Intentar localStorage (para web)
+      if (typeof window !== 'undefined') {
+        userString = localStorage.getItem('user');
+        token = localStorage.getItem('token');
+        if (userString && token) {
+          console.log('🌐 Usuario cargado desde localStorage (web)');
+          const userData = JSON.parse(userString);
+          userData.token = token;
+          return userData;
+        }
       }
       
-      return userData;
+      // SEGUNDO: Intentar AsyncStorage (para móvil)
+      const [asyncUser, asyncToken] = await AsyncStorage.multiGet(['user', 'token']);
+      userString = asyncUser[1];
+      token = asyncToken[1];
+      
+      if (userString && token) {
+        console.log('📱 Usuario cargado desde AsyncStorage (móvil)');
+        const userData = JSON.parse(userString);
+        userData.token = token;
+        return userData;
+      }
+      
+      return null;
     } catch (error) {
       console.error('Error cargando usuario:', error);
       return null;
@@ -74,7 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return user?.rol === 'admin' || user?.rol === 'moderator';
   };
 
-  // Login mejorado
+  // Login
   const login = async (userData: User, token?: string) => {
     console.log('🔐 Iniciando login...', userData.email);
     
@@ -91,27 +129,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Logout
   const logout = async (): Promise<void> => {
-    return new Promise(async (resolve) => {
-      console.log('🚪 Iniciando logout...');
+    console.log('🚪 Iniciando logout...');
+    
+    try {
+      // 1. Limpiar storage
+      await removeUserFromStorage();
       
-      try {
-        // 1. Limpiar AsyncStorage primero
-        await removeUserFromStorage();
-        
-        // 2. Resetear estado de React
-        setUser(null);
-        setIsAuthenticated(false);
-        
-        console.log('✅ Logout completado - Estado limpiado');
-        resolve();
-      } catch (error) {
-        console.error('❌ Error en logout:', error);
-        // Forzar reset del estado incluso si hay error
-        setUser(null);
-        setIsAuthenticated(false);
-        resolve();
-      }
-    });
+      // 2. Resetear estado
+      setUser(null);
+      setIsAuthenticated(false);
+      
+      console.log('✅ Logout completado');
+    } catch (error) {
+      console.error('❌ Error en logout:', error);
+      // Forzar reset del estado
+      setUser(null);
+      setIsAuthenticated(false);
+    }
   };
 
   // Verificar autenticación al iniciar la app
@@ -137,7 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Efecto para verificar autenticación al montar el componente
+  // Efecto para verificar autenticación al montar
   useEffect(() => {
     checkAuth();
   }, []);
@@ -159,7 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// Hook personalizado para usar el contexto
+// Hook personalizado
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

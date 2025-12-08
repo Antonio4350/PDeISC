@@ -57,6 +57,7 @@ export default function AdminPanel() {
     } as any);
   };
 
+  // Lista de componentes SIN coolers
   const allComponents = [
     { 
       type: 'procesadores', 
@@ -114,24 +115,11 @@ export default function AdminPanel() {
       count: stats?.gabinetes || 0,
       description: 'Torres PC'
     },
-    { 
-      type: 'coolers', 
-      name: 'Coolers', 
-      icon: '❄️', 
-      color: '#26C6DA',
-      count: stats?.coolers || 0,
-      description: 'Refrigeración'
-    },
+    // Coolers ha sido ELIMINADO de esta lista
   ];
 
+  // Acciones rápidas SIN "Gestionar Propiedades"
   const quickActions = [
-    {
-      title: 'Gestionar Propiedades',
-      description: 'Marcas, sockets, chipsets',
-      icon: '🏷️',
-      route: '/(tabs)/ManageProperties',
-      color: '#667eea'
-    },
     {
       title: 'Ver Catálogo Completo',
       description: 'Todos los componentes',
@@ -153,6 +141,7 @@ export default function AdminPanel() {
       route: '/(tabs)/Projects',
       color: '#98D8C8'
     }
+    // "Gestionar Propiedades" ha sido ELIMINADO de esta lista
   ];
 
   if (loading) {
@@ -216,7 +205,7 @@ export default function AdminPanel() {
           </View>
         </View>
 
-        {/* Quick Actions */}
+        {/* Quick Actions (ahora con solo 3 items) */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
           <Text style={styles.sectionSubtitle}>Accesos directos a funciones principales</Text>

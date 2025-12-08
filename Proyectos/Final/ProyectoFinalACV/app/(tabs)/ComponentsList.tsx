@@ -1,4 +1,4 @@
-// app/(tabs)/ComponentsList.tsx - COMPLETAMENTE CORREGIDO
+// app/(tabs)/ComponentsList.tsx - CON CONFIRMACIÓN DE ELIMINACIÓN
 import React, { useState, useEffect } from 'react';
 import { 
   View, 
@@ -10,7 +10,9 @@ import {
   ActivityIndicator,
   Alert,
   useWindowDimensions,
-  Dimensions
+  Dimensions,
+  Modal,
+  Pressable
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../AuthContext';
@@ -38,6 +40,8 @@ export default function ComponentsList() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [permissionChecked, setPermissionChecked] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [componentToDelete, setComponentToDelete] = useState<Component | null>(null);
 
   useEffect(() => {
     // Verificar permisos después de que el componente esté montado
@@ -125,74 +129,77 @@ export default function ComponentsList() {
     } as any);
   };
 
-  const handleDelete = async (component: Component) => {
-    Alert.alert(
-      '🗑️ Eliminar Componente',
-      `¿Querés eliminar a ${component.marca} ${component.modelo}?\n\nEsta acción no se puede deshacer.`,
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            await deleteComponent(component.id);
-          },
-        },
-      ],
-    );
+  // ✅ VERSIÓN MEJORADA: Confirmación con modal personalizado
+  const handleDelete = (component: Component) => {
+    // Guardar el componente que se quiere eliminar
+    setComponentToDelete(component);
+    setDeleteModalVisible(true);
   };
 
-  const deleteComponent = async (componentId: number) => {
+  // ✅ CONFIRMAR ELIMINACIÓN
+  const confirmDelete = async () => {
+    if (!componentToDelete) return;
+
     try {
-      console.log(`[DELETE] Tipo: ${componentType}, ID: ${componentId}`);
+      setLoading(true);
+      console.log(`[DELETE] Tipo: ${componentType}, ID: ${componentToDelete.id}`);
       
       let result: any;
       
       switch (componentType) {
         case 'procesadores':
-          result = await componentService.deleteProcessor(componentId);
+          result = await componentService.deleteProcessor(componentToDelete.id);
           break;
         case 'motherboards':
-          result = await componentService.deleteMotherboard(componentId);
+          result = await componentService.deleteMotherboard(componentToDelete.id);
           break;
         case 'memorias_ram':
-          result = await componentService.deleteRAM(componentId);
+          result = await componentService.deleteRAM(componentToDelete.id);
           break;
         case 'tarjetas_graficas':
-          result = await componentService.deleteGPU(componentId);
+          result = await componentService.deleteGPU(componentToDelete.id);
           break;
         case 'almacenamiento':
-          result = await componentService.deleteStorage(componentId);
+          result = await componentService.deleteStorage(componentToDelete.id);
           break;
         case 'fuentes_poder':
-          result = await componentService.deletePSU(componentId);
+          result = await componentService.deletePSU(componentToDelete.id);
           break;
         case 'gabinetes':
-          result = await componentService.deleteCase(componentId);
+          result = await componentService.deleteCase(componentToDelete.id);
           break;
         default:
           toast.error(`Tipo no soportado: ${componentType}`);
+          setDeleteModalVisible(false);
+          setComponentToDelete(null);
+          setLoading(false);
           return;
       }
 
       console.log(`[DELETE RESULT]`, result);
 
       if (result?.success) {
-        toast.success('Eliminado!');
-        setLoading(true);
-        setTimeout(() => {
-          loadComponents();
-        }, 300);
+        toast.success(`✅ ${componentToDelete.marca} ${componentToDelete.modelo} eliminado!`);
+        
+        // Recargar la lista de componentes
+        await loadComponents();
       } else {
-        toast.error(`Error: ${result?.error || 'Desconocido'}`);
+        toast.error(`❌ Error: ${result?.error || 'Error al eliminar'}`);
       }
     } catch (err: any) {
       console.error(`[DELETE ERROR]`, err);
-      toast.error(`Error de conexión`);
+      toast.error(`❌ Error de conexión`);
+    } finally {
+      setLoading(false);
+      setDeleteModalVisible(false);
+      setComponentToDelete(null);
     }
+  };
+
+  // ✅ CANCELAR ELIMINACIÓN
+  const cancelDelete = () => {
+    setDeleteModalVisible(false);
+    setComponentToDelete(null);
   };
 
   const getComponentIcon = () => {
@@ -208,15 +215,81 @@ export default function ComponentsList() {
     return icons[componentType] || '🔧';
   };
 
-const handleBack = () => {
-  console.log('Navegando hacia atrás...');
-  if (router.canGoBack()) {
-    router.back();
-  } else {
-    // Si no puede ir atrás, ir al admin panel
-    router.push('/(tabs)/AdminPanel' as any);
-  }
-};
+  const handleBack = () => {
+    console.log('Navegando hacia atrás...');
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      // Si no puede ir atrás, ir al admin panel
+      router.push('/(tabs)/AdminPanel' as any);
+    }
+  };
+
+  // Modal de confirmación de eliminación
+  const DeleteConfirmationModal = () => {
+    if (!componentToDelete) return null;
+
+    return (
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={deleteModalVisible}
+        onRequestClose={cancelDelete}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContainer, isMobile && styles.modalContainerMobile]}>
+            <Text style={[styles.modalTitle, isMobile && styles.modalTitleMobile]}>
+              🗑️ Eliminar Componente
+            </Text>
+            
+            <View style={styles.modalContent}>
+              <Text style={[styles.modalText, isMobile && styles.modalTextMobile]}>
+                ¿Estás seguro de que querés eliminar?
+              </Text>
+              
+              <View style={[styles.componentToDelete, isMobile && styles.componentToDeleteMobile]}>
+                <Text style={[styles.deleteBrand, isMobile && styles.deleteBrandMobile]}>
+                  {componentToDelete.marca}
+                </Text>
+                <Text style={[styles.deleteModel, isMobile && styles.deleteModelMobile]}>
+                  {componentToDelete.modelo}
+                </Text>
+              </View>
+              
+              <Text style={[styles.warningText, isMobile && styles.warningTextMobile]}>
+                ⚠️ Esta acción no se puede deshacer.
+              </Text>
+            </View>
+            
+            <View style={[styles.modalButtons, isMobile && styles.modalButtonsMobile]}>
+              <TouchableOpacity
+                style={[styles.cancelButton, isMobile && styles.cancelButtonMobile]}
+                onPress={cancelDelete}
+              >
+                <Text style={[styles.cancelButtonText, isMobile && styles.cancelButtonTextMobile]}>
+                  Cancelar
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.confirmDeleteButton, isMobile && styles.confirmDeleteButtonMobile]}
+                onPress={confirmDelete}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={[styles.confirmDeleteButtonText, isMobile && styles.confirmDeleteButtonTextMobile]}>
+                    Eliminar
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
 
   // Si no tiene permisos, mostrar loading
   if (!permissionChecked) {
@@ -228,7 +301,7 @@ const handleBack = () => {
     );
   }
 
-  if (loading) {
+  if (loading && !deleteModalVisible) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#667eea" />
@@ -239,6 +312,8 @@ const handleBack = () => {
 
   return (
     <View style={styles.container}>
+      <DeleteConfirmationModal />
+      
       <View style={[styles.header, isMobile && styles.headerMobile]}>
         <TouchableOpacity 
           style={[styles.backButton, isMobile && styles.backButtonMobile]} 
@@ -576,5 +651,135 @@ const styles = StyleSheet.create({
   detailTextMobile: {
     fontSize: 10,
     marginBottom: 2,
+  },
+  // Modal de confirmación
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContainer: {
+    backgroundColor: '#1a1b27',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  modalContainerMobile: {
+    padding: 16,
+    maxWidth: '90%',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#ffffff',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalTitleMobile: {
+    fontSize: 18,
+    marginBottom: 16,
+  },
+  modalContent: {
+    marginBottom: 24,
+  },
+  modalText: {
+    fontSize: 16,
+    color: '#8b9cb3',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 24,
+  },
+  modalTextMobile: {
+    fontSize: 14,
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  componentToDelete: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  componentToDeleteMobile: {
+    padding: 12,
+    marginBottom: 16,
+  },
+  deleteBrand: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#ef4444',
+    marginBottom: 4,
+  },
+  deleteBrandMobile: {
+    fontSize: 16,
+  },
+  deleteModel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  deleteModelMobile: {
+    fontSize: 14,
+  },
+  warningText: {
+    fontSize: 14,
+    color: '#ffd700',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  warningTextMobile: {
+    fontSize: 12,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  modalButtonsMobile: {
+    gap: 8,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  cancelButtonMobile: {
+    paddingVertical: 12,
+  },
+  cancelButtonText: {
+    color: '#8b9cb3',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  cancelButtonTextMobile: {
+    fontSize: 14,
+  },
+  confirmDeleteButton: {
+    flex: 1,
+    backgroundColor: '#ef4444',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  confirmDeleteButtonMobile: {
+    paddingVertical: 12,
+  },
+  confirmDeleteButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  confirmDeleteButtonTextMobile: {
+    fontSize: 14,
   },
 });

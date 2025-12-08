@@ -10,7 +10,7 @@ export default function UserItem({ userData }: { userData: FormData }) {
     <View style={[styles.card, isMobile && styles.cardMobile]}>
       <Image
         style={[styles.imagen, isMobile && styles.imagenMobile]}
-        source={{ uri: 'http://192.168.1.38:3031/' + userData.get('foto') }}
+        source={{ uri: 'http://192.168.100.156:3031/' + userData.get('foto') }}
       />
       
       <Text style={[styles.nombre, isMobile && styles.nombreMobile]}>{userData.get('nombre') as any}</Text>
@@ -29,13 +29,13 @@ export default function UserItem({ userData }: { userData: FormData }) {
             {userData.get('documento1') && (
               <Image
                 style={[styles.documentImage, isMobile && styles.documentImageMobile]}
-                source={{ uri: 'http://192.168.1.38:3031/' + userData.get('documento1') }}
+                source={{ uri: 'http://192.168.100.156:3031/' + userData.get('documento1') }}
               />
             )}
             {userData.get('documento2') && (
               <Image
                 style={[styles.documentImage, isMobile && styles.documentImageMobile]}
-                source={{ uri: 'http://192.168.1.38:3031/' + userData.get('documento2') }}
+                source={{ uri: 'http://192.168.100.156:3031/' + userData.get('documento2') }}
               />
             )}
           </View>
