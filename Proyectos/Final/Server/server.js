@@ -5,8 +5,44 @@ import 'dotenv/config';
 const app = express();
 
 // ========== MIDDLEWARE ==========
+// Configuración de CORS para desarrollo y producción
+const allowedOrigins = [
+  // Desarrollo local
+  'http://localhost:3000', 
+  'http://localhost:19006', 
+  'http://localhost:8081', 
+  'exp://localhost:19000', 
+  'http://localhost:19000',
+  
+  // Producción - URLs de Vercel (REEMPLAZA CON TUS URLS REALES)
+  'https://proyectofinalacv.vercel.app',
+  'https://proyectofinalacv-frontend.vercel.app',
+  'https://proyectofinalacv-backend.vercel.app',
+  
+  // También acepta cualquier origen en desarrollo
+  ...(process.env.NODE_ENV === 'development' ? ['*'] : [])
+];
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:19006', 'http://localhost:8081', 'exp://localhost:19000', 'http://localhost:19000'],
+  origin: function (origin, callback) {
+    // Permitir requests sin origen (como apps móviles)
+    if (!origin && process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    
+    // En producción, verificar origen
+    if (process.env.NODE_ENV === 'production') {
+      if (allowedOrigins.includes(origin) || origin === undefined) {
+        return callback(null, true);
+      } else {
+        console.warn(`⚠️ Origen CORS bloqueado en producción: ${origin}`);
+        return callback(new Error('CORS no permitido'), false);
+      }
+    }
+    
+    // En desarrollo, permitir todo
+    return callback(null, true);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
@@ -15,21 +51,23 @@ app.use(cors({
 app.options('*', cors());
 app.use(express.json());
 
-// Logging de requests
-app.use((req, res, next) => {
-  console.log(`\n=== 🌐 REQUEST INCOMING ===`);
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  console.log('📋 Headers:', {
-    authorization: req.headers.authorization ? 'PRESENTE' : 'NO',
-    origin: req.headers.origin,
-    'content-type': req.headers['content-type']
+// Logging de requests (solo en desarrollo)
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    console.log(`\n=== 🌐 REQUEST INCOMING ===`);
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    console.log('📋 Headers:', {
+      authorization: req.headers.authorization ? 'PRESENTE' : 'NO',
+      origin: req.headers.origin,
+      'content-type': req.headers['content-type']
+    });
+    if (req.body && Object.keys(req.body).length > 0) {
+      console.log('📦 Body:', JSON.stringify(req.body).substring(0, 200) + '...');
+    }
+    console.log(`=== END REQUEST ===\n`);
+    next();
   });
-  if (req.body && Object.keys(req.body).length > 0) {
-    console.log('📦 Body:', JSON.stringify(req.body).substring(0, 200) + '...');
-  }
-  console.log(`=== END REQUEST ===\n`);
-  next();
-});
+}
 
 // Importar componentes
 import authController from './Components/authController.js';
@@ -46,7 +84,9 @@ app.get('/', (req, res) => {
     message: 'Backend de ProyectoFinalACV funcionando',
     project: 'AntonioPCBuilder',
     status: 'OK',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    baseUrl: req.protocol + '://' + req.get('host')
   });
 });
 
@@ -55,6 +95,7 @@ app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
     endpoints: {
       projects: '/api/projects',
       components: '/components',
@@ -213,7 +254,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ 
     success: false,
     message: 'Error interno del servidor',
-    error: err.message
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Error interno'
   });
 });
 
@@ -236,17 +277,15 @@ function startServer() {
     const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`\n🚀🚀🚀 SERVIDOR EXPRESS INICIADO 🚀🚀🚀`);
       console.log(`📍 URL: http://localhost:${PORT}`);
+      console.log(`🌍 URL Externa: https://proyectofinalacv-backend.vercel.app`);
       console.log(`🔧 Entorno: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`📊 Puerto: ${PORT}`);
       
       console.log(`\n📋 ENDPOINTS PRINCIPALES:`);
-      console.log(`   GET  /components/gabinetes/:id      - Obtener gabinete por ID`);
-      console.log(`   PUT  /components/gabinetes/:id      - Actualizar gabinete ✅`);
-      console.log(`   GET  /components/tarjetas_graficas/:id - Obtener GPU por ID`);
-      console.log(`   PUT  /components/tarjetas_graficas/:id - Actualizar GPU ✅`);
-      console.log(`   GET  /components/almacenamiento/:id  - Obtener almacenamiento por ID`);
-      console.log(`   PUT  /components/almacenamiento/:id  - Actualizar almacenamiento ✅`);
-      console.log(`   GET  /components/fuentes_poder/:id   - Obtener PSU por ID`);
-      console.log(`   PUT  /components/fuentes_poder/:id   - Actualizar PSU ✅`);
+      console.log(`   GET  /health                - Health check`);
+      console.log(`   POST /login                 - Login usuario`);
+      console.log(`   POST /register              - Registrar usuario`);
+      console.log(`   GET  /components/:type      - Obtener componentes`);
     });
 
     server.on('error', (err) => {

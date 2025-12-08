@@ -1,3 +1,4 @@
+// app/config/apiConfig.ts - VERSIÓN SIMPLIFICADA
 import Constants from 'expo-constants';
 
 interface ApiConfig {
@@ -7,11 +8,13 @@ interface ApiConfig {
 }
 
 function getApiConfig(): ApiConfig {
-  // Leer variable de entorno pública (EXPO_PUBLIC_API_URL)
+  // URL DE PRODUCCIÓN - REEMPLAZA ESTO CON TU URL REAL DE VERCEL
+  const PRODUCTION_URL = 'https://proyectofinalacv-backend.vercel.app';
+  
+  // 1. Si hay variable de entorno, usarla (configurada en Vercel)
   const publicApiUrl = process.env.EXPO_PUBLIC_API_URL;
-
-  // Si está configurada en .env.local o variables de entorno, usarla
-  if (publicApiUrl && publicApiUrl.trim()) {
+  
+  if (publicApiUrl && publicApiUrl.trim() && publicApiUrl !== 'undefined') {
     return {
       apiUrl: publicApiUrl,
       isDevelopment: publicApiUrl.includes('localhost') || publicApiUrl.includes('192.168'),
@@ -19,16 +22,25 @@ function getApiConfig(): ApiConfig {
                    publicApiUrl.includes('192.168') ? 'lan' : 'production'
     };
   }
-
-  // FALLBACK: Detectar automáticamente en base a debugger
+  
+  // 2. Si estamos en desarrollo web local (localhost:8081, etc)
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname.includes('192.168')) {
+      return {
+        apiUrl: 'http://localhost:5000',
+        isDevelopment: true,
+        environment: 'local'
+      };
+    }
+  }
+  
+  // 3. Si estamos en desarrollo con Expo Go
   const debuggerHost = Constants.expoConfig?.hostUri || '';
   
-  if (debuggerHost && debuggerHost.includes(':')) {
-    // Estamos en desarrollo con Expo
-    // Extraer la IP del debuggerHost (ej: "192.168.100.156:19000" → "192.168.100.156")
+  if (__DEV__ && debuggerHost && debuggerHost.includes(':')) {
     const ipFromDebugger = debuggerHost.split(':')[0];
     
-    // Si la IP es 127.0.0.1 o localhost, usar localhost
     if (ipFromDebugger === '127.0.0.1' || ipFromDebugger === 'localhost') {
       return {
         apiUrl: 'http://localhost:5000',
@@ -37,7 +49,6 @@ function getApiConfig(): ApiConfig {
       };
     }
 
-    // Si hay IP detectada en la LAN, usarla
     if (ipFromDebugger && ipFromDebugger !== 'localhost') {
       return {
         apiUrl: `http://${ipFromDebugger}:5000`,
@@ -46,26 +57,20 @@ function getApiConfig(): ApiConfig {
       };
     }
   }
-
-  // DEFAULT PRODUCTION
-  // ⚠️ IMPORTANTE: Reemplaza esto con tu URL de Vercel/hosting cuando hagas deploy
+  
+  // 4. DEFAULT: PRODUCCIÓN
   return {
-    apiUrl: process.env.EXPO_PUBLIC_PRODUCTION_API_URL || 'https://api.example.com',
+    apiUrl: PRODUCTION_URL,
     isDevelopment: false,
     environment: 'production'
   };
 }
 
-// Exportar configuración
 export const apiConfig = getApiConfig();
 
-// Log para debugging (comentar en producción)
+// Log solo en desarrollo
 if (__DEV__) {
-  console.log('📡 API Config:', {
-    url: apiConfig.apiUrl,
-    environment: apiConfig.environment,
-    isDevelopment: apiConfig.isDevelopment
-  });
+  console.log('📡 API Config:', apiConfig);
 }
 
 export default apiConfig;
