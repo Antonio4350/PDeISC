@@ -1,4 +1,4 @@
-// app/(tabs)/EditComponent.tsx - NUEVO ARCHIVO
+// app/(tabs)/EditComponent.tsx - VERSIÓN COMPLETA
 import React, { useState, useEffect } from 'react';
 import { 
   View, 
@@ -31,24 +31,24 @@ export default function EditComponent() {
   const [currentField, setCurrentField] = useState<any>(null);
   const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
 
-useEffect(() => {
-  // Verificar permisos después del montaje
-  const checkPermissions = () => {
-    if (!isAdmin()) {
-      toast.error('No tenés permisos para acceder');
-      setTimeout(() => {
-        router.back();
-      }, 100);
-      return false;
-    }
-    return true;
-  };
+  useEffect(() => {
+    // Verificar permisos después del montaje
+    const checkPermissions = () => {
+      if (!isAdmin()) {
+        toast.error('No tenés permisos para acceder');
+        setTimeout(() => {
+          router.back();
+        }, 100);
+        return false;
+      }
+      return true;
+    };
 
-  if (checkPermissions()) {
-    loadFormOptions();
-    loadComponent();
-  }
-}, [componentType, componentId]);
+    if (checkPermissions()) {
+      loadFormOptions();
+      loadComponent();
+    }
+  }, [componentType, componentId]);
 
   const loadFormOptions = async () => {
     try {
@@ -88,7 +88,9 @@ useEffect(() => {
 
   const loadComponent = async () => {
     try {
+      console.log(`📥 Cargando componente: ${componentType} ID: ${componentId}`);
       let result;
+      
       switch (componentType) {
         case 'procesadores':
           result = await componentService.getProcessorById(Number(componentId));
@@ -99,18 +101,32 @@ useEffect(() => {
         case 'memorias_ram':
           result = await componentService.getRAMById(Number(componentId));
           break;
+        case 'tarjetas_graficas':
+          result = await componentService.getGPUById(Number(componentId));
+          break;
+        case 'almacenamiento':
+          result = await componentService.getStorageById(Number(componentId));
+          break;
+        case 'fuentes_poder':
+          result = await componentService.getPSUById(Number(componentId));
+          break;
+        case 'gabinetes':
+          result = await componentService.getCaseById(Number(componentId));
+          break;
         default:
           toast.error('Tipo de componente no soportado');
           return;
       }
 
       if (result.success && result.data) {
+        console.log(`✅ Componente cargado:`, result.data);
         setFormData(result.data);
       } else {
-        toast.error('Error cargando componente');
+        toast.error(result.error || 'Error cargando componente');
         router.back();
       }
     } catch (error) {
+      console.error('❌ Error cargando componente:', error);
       toast.error('Error de conexión');
       router.back();
     }
@@ -123,7 +139,7 @@ useEffect(() => {
         { name: 'marca', label: 'Marca', required: true, type: 'select', optionsKey: 'marcas' },
         { name: 'modelo', label: 'Modelo', required: true },
         { name: 'generacion', label: 'Generación', type: 'select', optionsKey: 'generaciones' },
-        { name: 'año_lanzamiento', label: 'Año Lanzamiento', type: 'select', optionsKey: 'años' },
+        { name: 'año_lanzamiento', label: 'Año Lanzamiento', type: 'number' },
         { name: 'socket', label: 'Socket', required: true, type: 'select', optionsKey: 'sockets' },
         { name: 'nucleos', label: 'Núcleos', type: 'number' },
         { name: 'hilos', label: 'Hilos', type: 'number' },
@@ -131,11 +147,11 @@ useEffect(() => {
         { name: 'frecuencia_turbo', label: 'Frecuencia Turbo (GHz)', type: 'number' },
         { name: 'cache', label: 'Cache' },
         { name: 'tdp', label: 'TDP (W)', type: 'number' },
-        { name: 'tipo_memoria', label: 'Tipo Memoria', type: 'select', optionsKey: 'memoryTypes' },
+        { name: 'tipo_memoria', label: 'Tipo Memoria' },
         { name: 'velocidad_memoria_max', label: 'Velocidad Memoria Max (MHz)', type: 'number' },
         { name: 'graficos_integrados', label: 'Gráficos Integrados', type: 'boolean' },
         { name: 'modelo_graficos', label: 'Modelo Gráficos' },
-        { name: 'tecnologia', label: 'Tecnología (nm)', type: 'select', optionsKey: 'tecnologias' },
+        { name: 'tecnologia', label: 'Tecnología (nm)' },
         { name: 'imagen_url', label: 'URL Imagen' }
       ]
     },
@@ -145,14 +161,14 @@ useEffect(() => {
         { name: 'marca', label: 'Marca', required: true, type: 'select', optionsKey: 'marcas' },
         { name: 'modelo', label: 'Modelo', required: true },
         { name: 'socket', label: 'Socket', required: true, type: 'select', optionsKey: 'sockets' },
-        { name: 'chipset', label: 'Chipset', type: 'select', optionsKey: 'chipsets' },
-        { name: 'formato', label: 'Formato', type: 'select', optionsKey: 'formats' },
-        { name: 'tipo_memoria', label: 'Tipo Memoria', type: 'select', optionsKey: 'memoryTypes' },
+        { name: 'chipset', label: 'Chipset' },
+        { name: 'formato', label: 'Formato', type: 'select', optionsKey: 'formatos' },
+        { name: 'tipo_memoria', label: 'Tipo Memoria' },
         { name: 'slots_memoria', label: 'Slots Memoria', type: 'number' },
         { name: 'memoria_maxima', label: 'Memoria Máxima (GB)', type: 'number' },
         { name: 'velocidad_memoria_soportada', label: 'Velocidad Memoria (MHz)', type: 'number' },
         { name: 'slots_pcie', label: 'Slots PCIe', type: 'number' },
-        { name: 'version_pcie', label: 'Versión PCIe', type: 'select', optionsKey: 'versionesPCIe' },
+        { name: 'version_pcie', label: 'Versión PCIe' },
         { name: 'puertos_sata', label: 'Puertos SATA', type: 'number' },
         { name: 'puertos_m2', label: 'Puertos M.2', type: 'number' },
         { name: 'conectividad_red', label: 'Conectividad Red' },
@@ -166,7 +182,7 @@ useEffect(() => {
       fields: [
         { name: 'marca', label: 'Marca', required: true, type: 'select', optionsKey: 'marcas' },
         { name: 'modelo', label: 'Modelo', required: true },
-        { name: 'tipo', label: 'Tipo', required: true, type: 'select', optionsKey: 'tiposRAM' },
+        { name: 'tipo', label: 'Tipo', required: true, type: 'select', optionsKey: 'tipos' },
         { name: 'capacidad', label: 'Capacidad (GB)', type: 'number', required: true },
         { name: 'velocidad_mhz', label: 'Velocidad (MHz)', type: 'number' },
         { name: 'velocidad_mt', label: 'Velocidad (MT/s)', type: 'number' },
@@ -174,6 +190,80 @@ useEffect(() => {
         { name: 'voltaje', label: 'Voltaje (V)', type: 'number' },
         { name: 'formato', label: 'Formato' },
         { name: 'rgb', label: 'RGB', type: 'boolean' },
+        { name: 'imagen_url', label: 'URL Imagen' }
+      ]
+    },
+    tarjetas_graficas: {
+      title: '🎮 Editar Tarjeta Gráfica',
+      fields: [
+        { name: 'marca', label: 'Marca', required: true, type: 'select', optionsKey: 'marcas' },
+        { name: 'modelo', label: 'Modelo', required: true },
+        { name: 'fabricante', label: 'Fabricante' },
+        { name: 'memoria', label: 'Memoria (GB)', type: 'number' },
+        { name: 'tipo_memoria', label: 'Tipo Memoria' },
+        { name: 'bus_memoria', label: 'Bus Memoria (bits)', type: 'number' },
+        { name: 'velocidad_memoria', label: 'Velocidad Memoria (MHz)', type: 'number' },
+        { name: 'nucleos_cuda', label: 'Núcleos CUDA', type: 'number' },
+        { name: 'frecuencia_base', label: 'Frecuencia Base (MHz)', type: 'number' },
+        { name: 'frecuencia_boost', label: 'Frecuencia Boost (MHz)', type: 'number' },
+        { name: 'tdp', label: 'TDP (W)', type: 'number' },
+        { name: 'conectores_alimentacion', label: 'Conectores Alimentación' },
+        { name: 'salidas_video', label: 'Salidas Video' },
+        { name: 'longitud_mm', label: 'Longitud (mm)', type: 'number' },
+        { name: 'altura_mm', label: 'Altura (mm)', type: 'number' },
+        { name: 'slots_ocupados', label: 'Slots Ocupados', type: 'number' },
+        { name: 'peso_kg', label: 'Peso (kg)', type: 'number' },
+        { name: 'imagen_url', label: 'URL Imagen' }
+      ]
+    },
+    almacenamiento: {
+      title: '💽 Editar Almacenamiento',
+      fields: [
+        { name: 'marca', label: 'Marca', required: true, type: 'select', optionsKey: 'marcas' },
+        { name: 'modelo', label: 'Modelo', required: true },
+        { name: 'capacidad', label: 'Capacidad (GB)', type: 'number', required: true },
+        { name: 'tipo', label: 'Tipo', required: true, type: 'select', optionsKey: 'tipos' },
+        { name: 'interfaz', label: 'Interfaz' },
+        { name: 'velocidad_lectura', label: 'Velocidad Lectura (MB/s)', type: 'number' },
+        { name: 'velocidad_escritura', label: 'Velocidad Escritura (MB/s)', type: 'number' },
+        { name: 'formato', label: 'Formato' },
+        { name: 'rpm', label: 'RPM', type: 'number' },
+        { name: 'imagen_url', label: 'URL Imagen' }
+      ]
+    },
+    fuentes_poder: {
+      title: '🔋 Editar Fuente de Poder',
+      fields: [
+        { name: 'marca', label: 'Marca', required: true, type: 'select', optionsKey: 'marcas' },
+        { name: 'modelo', label: 'Modelo', required: true },
+        { name: 'potencia', label: 'Potencia (W)', type: 'number', required: true },
+        { name: 'certificacion', label: 'Certificación' },
+        { name: 'modular', label: 'Modular' },
+        { name: 'conectores_pcie', label: 'Conectores PCIe' },
+        { name: 'conectores_sata', label: 'Conectores SATA', type: 'number' },
+        { name: 'conectores_molex', label: 'Conectores Molex', type: 'number' },
+        { name: 'formato', label: 'Formato' },
+        { name: 'protecciones', label: 'Protecciones' },
+        { name: 'imagen_url', label: 'URL Imagen' }
+      ]
+    },
+    gabinetes: {
+      title: '🖥️ Editar Gabinete',
+      fields: [
+        { name: 'marca', label: 'Marca', required: true, type: 'select', optionsKey: 'marcas' },
+        { name: 'modelo', label: 'Modelo', required: true },
+        { name: 'formato', label: 'Formato' },
+        { name: 'motherboards_soportadas', label: 'Motherboards Soportadas' },
+        { name: 'longitud_max_gpu', label: 'Longitud Máx GPU (mm)', type: 'number' },
+        { name: 'altura_max_cooler', label: 'Altura Máx Cooler (mm)', type: 'number' },
+        { name: 'bahias_35', label: 'Bahías 3.5"', type: 'number' },
+        { name: 'bahias_25', label: 'Bahías 2.5"', type: 'number' },
+        { name: 'slots_expansion', label: 'Slots Expansión', type: 'number' },
+        { name: 'ventiladores_incluidos', label: 'Ventiladores Incluidos' },
+        { name: 'ventiladores_soportados', label: 'Ventiladores Soportados' },
+        { name: 'radiador_soportado', label: 'Radiador Soportado' },
+        { name: 'panel_frontal', label: 'Panel Frontal' },
+        { name: 'material', label: 'Material' },
         { name: 'imagen_url', label: 'URL Imagen' }
       ]
     }
@@ -213,6 +303,8 @@ useEffect(() => {
 
     try {
       let result;
+      console.log(`✏️ Actualizando ${componentType} ID: ${componentId}`, formData);
+      
       switch (componentType) {
         case 'procesadores':
           result = await componentService.updateProcessor(Number(componentId), formData);
@@ -223,18 +315,31 @@ useEffect(() => {
         case 'memorias_ram':
           result = await componentService.updateRAM(Number(componentId), formData);
           break;
+        case 'tarjetas_graficas':
+          result = await componentService.updateGPU(Number(componentId), formData);
+          break;
+        case 'almacenamiento':
+          result = await componentService.updateStorage(Number(componentId), formData);
+          break;
+        case 'fuentes_poder':
+          result = await componentService.updatePSU(Number(componentId), formData);
+          break;
+        case 'gabinetes':
+          result = await componentService.updateCase(Number(componentId), formData);
+          break;
         default:
           toast.error('Tipo de componente no soportado');
           return;
       }
 
       if (result.success) {
-        toast.success('Componente actualizado exitosamente');
+        toast.success('✅ Componente actualizado exitosamente');
         router.back();
       } else {
-        toast.error(result.error || 'Error al actualizar componente');
+        toast.error(result.error || '❌ Error al actualizar componente');
       }
     } catch (error) {
+      console.error('❌ Error actualizando componente:', error);
       toast.error('Error de conexión');
     } finally {
       setLoading(false);
@@ -256,6 +361,8 @@ useEffect(() => {
     setLoading(true);
     try {
       let result;
+      console.log(`🗑️ Eliminando ${componentType} ID: ${componentId}`);
+      
       switch (componentType) {
         case 'procesadores':
           result = await componentService.deleteProcessor(Number(componentId));
@@ -265,6 +372,18 @@ useEffect(() => {
           break;
         case 'memorias_ram':
           result = await componentService.deleteRAM(Number(componentId));
+          break;
+        case 'tarjetas_graficas':
+          result = await componentService.deleteGPU(Number(componentId));
+          break;
+        case 'almacenamiento':
+          result = await componentService.deleteStorage(Number(componentId));
+          break;
+        case 'fuentes_poder':
+          result = await componentService.deletePSU(Number(componentId));
+          break;
+        case 'gabinetes':
+          result = await componentService.deleteCase(Number(componentId));
           break;
         default:
           toast.error('Tipo de componente no soportado');
@@ -278,6 +397,7 @@ useEffect(() => {
         toast.error(result.error || 'Error al eliminar componente');
       }
     } catch (error) {
+      console.error('❌ Error eliminando componente:', error);
       toast.error('Error de conexión');
     } finally {
       setLoading(false);
@@ -387,6 +507,17 @@ useEffect(() => {
     );
   }
 
+  if (!currentForm) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Tipo de componente no soportado: {componentType}</Text>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Text style={styles.backButtonText}>← Volver</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -396,7 +527,7 @@ useEffect(() => {
         <Text style={styles.title}>{currentForm.title}</Text>
       </View>
 
-      <ScrollView style={styles.form}>
+      <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
         {currentForm.fields.map((field: any, index: number) => (
           <View key={index}>
             {renderField(field)}
@@ -414,17 +545,10 @@ useEffect(() => {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={styles.deleteButton}
-            onPress={handleDelete}
-            disabled={loading}
-          >
-            <Text style={styles.deleteButtonText}>🗑️ Eliminar Componente</Text>
-          </TouchableOpacity>
+          
         </View>
       </ScrollView>
-
-      {/* Modal para seleccionar opciones */}
+      
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -481,6 +605,12 @@ const styles = StyleSheet.create({
     color: '#8b9cb3',
     fontSize: 16,
     marginTop: 16,
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 50,
   },
   header: {
     flexDirection: 'row',
@@ -582,7 +712,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   actionsContainer: {
-    marginTop: 20,
+    marginTop: 30,
     marginBottom: 40,
   },
   submitButton: {
@@ -594,6 +724,7 @@ const styles = StyleSheet.create({
   },
   submitButtonDisabled: {
     backgroundColor: '#8b9cb3',
+    opacity: 0.7,
   },
   submitButtonText: {
     color: '#ffffff',

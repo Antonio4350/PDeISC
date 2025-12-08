@@ -1,5 +1,0 @@
-arreglar entrada de datos
-arreglar compatibilidad
-arreglar edicion
-hostear
-

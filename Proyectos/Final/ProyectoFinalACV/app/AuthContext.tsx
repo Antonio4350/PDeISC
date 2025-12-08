@@ -21,6 +21,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   isAdmin: () => boolean;
+  authChecked: boolean; // NUEVO: para saber cuando ya se verificó la autenticación
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,6 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false); // NUEVO
 
   // Guardar usuario en storage (AMBOS: AsyncStorage y localStorage)
   const saveUserToStorage = async (userData: User) => {
@@ -109,7 +111,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Verificar si es admin/moderator
   const isAdmin = (): boolean => {
-    return user?.rol === 'admin' || user?.rol === 'moderator';
+    if (!user) return false;
+    return user.rol === 'admin' || user.rol === 'moderator' || user.rol === 'administrador';
   };
 
   // Login
@@ -123,6 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     setUser(userWithToken);
     setIsAuthenticated(true);
+    setAuthChecked(true); // Marcar como verificado
     await saveUserToStorage(userWithToken);
     console.log(`✅ Usuario ${userData.email} logueado correctamente`);
   };
@@ -138,6 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // 2. Resetear estado
       setUser(null);
       setIsAuthenticated(false);
+      setAuthChecked(true); // Marcar como verificado
       
       console.log('✅ Logout completado');
     } catch (error) {
@@ -145,6 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Forzar reset del estado
       setUser(null);
       setIsAuthenticated(false);
+      setAuthChecked(true);
     }
   };
 
@@ -152,6 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const checkAuth = async () => {
     try {
       setIsLoading(true);
+      console.log('🔍 Verificando autenticación...');
       const savedUser = await loadUserFromStorage();
       if (savedUser) {
         setUser(savedUser);
@@ -168,6 +175,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
+      setAuthChecked(true); // IMPORTANTE: marcar que ya se verificó
+      console.log('✅ Verificación de autenticación completada');
     }
   };
 
@@ -183,7 +192,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     logout,
     checkAuth,
-    isAdmin
+    isAdmin,
+    authChecked // NUEVO: exponer este estado
   };
 
   return (

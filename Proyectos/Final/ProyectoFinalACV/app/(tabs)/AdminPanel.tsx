@@ -13,30 +13,77 @@ import componentService from '../services/components';
 import toast from '../utils/toast';
 
 export default function AdminPanel() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isLoading: authLoading, authChecked } = useAuth();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
-    if (!isAdmin()) {
-      toast.error('No tenés permisos para acceder a esta sección');
-      setTimeout(() => {
-        router.back();
-      }, 1500);
+    console.log('🔄 AdminPanel useEffect ejecutándose');
+    console.log('authLoading:', authLoading);
+    console.log('authChecked:', authChecked);
+    console.log('user:', user);
+    
+    // Esperar a que la verificación de autenticación haya terminado
+    if (!authChecked) {
+      console.log('⏳ Esperando verificación de autenticación...');
       return;
     }
-    loadStats();
-  }, []);
+
+    const verifyPermissions = () => {
+      console.log('🔍 Verificando permisos de admin...');
+      
+      if (!user) {
+        console.log('❌ No hay usuario autenticado');
+        toast.error('Debés iniciar sesión para acceder');
+        setAccessDenied(true);
+        setTimeout(() => {
+          router.push('/(tabs)/Login');
+        }, 1500);
+        return false;
+      }
+      
+      const adminCheck = isAdmin();
+      console.log('Es admin?', adminCheck);
+      
+      if (!adminCheck) {
+        console.log('❌ Usuario no es admin');
+        toast.error('No tenés permisos de administrador');
+        setAccessDenied(true);
+        setTimeout(() => {
+          if (router.canGoBack()) {
+            router.back();
+          } else {
+            router.push('./index');
+          }
+        }, 1500);
+        return false;
+      }
+      
+      console.log('✅ Permisos de admin verificados correctamente');
+      return true;
+    };
+
+    const hasPermission = verifyPermissions();
+    
+    if (hasPermission) {
+      loadStats();
+    }
+  }, [authChecked, user]);
 
   const loadStats = async () => {
     try {
+      console.log('📊 Cargando estadísticas...');
       const result = await componentService.getStats();
       if (result.success) {
+        console.log('✅ Estadísticas cargadas:', result.data);
         setStats(result.data);
       } else {
+        console.error('❌ Error cargando estadísticas:', result.error);
         toast.error('Error cargando estadísticas');
       }
     } catch (error) {
+      console.error('💥 Error de conexión:', error);
       toast.error('Error de conexión');
     } finally {
       setLoading(false);
@@ -44,6 +91,7 @@ export default function AdminPanel() {
   };
 
   const handleAddComponent = (type: string) => {
+    console.log(`➕ Agregando componente tipo: ${type}`);
     router.push({
       pathname: '/(tabs)/AddComponent',
       params: { type: type }
@@ -51,6 +99,7 @@ export default function AdminPanel() {
   };
 
   const handleViewComponents = (type: string, name: string) => {
+    console.log(`👁️ Viendo componentes tipo: ${type}`);
     router.push({
       pathname: '/(tabs)/ComponentsList',
       params: { type: type, name: name }
@@ -115,10 +164,9 @@ export default function AdminPanel() {
       count: stats?.gabinetes || 0,
       description: 'Torres PC'
     },
-    // Coolers ha sido ELIMINADO de esta lista
   ];
 
-  // Acciones rápidas SIN "Gestionar Propiedades"
+  // Acciones rápidas
   const quickActions = [
     {
       title: 'Ver Catálogo Completo',
@@ -141,9 +189,43 @@ export default function AdminPanel() {
       route: '/(tabs)/Projects',
       color: '#98D8C8'
     }
-    // "Gestionar Propiedades" ha sido ELIMINADO de esta lista
   ];
 
+  // 1. Mientras auth está cargando
+  if (authLoading || !authChecked) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#667eea" />
+        <Text style={styles.loadingText}>
+          {authLoading ? 'Verificando autenticación...' : 'Cargando permisos...'}
+        </Text>
+      </View>
+    );
+  }
+
+  // 2. Si el acceso fue denegado
+  if (accessDenied) {
+    return (
+      <View style={styles.accessDeniedContainer}>
+        <Text style={styles.accessDeniedIcon}>🔒</Text>
+        <Text style={styles.accessDeniedTitle}>Acceso Denegado</Text>
+        <Text style={styles.accessDeniedText}>
+          Solo administradores pueden acceder al Panel de Administración.
+        </Text>
+        <Text style={styles.accessDeniedSubtext}>
+          Tu rol actual: {user?.rol || 'Invitado'}
+        </Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.backButtonText}>← Volver</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // 3. Loading de estadísticas
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -160,15 +242,16 @@ export default function AdminPanel() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Título Principal */}
-        <View style={styles.titleSection}>
-          <Text style={styles.mainTitle}>Panel de Administración</Text>
-          <Text style={styles.mainSubtitle}>Gestioná todos los componentes del sistema</Text>
-        </View>
+
 
         {/* All Components List */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Componentes del Sistema</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Componentes del Sistema</Text>
+            <Text style={styles.sectionCount}>
+  Total: {allComponents.reduce((acc, comp) => acc + Number(comp.count || 0), 0)} componentes
+</Text>
+          </View>
           <Text style={styles.sectionSubtitle}>Administrá y agregá nuevos componentes</Text>
           
           <View style={styles.componentsList}>
@@ -205,7 +288,7 @@ export default function AdminPanel() {
           </View>
         </View>
 
-        {/* Quick Actions (ahora con solo 3 items) */}
+        {/* Quick Actions */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
           <Text style={styles.sectionSubtitle}>Accesos directos a funciones principales</Text>
@@ -228,6 +311,7 @@ export default function AdminPanel() {
             ))}
           </View>
         </View>
+
       </ScrollView>
     </View>
   );
@@ -245,9 +329,54 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f1117',
   },
   loadingText: {
-    color: '#8b9cb3',
+    marginTop: 16,
     fontSize: 16,
-    marginTop: 10,
+    color: '#8b9cb3',
+  },
+  accessDeniedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0f1117',
+    padding: 20,
+  },
+  accessDeniedIcon: {
+    fontSize: 64,
+    marginBottom: 20,
+    color: '#ef4444',
+  },
+  accessDeniedTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#ffffff',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  accessDeniedText: {
+    fontSize: 16,
+    color: '#8b9cb3',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 8,
+  },
+  accessDeniedSubtext: {
+    fontSize: 14,
+    color: '#8b9cb3',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginBottom: 30,
+  },
+  backButton: {
+    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  backButtonText: {
+    color: '#667eea',
+    fontSize: 16,
+    fontWeight: '600',
   },
   scrollView: {
     flex: 1,
@@ -257,7 +386,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   titleSection: {
-    marginBottom: 24,
+    marginBottom: 16,
     paddingHorizontal: 8,
   },
   mainTitle: {
@@ -270,14 +399,49 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#8b9cb3',
   },
+  welcomeSection: {
+    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(102, 126, 234, 0.2)',
+  },
+  welcomeText: {
+    fontSize: 18,
+    color: '#ffffff',
+    marginBottom: 4,
+  },
+  userName: {
+    fontWeight: '700',
+    color: '#667eea',
+  },
+  welcomeSubtext: {
+    fontSize: 14,
+    color: '#8b9cb3',
+  },
+  userRole: {
+    color: '#ffd700',
+    fontWeight: '600',
+  },
   section: {
     marginBottom: 30,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: '#ffffff',
-    marginBottom: 6,
+  },
+  sectionCount: {
+    fontSize: 14,
+    color: '#667eea',
+    fontWeight: '600',
   },
   sectionSubtitle: {
     fontSize: 14,
@@ -397,5 +561,41 @@ const styles = StyleSheet.create({
   actionDescription: {
     color: '#8b9cb3',
     fontSize: 13,
+  },
+  infoSection: {
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    marginTop: 10,
+  },
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 16,
+  },
+  infoGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  infoItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  infoIcon: {
+    fontSize: 24,
+    marginBottom: 8,
+  },
+  infoLabel: {
+    fontSize: 12,
+    color: '#8b9cb3',
+    marginBottom: 4,
+  },
+  infoValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
   },
 });

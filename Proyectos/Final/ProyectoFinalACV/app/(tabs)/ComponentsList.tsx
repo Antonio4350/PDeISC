@@ -1,4 +1,4 @@
-// app/(tabs)/ComponentsList.tsx - CON CONFIRMACIÓN DE ELIMINACIÓN
+// app/(tabs)/ComponentsList.tsx - VERSIÓN COMPLETA CON FIX DE PERMISOS
 import React, { useState, useEffect } from 'react';
 import { 
   View, 
@@ -10,9 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   useWindowDimensions,
-  Dimensions,
-  Modal,
-  Pressable
+  Modal
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../AuthContext';
@@ -28,7 +26,7 @@ interface Component {
 }
 
 export default function ComponentsList() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isLoading: authLoading, authChecked } = useAuth();
   const params = useLocalSearchParams();
   const componentType = params.type as string;
   const componentName = params.name as string;
@@ -40,31 +38,65 @@ export default function ComponentsList() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [permissionChecked, setPermissionChecked] = useState(false);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [componentToDelete, setComponentToDelete] = useState<Component | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    // Verificar permisos después de que el componente esté montado
-    const checkPermissions = async () => {
-      if (!isAdmin()) {
-        toast.error('No tenés permisos para acceder');
+    console.log('🔄 useEffect ejecutándose');
+    console.log('authLoading:', authLoading);
+    console.log('authChecked:', authChecked);
+    console.log('user:', user);
+    console.log('permissionChecked:', permissionChecked);
+    
+    // Esperar a que la verificación de autenticación haya terminado
+    if (!authChecked) {
+      console.log('⏳ Esperando verificación de autenticación...');
+      return;
+    }
+
+    const verifyPermissions = () => {
+      console.log('🔍 Verificando permisos...');
+      
+      if (!user) {
+        console.log('❌ No hay usuario autenticado');
+        toast.error('Debés iniciar sesión para acceder');
+        setAccessDenied(true);
         setTimeout(() => {
-          router.back();
-        }, 100);
+          router.push('/(tabs)/Login');
+        }, 1500);
         return false;
       }
+      
+      const adminCheck = isAdmin();
+      console.log('Es admin?', adminCheck);
+      
+      if (!adminCheck) {
+        console.log('❌ Usuario no es admin');
+        toast.error('No tenés permisos de administrador');
+        setAccessDenied(true);
+        setTimeout(() => {
+          if (router.canGoBack()) {
+            router.back();
+          } else {
+            router.push('./index');
+          }
+        }, 1500);
+        return false;
+      }
+      
+      console.log('✅ Permisos verificados correctamente');
       setPermissionChecked(true);
       return true;
     };
 
-    checkPermissions();
-  }, []);
-
-  useEffect(() => {
-    if (permissionChecked) {
+    const hasPermission = verifyPermissions();
+    
+    if (hasPermission) {
       loadComponents();
     }
-  }, [componentType, permissionChecked]);
+  }, [authChecked, user, componentType]);
 
   useEffect(() => {
     filterComponents();
@@ -73,12 +105,12 @@ export default function ComponentsList() {
   const loadComponents = async () => {
     try {
       setLoading(true);
-      console.log(`Cargando componentes de tipo: ${componentType}`);
+      console.log(`📥 Cargando componentes de tipo: ${componentType}`);
       
       const result = await componentService.getComponents(componentType);
       
       if (result.success && result.data) {
-        console.log(`Encontrados ${result.data.length} componentes`);
+        console.log(`✅ Encontrados ${result.data.length} componentes`);
         const mappedComponents = result.data.map((comp: any) => ({
           ...comp,
           tipo: componentType
@@ -87,13 +119,13 @@ export default function ComponentsList() {
         setComponents(mappedComponents);
         setFilteredComponents(mappedComponents);
       } else {
-        console.error('Error en la respuesta:', result.error);
+        console.error('❌ Error en la respuesta:', result.error);
         toast.error(result.error || 'Error cargando componentes');
         setComponents([]);
         setFilteredComponents([]);
       }
     } catch (error) {
-      console.error('Error cargando componentes:', error);
+      console.error('💥 Error cargando componentes:', error);
       toast.error('Error de conexión');
       setComponents([]);
       setFilteredComponents([]);
@@ -129,20 +161,17 @@ export default function ComponentsList() {
     } as any);
   };
 
-  // ✅ VERSIÓN MEJORADA: Confirmación con modal personalizado
   const handleDelete = (component: Component) => {
-    // Guardar el componente que se quiere eliminar
     setComponentToDelete(component);
     setDeleteModalVisible(true);
   };
 
-  // ✅ CONFIRMAR ELIMINACIÓN
   const confirmDelete = async () => {
     if (!componentToDelete) return;
 
     try {
-      setLoading(true);
-      console.log(`[DELETE] Tipo: ${componentType}, ID: ${componentToDelete.id}`);
+      setDeleting(true);
+      console.log(`🗑️ Eliminando componente: ${componentType}, ID: ${componentToDelete.id}`);
       
       let result: any;
       
@@ -169,34 +198,31 @@ export default function ComponentsList() {
           result = await componentService.deleteCase(componentToDelete.id);
           break;
         default:
-          toast.error(`Tipo no soportado: ${componentType}`);
+          toast.error(`❌ Tipo no soportado: ${componentType}`);
           setDeleteModalVisible(false);
           setComponentToDelete(null);
-          setLoading(false);
+          setDeleting(false);
           return;
       }
 
-      console.log(`[DELETE RESULT]`, result);
+      console.log(`📋 Resultado eliminación:`, result);
 
       if (result?.success) {
         toast.success(`✅ ${componentToDelete.marca} ${componentToDelete.modelo} eliminado!`);
-        
-        // Recargar la lista de componentes
         await loadComponents();
       } else {
         toast.error(`❌ Error: ${result?.error || 'Error al eliminar'}`);
       }
     } catch (err: any) {
-      console.error(`[DELETE ERROR]`, err);
+      console.error(`💥 Error eliminando:`, err);
       toast.error(`❌ Error de conexión`);
     } finally {
-      setLoading(false);
+      setDeleting(false);
       setDeleteModalVisible(false);
       setComponentToDelete(null);
     }
   };
 
-  // ✅ CANCELAR ELIMINACIÓN
   const cancelDelete = () => {
     setDeleteModalVisible(false);
     setComponentToDelete(null);
@@ -220,7 +246,6 @@ export default function ComponentsList() {
     if (router.canGoBack()) {
       router.back();
     } else {
-      // Si no puede ir atrás, ir al admin panel
       router.push('/(tabs)/AdminPanel' as any);
     }
   };
@@ -265,6 +290,7 @@ export default function ComponentsList() {
               <TouchableOpacity
                 style={[styles.cancelButton, isMobile && styles.cancelButtonMobile]}
                 onPress={cancelDelete}
+                disabled={deleting}
               >
                 <Text style={[styles.cancelButtonText, isMobile && styles.cancelButtonTextMobile]}>
                   Cancelar
@@ -274,9 +300,9 @@ export default function ComponentsList() {
               <TouchableOpacity
                 style={[styles.confirmDeleteButton, isMobile && styles.confirmDeleteButtonMobile]}
                 onPress={confirmDelete}
-                disabled={loading}
+                disabled={deleting}
               >
-                {loading ? (
+                {deleting ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
                   <Text style={[styles.confirmDeleteButtonText, isMobile && styles.confirmDeleteButtonTextMobile]}>
@@ -291,7 +317,41 @@ export default function ComponentsList() {
     );
   };
 
-  // Si no tiene permisos, mostrar loading
+  // 1. Mientras auth está cargando
+  if (authLoading || !authChecked) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#667eea" />
+        <Text style={styles.loadingText}>
+          {authLoading ? 'Verificando autenticación...' : 'Cargando permisos...'}
+        </Text>
+      </View>
+    );
+  }
+
+  // 2. Si el acceso fue denegado
+  if (accessDenied) {
+    return (
+      <View style={styles.accessDeniedContainer}>
+        <Text style={styles.accessDeniedIcon}>🔒</Text>
+        <Text style={styles.accessDeniedTitle}>Acceso Denegado</Text>
+        <Text style={styles.accessDeniedText}>
+          No tenés permisos para acceder a esta sección.
+        </Text>
+        <Text style={styles.accessDeniedSubtext}>
+          Solo administradores pueden acceder.
+        </Text>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.backButtonText}>← Volver</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // 3. Si todavía no se verificaron permisos
   if (!permissionChecked) {
     return (
       <View style={styles.loadingContainer}>
@@ -301,7 +361,8 @@ export default function ComponentsList() {
     );
   }
 
-  if (loading && !deleteModalVisible) {
+  // 4. Loading de componentes
+  if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#667eea" />
@@ -310,6 +371,7 @@ export default function ComponentsList() {
     );
   }
 
+  // 5. Render normal
   return (
     <View style={styles.container}>
       <DeleteConfirmationModal />
@@ -352,8 +414,8 @@ export default function ComponentsList() {
             <Text style={[styles.emptyTitle, isMobile && styles.emptyTitleMobile]}>No se encontraron</Text>
             <Text style={[styles.emptyText, isMobile && styles.emptyTextMobile]}>
               {components.length === 0 
-                ? `No hay ${componentName.toLowerCase()}s`
-                : 'Probá otros términos'
+                ? `No hay ${componentName.toLowerCase()}s en la base de datos`
+                : 'Probá otros términos de búsqueda'
               }
             </Text>
           </View>
@@ -430,6 +492,51 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#8b9cb3',
   },
+  accessDeniedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0f1117',
+    padding: 20,
+  },
+  accessDeniedIcon: {
+    fontSize: 64,
+    marginBottom: 20,
+    color: '#ef4444',
+  },
+  accessDeniedTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#ffffff',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  accessDeniedText: {
+    fontSize: 16,
+    color: '#8b9cb3',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 8,
+  },
+  accessDeniedSubtext: {
+    fontSize: 14,
+    color: '#8b9cb3',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginBottom: 30,
+  },
+  backButton: {
+    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  backButtonText: {
+    color: '#667eea',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -439,22 +546,10 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingHorizontal: 0,
   },
-  backButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginRight: 15,
-  },
   backButtonMobile: {
     paddingHorizontal: 10,
     paddingVertical: 6,
     marginRight: 8,
-  },
-  backButtonText: {
-    color: '#667eea',
-    fontSize: 14,
-    fontWeight: '600',
   },
   backButtonTextMobile: {
     fontSize: 12,
@@ -496,6 +591,7 @@ const styles = StyleSheet.create({
     left: 15,
     top: 16,
     fontSize: 16,
+    color: '#8b9cb3',
   },
   resultsHeader: {
     marginBottom: 15,
@@ -518,6 +614,7 @@ const styles = StyleSheet.create({
   emptyIcon: {
     fontSize: 48,
     marginBottom: 16,
+    color: '#8b9cb3',
   },
   emptyTitle: {
     fontSize: 18,
