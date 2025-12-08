@@ -28,7 +28,7 @@ function getApiConfig(): ApiConfig {
     const hostname = window.location.hostname;
     if (hostname === 'localhost' || hostname.includes('192.168')) {
       return {
-        apiUrl: 'http://localhost:5000',
+        apiUrl: 'https://proyectofinalacv-backend.vercel.app',
         isDevelopment: true,
         environment: 'local'
       };
@@ -43,7 +43,7 @@ function getApiConfig(): ApiConfig {
     
     if (ipFromDebugger === '127.0.0.1' || ipFromDebugger === 'localhost') {
       return {
-        apiUrl: 'http://localhost:5000',
+        apiUrl: 'https://proyectofinalacv-backend.vercel.app',
         isDevelopment: true,
         environment: 'local'
       };

@@ -1,5 +1,5 @@
 // services/projectService.ts - VERSIÓN COMPLETA
-const API_URL = "http://localhost:5000";
+const API_URL = "https://proyectofinalacv-backend.vercel.app";
 
 class ProjectService {
   

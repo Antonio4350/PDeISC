@@ -6,22 +6,8 @@ const app = express();
 
 // ========== MIDDLEWARE ==========
 // Configuración de CORS SIMPLIFICADA
-app.use(cors({
-  origin: [
-    'http://localhost:3000', 
-    'http://localhost:19006', 
-    'http://localhost:8081', 
-    'exp://localhost:19000', 
-    'http://localhost:19000',
-    'https://proyecto-final-front-xi.vercel.app', // TU FRONTEND
-    'https://proyecto-final-back-zeta.vercel.app'  // TU BACKEND
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
-}));
+app.use(cors());
 
-app.options('*', cors());
 app.use(express.json());
 
 // Logging de requests
