@@ -29,7 +29,7 @@ function getApiConfig(): ApiConfig {
     
     // Fallback para producción
     return {
-      apiUrl: 'https://proyectofinalacv-backend.vercel.app',
+      apiUrl: 'https://proyecto-final-back-zeta.vercel.app',
       isDevelopment: false,
       environment: 'production'
     };

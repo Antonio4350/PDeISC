@@ -6,7 +6,7 @@ import * as WebBrowser from 'expo-web-browser';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const API_URL = "https://proyectofinalacv-backend.vercel.app";
+const API_URL = "https://proyecto-final-back-zeta.vercel.app";
 
 interface GoogleOAuthProps {
   type: 'login' | 'register';

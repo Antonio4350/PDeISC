@@ -567,7 +567,7 @@ export default function PcBuilder() {
       
       if (isEditingProject && projectId) {
         console.log(`🔄 Actualizando proyecto ID: ${projectId}`);
-        response = await fetch(`https://proyectofinalacv-backend.vercel.app/api/projects/${projectId}`, {
+        response = await fetch(`https://proyecto-final-back-zeta.vercel.app/api/projects/${projectId}`, {
           method: 'PUT',
           mode: 'cors',
           credentials: 'include',
@@ -579,7 +579,7 @@ export default function PcBuilder() {
         });
       } else {
         console.log('📝 Creando nuevo proyecto');
-        response = await fetch('https://proyectofinalacv-backend.vercel.app/api/projects', {
+        response = await fetch('https://proyecto-final-back-zeta.vercel.app/api/projects', {
           method: 'POST',
           mode: 'cors',
           credentials: 'include',
