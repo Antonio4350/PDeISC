@@ -4,169 +4,167 @@ import jwt from 'jsonwebtoken';
 
 class AuthController {
   // Login con Google
-  async googleLogin(req, res) {
+  // Login con Google
+async googleLogin(req, res) {
+  try {
     const { idToken, accessToken } = req.body;
-    try {
-      console.log('Solicitud Google Login recibida', { 
-        hasAccessToken: !!accessToken, 
-        hasIdToken: !!idToken 
-      });
-      
-      if (!accessToken && !idToken) {
-        return res.status(400).json({
-          success: false,
-          error: 'Token de acceso o ID token requerido'
-        });
-      }
-
-      // Verificar tokens con Google
-      const googleResult = await googleLogin(idToken, accessToken);
-      
-      if (!googleResult.success) {
-        return res.status(401).json({
-          success: false,
-          error: googleResult.error || 'Error en autenticación con Google'
-        });
-      }
-
-      if (!googleResult.mail) {
-        return res.status(401).json({
-          success: false,
-          error: 'No se pudo obtener el email del usuario de Google'
-        });
-      }
-
-      // Buscar usuario por email
-      const existingUser = await userService.findUserByEmail(googleResult.mail);
-      
-      if (existingUser) {
-        console.log('Usuario existente encontrado:', existingUser.email);
-        
-        // Usuario existe - actualizar si es necesario
-        if (!existingUser.google_id && googleResult.googleId) {
-          await userService.updateGoogleId(existingUser.id, googleResult.googleId);
-        }
-        
-        // Generar token JWT
-        const token = generateToken(existingUser);
-
-        return res.json({
-          success: true,
-          user: {
-            id: existingUser.id,
-            email: existingUser.email,
-            nombre: existingUser.nombre || googleResult.name,
-            apellido: existingUser.apellido,
-            rol: existingUser.rol,
-            avatar_url: existingUser.avatar_url || googleResult.picture
-          },
-          token: token
-        });
-      } else {
-        console.log('Creando nuevo usuario para:', googleResult.mail);
-        
-        // Crear nuevo usuario
-        const newUser = await userService.createGoogleUser({
-          email: googleResult.mail,
-          nombre: googleResult.name,
-          google_id: googleResult.googleId,
-          avatar_url: googleResult.picture
-        });
-
-        if (!newUser) {
-          throw new Error('No se pudo crear el usuario');
-        }
-
-        // Generar token JWT
-        const token = generateToken(newUser);
-
-        return res.json({
-          success: true,
-          user: {
-            id: newUser.id,
-            email: newUser.email,
-            nombre: newUser.nombre,
-            apellido: newUser.apellido,
-            rol: newUser.rol,
-            avatar_url: newUser.avatar_url
-          },
-          token: token
-        });
-      }
-    } catch (err) {
-      console.error('Error en Google login:', err);
-      res.status(500).json({ 
-        success: false, 
-        error: err.message || 'Error interno del servidor' 
+    
+    console.log('\n=== 🔐 GOOGLE LOGIN INICIADO ===');
+    console.log('📦 Request Body recibido:', { 
+      hasIdToken: !!idToken,
+      hasAccessToken: !!accessToken,
+      idTokenLength: idToken?.length || 0,
+      accessTokenLength: accessToken?.length || 0
+    });
+    console.log('🌐 Origin:', req.headers.origin);
+    console.log('📱 User-Agent:', req.headers['user-agent']?.substring(0, 100));
+    
+    // Validar que tenemos al menos un token
+    if (!accessToken && !idToken) {
+      console.log('❌ Error: No tokens recibidos');
+      return res.status(400).json({
+        success: false,
+        error: 'Token de acceso o ID token requerido',
+        code: 'NO_TOKENS'
       });
     }
-  }
 
-  // Login normal
-  async normalLogin(req, res) {
-    const { email, password } = req.body;
+    console.log('🔍 Llamando a googleLogin (GoogleAuth.js)...');
     
-    try {
-      console.log('Solicitud Login normal:', { email });
+    // Verificar tokens con Google
+    const googleResult = await googleLogin(idToken, accessToken);
+    
+    console.log('📊 Resultado de GoogleAuth:', {
+      success: googleResult.success,
+      error: googleResult.error,
+      mail: googleResult.mail,
+      name: googleResult.name
+    });
+    
+    if (!googleResult.success) {
+      console.log('❌ Error de Google Auth:', googleResult.error);
+      return res.status(401).json({
+        success: false,
+        error: googleResult.error || 'Error en autenticación con Google',
+        code: 'GOOGLE_AUTH_FAILED',
+        details: {
+          hasIdToken: !!idToken,
+          hasAccessToken: !!accessToken
+        }
+      });
+    }
+
+    if (!googleResult.mail) {
+      console.log('❌ Error: No se pudo obtener el email');
+      return res.status(401).json({
+        success: false,
+        error: 'No se pudo obtener el email del usuario de Google',
+        code: 'NO_EMAIL'
+      });
+    }
+
+    console.log(`✅ Google Auth exitoso: ${googleResult.mail}`);
+    
+    // Buscar usuario por email
+    console.log(`🔍 Buscando usuario en BD: ${googleResult.mail}`);
+    const existingUser = await userService.findUserByEmail(googleResult.mail);
+    
+    if (existingUser) {
+      console.log('✅ Usuario existente encontrado:', {
+        id: existingUser.id,
+        email: existingUser.email,
+        nombre: existingUser.nombre
+      });
       
-      if (!email || !password) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Email y contraseña son requeridos' 
-        });
+      // Usuario existe - actualizar si es necesario
+      if (!existingUser.google_id && googleResult.googleId) {
+        console.log(`🔄 Actualizando Google ID: ${googleResult.googleId}`);
+        await userService.updateGoogleId(existingUser.id, googleResult.googleId);
       }
-
-      // Buscar usuario por email
-      const user = await userService.findUserByEmail(email);
       
-      if (!user) {
-        return res.status(401).json({ 
-          success: false, 
-          error: 'Usuario no encontrado' 
-        });
+      // Generar token JWT
+      console.log('🔑 Generando JWT...');
+      const token = generateToken(existingUser);
+
+      console.log('🎉 Login exitoso (usuario existente)');
+      
+      return res.json({
+        success: true,
+        user: {
+          id: existingUser.id,
+          email: existingUser.email,
+          nombre: existingUser.nombre || googleResult.name,
+          apellido: existingUser.apellido,
+          rol: existingUser.rol,
+          avatar_url: existingUser.avatar_url || googleResult.picture
+        },
+        token: token,
+        isNewUser: false
+      });
+    } else {
+      console.log('🆕 Creando nuevo usuario para:', googleResult.mail);
+      
+      // Crear nuevo usuario
+      const newUserData = {
+        email: googleResult.mail,
+        nombre: googleResult.name,
+        google_id: googleResult.googleId,
+        avatar_url: googleResult.picture
+      };
+      
+      console.log('📝 Datos del nuevo usuario:', newUserData);
+      
+      const newUser = await userService.createGoogleUser(newUserData);
+
+      if (!newUser) {
+        console.log('❌ Error: No se pudo crear el usuario');
+        throw new Error('No se pudo crear el usuario');
       }
 
-      // Verificar si es usuario de Google
-      if (user.google_id && !user.password) {
-        return res.status(401).json({ 
-          success: false, 
-          error: 'Este usuario está registrado con Google. Usá el login con Google.' 
-        });
-      }
-
-      // Verificar contraseña
-      if (!await userService.verifyPassword(password, user.password)) {
-        return res.status(401).json({ 
-          success: false, 
-          error: 'Contraseña incorrecta' 
-        });
-      }
+      console.log('✅ Usuario creado:', {
+        id: newUser.id,
+        email: newUser.email
+      });
 
       // Generar token JWT
-      const token = generateToken(user);
+      console.log('🔑 Generando JWT para nuevo usuario...');
+      const token = generateToken(newUser);
 
-      res.json({ 
-        success: true, 
-        message: 'Login exitoso',
+      console.log('🎉 Login exitoso (nuevo usuario)');
+      
+      return res.json({
+        success: true,
         user: {
-          id: user.id,
-          email: user.email,
-          nombre: user.nombre,
-          apellido: user.apellido,
-          rol: user.rol,
-          telefono: user.telefono,
-          avatar_url: user.avatar_url
+          id: newUser.id,
+          email: newUser.email,
+          nombre: newUser.nombre,
+          apellido: newUser.apellido,
+          rol: newUser.rol,
+          avatar_url: newUser.avatar_url
         },
-        token: token
-      });
-    } catch (error) {
-      console.error('Error en login normal:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Error interno del servidor' 
+        token: token,
+        isNewUser: true
       });
     }
+  } catch (err) {
+    console.error('\n💥💥💥 ERROR EN GOOGLE LOGIN 💥💥💥');
+    console.error('Error message:', err.message);
+    console.error('Error stack:', err.stack);
+    console.error('Request body:', req.body);
+    console.error('Request headers:', req.headers);
+    console.error('=== FIN ERROR ===\n');
+    
+    // Asegurar headers CORS incluso en errores
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    res.status(500).json({ 
+      success: false, 
+      error: err.message || 'Error interno del servidor',
+      code: 'INTERNAL_ERROR'
+    });
   }
+}
 
   // Registro normal
   async normalRegister(req, res) {
