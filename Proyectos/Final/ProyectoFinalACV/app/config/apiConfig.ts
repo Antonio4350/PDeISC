@@ -1,60 +1,58 @@
-// app/config/apiConfig.ts - VERSIÓN OPTIMIZADA PARA TUS .env
+// app/config/apiConfig.ts - VERSIÓN MEJORADA
 import Constants from 'expo-constants';
 
 interface ApiConfig {
   apiUrl: string;
   isDevelopment: boolean;
-  environment: 'local' | 'production';
+  environment: 'development' | 'production';
 }
 
 function getApiConfig(): ApiConfig {
-  // 1. PRIMERO: Usar la variable de entorno (Expo la carga automáticamente)
-  // Expo automáticamente carga .env.local en desarrollo y .env.production en producción
-  const publicApiUrl = process.env.EXPO_PUBLIC_API_URL;
+  // 1. Obtener URL de las variables de entorno
+  const envApiUrl = process.env.EXPO_PUBLIC_API_URL;
   
-  console.log('🔍 EXPO_PUBLIC_API_URL desde .env:', publicApiUrl);
+  console.log('🔍 EXPO_PUBLIC_API_URL desde .env:', envApiUrl);
   
-  // Verificar que la URL sea válida
-  if (!publicApiUrl || publicApiUrl === 'undefined' || publicApiUrl.trim() === '') {
-    console.warn('⚠️ EXPO_PUBLIC_API_URL no está definida, usando fallback');
-    
-    // Fallback para desarrollo
-    if (__DEV__) {
-      return {
-        apiUrl: 'http://localhost:5000',
-        isDevelopment: true,
-        environment: 'local'
-      };
-    }
-    
-    // Fallback para producción
-    return {
-      apiUrl: 'https://proyecto-final-back-zeta.vercel.app',
-      isDevelopment: false,
-      environment: 'production'
-    };
+  // 2. VALIDACIÓN ROBUSTA
+  // Si la URL es localhost pero estamos corriendo en producción (ej: Vercel deployment)
+  // o si la URL está vacía/undefined, usar el backend de Vercel
+  let finalUrl = envApiUrl || '';
+  
+  // Limpiar la URL (quitar barra final si existe)
+  if (finalUrl.endsWith('/')) {
+    finalUrl = finalUrl.slice(0, -1);
   }
   
-  // Determinar si es desarrollo o producción basado en la URL
-  const isDev = publicApiUrl.includes('localhost') || publicApiUrl.includes('192.168');
+  // DECISIÓN INTELIGENTE:
+  // - Si estamos en __DEV__ (modo desarrollo de Expo) PERO la URL es localhost
+  //   y queremos conectar al backend de Vercel, forzar la URL de Vercel
+  // - O si la URL está vacía, usar Vercel
+  if (!finalUrl || finalUrl.includes('undefined') || 
+      (finalUrl.includes('localhost') && __DEV__)) {
+    console.warn('⚠️ Usando backend de Vercel como fallback');
+    finalUrl = 'https://proyecto-final-back-zeta.vercel.app';
+  }
+  
+  // Determinar ambiente
+  const isDevelopment = finalUrl.includes('localhost') || 
+                       finalUrl.includes('192.168') || 
+                       __DEV__;
   
   return {
-    apiUrl: publicApiUrl,
-    isDevelopment: isDev,
-    environment: isDev ? 'local' : 'production'
+    apiUrl: finalUrl,
+    isDevelopment,
+    environment: isDevelopment ? 'development' : 'production'
   };
 }
 
 export const apiConfig = getApiConfig();
 
-// Log para debugging (solo en desarrollo)
-if (__DEV__) {
-  console.log('📡 API Config cargada:', {
-    url: apiConfig.apiUrl,
-    source: 'process.env.EXPO_PUBLIC_API_URL',
-    isDevelopment: apiConfig.isDevelopment,
-    environment: apiConfig.environment
-  });
-}
+// Log para debugging
+console.log('📡 API Config:', {
+  url: apiConfig.apiUrl,
+  isDevelopment: apiConfig.isDevelopment,
+  environment: apiConfig.environment,
+  mode: __DEV__ ? 'development' : 'production'
+});
 
 export default apiConfig;

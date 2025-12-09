@@ -72,23 +72,65 @@ export default function AdminPanel() {
   }, [authChecked, user]);
 
   const loadStats = async () => {
-    try {
-      console.log('📊 Cargando estadísticas...');
-      const result = await componentService.getStats();
-      if (result.success) {
-        console.log('✅ Estadísticas cargadas:', result.data);
-        setStats(result.data);
-      } else {
-        console.error('❌ Error cargando estadísticas:', result.error);
-        toast.error('Error cargando estadísticas');
-      }
-    } catch (error) {
-      console.error('💥 Error de conexión:', error);
-      toast.error('Error de conexión');
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    console.log('📊 Cargando estadísticas...');
+    
+    // ❌ EL PROBLEMA: componentService.getStats() usa un endpoint que no existe
+    // ✅ SOLUCIÓN: Obtener stats manualmente contando componentes
+    
+    // 1. Cargar TODOS los componentes como hace ComponentsCatalog
+    const [
+      processorsRes,
+      mothersRes,
+      ramRes,
+      gpuRes,
+      storageRes,
+      psuRes,
+      casesRes
+    ] = await Promise.all([
+      componentService.getProcessors(),
+      componentService.getMotherboards(),
+      componentService.getRAM(),
+      componentService.getGPUs(),
+      componentService.getStorage(),
+      componentService.getPSUs(),
+      componentService.getCases()
+    ]);
+
+    // 2. Crear stats manualmente
+    const manualStats = {
+      procesadores: processorsRes.success && processorsRes.data ? processorsRes.data.length : 0,
+      motherboards: mothersRes.success && mothersRes.data ? mothersRes.data.length : 0,
+      memorias_ram: ramRes.success && ramRes.data ? ramRes.data.length : 0,
+      tarjetas_graficas: gpuRes.success && gpuRes.data ? gpuRes.data.length : 0,
+      almacenamiento: storageRes.success && storageRes.data ? storageRes.data.length : 0,
+      fuentes_poder: psuRes.success && psuRes.data ? psuRes.data.length : 0,
+      gabinetes: casesRes.success && casesRes.data ? casesRes.data.length : 0
+    };
+
+    console.log('✅ Estadísticas calculadas:', manualStats);
+    setStats(manualStats);
+    
+  } catch (error) {
+    console.error('💥 Error cargando estadísticas:', error);
+    
+    // Valores por defecto si falla
+    const defaultStats = {
+      procesadores: 0,
+      motherboards: 0,
+      memorias_ram: 0,
+      tarjetas_graficas: 0,
+      almacenamiento: 0,
+      fuentes_poder: 0,
+      gabinetes: 0
+    };
+    
+    setStats(defaultStats);
+    toast.error('Error cargando estadísticas');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleAddComponent = (type: string) => {
     console.log(`➕ Agregando componente tipo: ${type}`);
@@ -108,63 +150,63 @@ export default function AdminPanel() {
 
   // Lista de componentes SIN coolers
   const allComponents = [
-    { 
-      type: 'procesadores', 
-      name: 'Procesadores', 
-      icon: '⚡', 
-      color: '#FF6B6B',
-      count: stats?.procesadores || 0,
-      description: 'CPU Intel/AMD'
-    },
-    { 
-      type: 'motherboards', 
-      name: 'Motherboards', 
-      icon: '🔌', 
-      color: '#4ECDC4',
-      count: stats?.motherboards || 0,
-      description: 'Placas base'
-    },
-    { 
-      type: 'memorias_ram', 
-      name: 'Memorias RAM', 
-      icon: '💾', 
-      color: '#45B7D1',
-      count: stats?.memorias_ram || 0,
-      description: 'DDR3/DDR4/DDR5'
-    },
-    { 
-      type: 'tarjetas_graficas', 
-      name: 'Tarjetas Gráficas', 
-      icon: '🎮', 
-      color: '#F7DC6F',
-      count: stats?.tarjetas_graficas || 0,
-      description: 'GPUs'
-    },
-    { 
-      type: 'almacenamiento', 
-      name: 'Almacenamiento', 
-      icon: '💿', 
-      color: '#98D8C8',
-      count: stats?.almacenamiento || 0,
-      description: 'SSD/HDD'
-    },
-    { 
-      type: 'fuentes_poder', 
-      name: 'Fuentes', 
-      icon: '🔋', 
-      color: '#FFA726',
-      count: stats?.fuentes_poder || 0,
-      description: 'Fuentes poder'
-    },
-    { 
-      type: 'gabinetes', 
-      name: 'Gabinetes', 
-      icon: '🖥️', 
-      color: '#AB47BC',
-      count: stats?.gabinetes || 0,
-      description: 'Torres PC'
-    },
-  ];
+  { 
+    type: 'procesadores', 
+    name: 'Procesadores', 
+    icon: '⚡', 
+    color: '#FF6B6B',
+    count: stats?.procesadores || 0,
+    description: 'CPU Intel/AMD'
+  },
+  { 
+    type: 'motherboards', 
+    name: 'Motherboards', 
+    icon: '🔌', 
+    color: '#4ECDC4',
+    count: stats?.motherboards || 0,
+    description: 'Placas base'
+  },
+  { 
+    type: 'memorias_ram', 
+    name: 'Memorias RAM', 
+    icon: '💾', 
+    color: '#45B7D1',
+    count: stats?.memorias_ram || 0,
+    description: 'DDR3/DDR4/DDR5'
+  },
+  { 
+    type: 'tarjetas_graficas', 
+    name: 'Tarjetas Gráficas', 
+    icon: '🎮', 
+    color: '#F7DC6F',
+    count: stats?.tarjetas_graficas || 0,
+    description: 'GPUs'
+  },
+  { 
+    type: 'almacenamiento', 
+    name: 'Almacenamiento', 
+    icon: '💿', 
+    color: '#98D8C8',
+    count: stats?.almacenamiento || 0,
+    description: 'SSD/HDD'
+  },
+  { 
+    type: 'fuentes_poder', 
+    name: 'Fuentes', 
+    icon: '🔋', 
+    color: '#FFA726',
+    count: stats?.fuentes_poder || 0,
+    description: 'Fuentes poder'
+  },
+  { 
+    type: 'gabinetes', 
+    name: 'Gabinetes', 
+    icon: '🖥️', 
+    color: '#AB47BC',
+    count: stats?.gabinetes || 0,
+    description: 'Torres PC'
+  },
+];
 
   // Acciones rápidas
   const quickActions = [

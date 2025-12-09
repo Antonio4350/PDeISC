@@ -59,40 +59,36 @@ export default function AddComponent() {
   }, []);
 
   const loadFormOptions = async () => {
-    try {
-      const result = await componentService.getFormOptions();
-      if (result.success) {
-        // La estructura viene como:
-        // { procesadores: { marcas: [...], sockets: [...] }, ... }
-        // Necesitamos extraer solo las propiedades del tipo de componente actual
-        const componentTypeMap: any = {
-          'procesadores': 'procesadores',
-          'motherboards': 'motherboards',
-          'memorias_ram': 'memorias_ram',
-          'tarjetas_graficas': 'tarjetas_graficas',
-          'almacenamiento': 'almacenamiento',
-          'fuentes_poder': 'fuentes_poder',
-          'gabinetes': 'gabinetes'
-        };
-        
-        const typeKey = componentTypeMap[componentType] || 'procesadores';
-        const optionsForType = result.data[typeKey] || {};
-        
-        // Convertir de { marcas: [{id: 1, valor: 'AMD'}, ...] } 
-        // a { marcas: ['AMD', 'Intel', ...] }
-        const flattenedOptions: any = {};
-        Object.keys(optionsForType).forEach(key => {
-          flattenedOptions[key] = optionsForType[key].map((item: any) => item.valor);
-        });
-        
-        setFormOptions(flattenedOptions);
-      }
-    } catch (error) {
-      console.error('Error cargando opciones:', error);
-    } finally {
-      setOptionsLoading(false);
+  try {
+    const result = await componentService.getFormOptions();
+    if (result.success) {
+      // ✅ COINCIDIR CON EL SERVICIO components.ts
+      // El servicio devuelve: { procesadores: {...}, motherboards: {...}, ... }
+      const optionsForType = result.data[componentType] || {};
+      
+      // Convertir a formato plano
+      const flattenedOptions: any = {};
+      Object.keys(optionsForType).forEach(key => {
+        // Los valores vienen como objetos {id, valor} o como strings
+        const items = optionsForType[key];
+        if (Array.isArray(items) && items.length > 0 && typeof items[0] === 'object') {
+          flattenedOptions[key] = items.map((item: any) => item.valor || item.nombre || String(item));
+        } else {
+          flattenedOptions[key] = items || [];
+        }
+      });
+      
+      setFormOptions(flattenedOptions);
+      console.log(`✅ Opciones para ${componentType}:`, flattenedOptions);
+    } else {
+      console.error('❌ Error obteniendo opciones:', result.error);
     }
-  };
+  } catch (error) {
+    console.error('❌ Error cargando opciones:', error);
+  } finally {
+    setOptionsLoading(false);
+  }
+};
 
   // Función para mapear y convertir datos
   const mapFormDataToAPI = (formData: any, componentType: string) => {

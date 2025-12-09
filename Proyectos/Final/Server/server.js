@@ -101,6 +101,59 @@ app.get('/health', (req, res) => {
   });
 });
 
+// ========== RUTAS DE COMPONENTES (COMPLETAS) ==========
+
+// GET - Listas
+app.get('/components/processors', (req, res) => componentController.getProcessors(req, res));
+app.get('/components/motherboards', (req, res) => componentController.getMotherboards(req, res));
+app.get('/components/ram', (req, res) => componentController.getRAM(req, res));
+app.get('/components/tarjetas_graficas', (req, res) => componentController.getGPUs(req, res));
+app.get('/components/almacenamiento', (req, res) => componentController.getStorage(req, res));
+app.get('/components/fuentes_poder', (req, res) => componentController.getPSUs(req, res));
+app.get('/components/gabinetes', (req, res) => componentController.getCases(req, res));
+
+// GET - Individuales por ID (FALTANTES)
+app.get('/components/processors/:id', (req, res) => componentController.getProcessorById(req, res));
+app.get('/components/motherboards/:id', (req, res) => componentController.getMotherboardById(req, res));
+app.get('/components/ram/:id', (req, res) => componentController.getRAMById(req, res));
+app.get('/components/tarjetas_graficas/:id', (req, res) => componentController.getGPUById(req, res));
+app.get('/components/almacenamiento/:id', (req, res) => componentController.getStorageById(req, res));
+app.get('/components/fuentes_poder/:id', (req, res) => componentController.getPSUById(req, res));
+app.get('/components/gabinetes/:id', (req, res) => componentController.getCaseById(req, res));
+
+// POST - Crear (FALTANTES)
+app.post('/components/processors', (req, res) => componentController.createProcessor(req, res));
+app.post('/components/motherboards', (req, res) => componentController.createMotherboard(req, res));
+app.post('/components/ram', (req, res) => componentController.createRAM(req, res));
+app.post('/components/tarjetas_graficas', (req, res) => componentController.createGPU(req, res));
+app.post('/components/almacenamiento', (req, res) => componentController.createStorage(req, res));
+app.post('/components/fuentes_poder', (req, res) => componentController.createPSU(req, res));
+app.post('/components/gabinetes', (req, res) => componentController.createCase(req, res));
+
+// PUT - Actualizar (FALTANTES)
+app.put('/components/processors/:id', (req, res) => componentController.updateProcessor(req, res));
+app.put('/components/motherboards/:id', (req, res) => componentController.updateMotherboard(req, res));
+app.put('/components/ram/:id', (req, res) => componentController.updateRAM(req, res));
+app.put('/components/tarjetas_graficas/:id', (req, res) => componentController.updateGPU(req, res));
+app.put('/components/almacenamiento/:id', (req, res) => componentController.updateStorage(req, res));
+app.put('/components/fuentes_poder/:id', (req, res) => componentController.updatePSU(req, res));
+app.put('/components/gabinetes/:id', (req, res) => componentController.updateCase(req, res));
+
+// DELETE - Eliminar (FALTANTES)
+app.delete('/components/processors/:id', (req, res) => componentController.deleteProcessor(req, res));
+app.delete('/components/motherboards/:id', (req, res) => componentController.deleteMotherboard(req, res));
+app.delete('/components/ram/:id', (req, res) => componentController.deleteRAM(req, res));
+app.delete('/components/tarjetas_graficas/:id', (req, res) => componentController.deleteGPU(req, res));
+app.delete('/components/almacenamiento/:id', (req, res) => componentController.deleteStorage(req, res));
+app.delete('/components/fuentes_poder/:id', (req, res) => componentController.deletePSU(req, res));
+app.delete('/components/gabinetes/:id', (req, res) => componentController.deleteCase(req, res));
+
+// Rutas adicionales que ya tenés en componentController.js
+app.get('/components/stats', (req, res) => componentController.getComponentStats(req, res));
+app.get('/components/form-options', (req, res) => componentController.getFormOptions(req, res));
+app.post('/components/compatibility', (req, res) => componentController.checkCompatibility(req, res));
+app.get('/components/:type', (req, res) => componentController.getComponentsByType(req, res));
+
 // ========== RUTAS DE AUTENTICACIÓN ==========
 // Middleware ESPECÍFICO para /googleLogin
 app.use('/googleLogin', (req, res, next) => {
