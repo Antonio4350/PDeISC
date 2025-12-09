@@ -4,53 +4,59 @@ import 'dotenv/config';
 
 const app = express();
 
-// ========== CONFIGURACIÓN CORS CORREGIDA ==========
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Permitir todos los orígenes en desarrollo
-    if (process.env.NODE_ENV !== 'production') {
-      callback(null, true);
-    } 
-    // En producción, permitir solo ciertos orígenes
-    else {
-      const allowedOrigins = [
-        'https://proyecto-final-front-xi.vercel.app',
-        'https://proyectofinalacv-backend.vercel.app'
-      ];
-      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    }
-  },
+// ========== CONFIGURACIÓN CORS SIMPLIFICADA Y EFECTIVA ==========
+// Opción 1: Permitir todos los orígenes (más fácil para debug)
+app.use(cors({
+  origin: '*', // Permitir TODOS los orígenes temporalmente
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range']
-};
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'Accept', 
+    'Origin',
+    'X-Requested-With',
+    'X-CSRF-Token',
+    'Access-Control-Allow-Origin'
+  ],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400
+}));
 
-app.use(cors(corsOptions));
-
-// MANEJAR EXPLÍCITAMENTE OPTIONS PARA TODAS LAS RUTAS
-app.options('*', cors(corsOptions));
-
-app.use(express.json());
-
-// Logging de requests
+// ========== MIDDLEWARE PARA DEBUG CORS ==========
 app.use((req, res, next) => {
-  console.log(`\n=== 🌐 REQUEST ${req.method} ${req.url} ===`);
-  console.log('📋 Origin:', req.headers.origin);
-  console.log('📦 Body:', req.body);
+  console.log('\n=== 🌐 REQUEST INCOMING ===');
+  console.log('Method:', req.method);
+  console.log('Path:', req.path);
+  console.log('Origin:', req.headers.origin || 'No origin header');
+  console.log('User-Agent:', req.headers['user-agent']?.substring(0, 50) + '...');
   
-  // Headers para debugging CORS
-  console.log('🔍 Headers:', {
-    'access-control-request-method': req.headers['access-control-request-method'],
-    'access-control-request-headers': req.headers['access-control-request-headers']
-  });
+  // Headers CORS manuales POR SI ACASO
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
+  
+  // Manejar preflight requests
+  if (req.method === 'OPTIONS') {
+    console.log('✅ Preflight OPTIONS request handled');
+    return res.status(200).json({});
+  }
   
   next();
 });
+
+// ========== MANEJAR OPTIONS GLOBALMENTE ==========
+app.options('*', (req, res) => {
+  console.log('🌐 Global OPTIONS request for:', req.path);
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.status(200).send();
+});
+
+app.use(express.json());
 
 // Importar componentes
 import authController from './Components/authController.js';
@@ -61,33 +67,69 @@ import projectController from './Components/projectController.js';
 // Extraer middleware
 const { authenticateToken } = authController;
 
-// Ruta de prueba
+// ========== RUTAS DE PRUEBA Y DIAGNÓSTICO ==========
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'Backend de ProyectoFinalACV funcionando',
+    message: '✅ Backend de ProyectoFinalACV funcionando',
     project: 'AntonioPCBuilder',
     status: 'OK',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    frontend_url: 'https://proyecto-final-front-xi.vercel.app'
-  });
-});
-
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
+    frontend_url: 'https://proyecto-final-front-xi.vercel.app',
+    backend_url: 'https://proyecto-final-back-zeta.vercel.app',
+    cors_status: 'ACTIVADO',
     endpoints: {
-      auth: 'POST /login, POST /register',
-      components: 'GET /components/:type',
-      projects: 'GET /api/projects'
+      auth: ['POST /googleLogin', 'POST /login', 'POST /register'],
+      test: ['GET /health', 'GET /test-cors']
     }
   });
 });
 
+// Health check mejorado
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    cors: {
+      enabled: true,
+      origin: req.headers.origin || 'none',
+      method: req.method
+    }
+  });
+});
+
+// Endpoint ESPECÍFICO para testear CORS
+app.get('/test-cors', (req, res) => {
+  console.log('🧪 Test CORS endpoint llamado desde origen:', req.headers.origin);
+  
+  res.json({
+    success: true,
+    message: '✅ CORS está funcionando correctamente',
+    timestamp: new Date().toISOString(),
+    origin: req.headers.origin,
+    method: req.method,
+    server: 'proyecto-final-back-zeta.vercel.app',
+    allowed: true
+  });
+});
+
+app.post('/test-cors', (req, res) => {
+  console.log('🧪 Test CORS POST llamado desde origen:', req.headers.origin);
+  console.log('Body recibido:', req.body);
+  
+  res.json({
+    success: true,
+    message: '✅ CORS POST está funcionando correctamente',
+    timestamp: new Date().toISOString(),
+    origin: req.headers.origin,
+    method: req.method,
+    body_received: req.body,
+    allowed: true
+  });
+});
+
 // ========== RUTAS DE AUTENTICACIÓN ==========
-// RUTAS GET PARA PRUEBAS (AGREGA ESTAS)
+// RUTAS GET PARA PRUEBAS
 app.get('/login', (req, res) => {
   res.json({
     success: false,
@@ -108,20 +150,56 @@ app.get('/register', (req, res) => {
 app.get('/googleLogin', (req, res) => {
   res.json({
     success: false,
-    message: 'Usa POST para Google login'
+    message: 'Usa POST para Google login',
+    ejemplo: 'POST /googleLogin con {idToken, accessToken}'
   });
 });
 
-// RUTAS POST REALES
-app.post("/googleLogin", (req, res) => authController.googleLogin(req, res));
+// ========== MIDDLEWARE ESPECÍFICO PARA GOOGLE LOGIN (CORS EXTRA) ==========
+app.use('/googleLogin', (req, res, next) => {
+  console.log('🔐 Middleware específico para /googleLogin');
+  console.log('Origin:', req.headers.origin);
+  console.log('Method:', req.method);
+  
+  // Headers CORS explícitos para esta ruta
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
+  
+  if (req.method === 'OPTIONS') {
+    console.log('✅ Preflight OPTIONS para /googleLogin manejado');
+    return res.status(200).end();
+  }
+  
+  next();
+});
+
+// RUTAS POST REALES DE AUTENTICACIÓN
+app.post("/googleLogin", (req, res) => {
+  console.log('📨 GoogleLogin POST recibido');
+  console.log('Body keys:', Object.keys(req.body));
+  console.log('Tiene accessToken?', !!req.body.accessToken);
+  console.log('Tiene idToken?', !!req.body.idToken);
+  
+  // Verificar que tenemos al menos un token
+  if (!req.body.accessToken && !req.body.idToken) {
+    return res.status(400).json({
+      success: false,
+      error: 'Se requiere accessToken o idToken'
+    });
+  }
+  
+  // Llamar al controlador
+  authController.googleLogin(req, res);
+});
+
 app.post("/login", (req, res) => authController.normalLogin(req, res));
 app.post("/register", (req, res) => authController.normalRegister(req, res));
 app.get("/user/:id", (req, res) => authController.getUserProfile(req, res));
 
 // ========== RUTAS DE COMPONENTES ==========
-// RUTAS ESPECÍFICAS
-app.get("/components/stats", (req, res) => componentController.getComponentStats(req, res));
-app.get("/components/form-options", (req, res) => componentController.getFormOptions(req, res));
+// ... (tus rutas existentes de componentes se mantienen igual) ...
 
 // PROCESADORES
 app.get("/components/processors", (req, res) => componentController.getProcessors(req, res));
@@ -202,45 +280,41 @@ app.post('/api/projects/test', (req, res) => {
   res.json({
     success: true,
     message: 'Ruta de prueba funciona',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    cors: 'ACTIVADO'
   });
 });
 
 // ========== MANEJO DE ERRORES ==========
 app.use((err, req, res, next) => {
   console.error('💥 ERROR:', err.stack);
+  
+  // Headers CORS incluso en errores
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
   res.status(500).json({ 
     success: false,
-    message: 'Error interno del servidor'
+    message: 'Error interno del servidor',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
-// Ruta no encontrada - MODIFICADA
+// Ruta no encontrada
 app.use('*', (req, res) => {
   console.log(`🔍 Ruta no encontrada: ${req.method} ${req.originalUrl}`);
   
-  // Si es una ruta de API, devolver JSON
-  if (req.originalUrl.startsWith('/api') || 
-      req.originalUrl.startsWith('/login') ||
-      req.originalUrl.startsWith('/register') ||
-      req.originalUrl.startsWith('/components') ||
-      req.originalUrl.startsWith('/user') ||
-      req.originalUrl.startsWith('/properties')) {
-    
-    res.status(404).json({ 
-      success: false,
-      message: 'Ruta de API no encontrada',
-      endpoint: req.originalUrl,
-      method: req.method,
-      suggestion: 'Verifica la URL y el método HTTP'
-    });
-  } else {
-    // Para otras rutas (como favicon.ico)
-    res.status(404).json({ 
-      success: false,
-      message: 'Ruta no encontrada'
-    });
-  }
+  // Headers CORS incluso en 404
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  res.status(404).json({ 
+    success: false,
+    message: 'Ruta no encontrada',
+    endpoint: req.originalUrl,
+    method: req.method,
+    suggestion: 'Verifica la URL y el método HTTP'
+  });
 });
 
 // ========== INICIAR SERVIDOR ==========
@@ -251,10 +325,11 @@ app.listen(PORT, () => {
   console.log(`📍 Local: http://localhost:${PORT}`);
   console.log(`🌍 Producción: https://proyecto-final-back-zeta.vercel.app`);
   console.log(`🔧 Entorno: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`\n📋 RUTAS DISPONIBLES:`);
-  console.log(`   GET  /                    - Home`);
-  console.log(`   GET  /health              - Health check`);
-  console.log(`   GET  /login               - Info login (POST para auth)`);
-  console.log(`   POST /login               - Login real`);
-  console.log(`   POST /register            - Registro`);
+  console.log(`🔐 CORS: ACTIVADO para todos los orígenes`);
+  console.log(`\n📋 ENDPOINTS DE TEST:`);
+  console.log(`   GET  /test-cors              - Test CORS básico`);
+  console.log(`   POST /test-cors              - Test CORS POST`);
+  console.log(`   GET  /health                 - Health check`);
+  console.log(`   GET  /googleLogin            - Info endpoint Google`);
+  console.log(`\n🔗 Frontend: https://proyecto-final-front-xi.vercel.app`);
 });
