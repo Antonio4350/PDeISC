@@ -8,11 +8,13 @@
     "scheme": "proyectofinalacv",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    
     "extra": {
-      "EXPO_PUBLIC_API_URL": "https://proyecto-final-back-zeta.vercel.app"
+      "EXPO_PUBLIC_API_URL": "https://proyecto-final-back-zeta.vercel.app",
+      "router": {},
+      "eas": {
+        "projectId": "a4cd3af2-ed33-42e2-96e0-9383a2979e07"
+      }
     },
-    
     "ios": {
       "supportsTablet": true
     },

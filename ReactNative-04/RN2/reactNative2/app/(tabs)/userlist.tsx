@@ -1,13 +1,19 @@
 import HeaderReact from "@/components/header";
 import UserItem from "@/components/useritem";
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, Dimensions, Platform } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
+const isSmallScreen = width < 375;
+const isMediumScreen = width >= 375 && width < 768;
+const isLargeScreen = width >= 768;
 
 export default function UserList() {
   const [usuarios, setUsuarios] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('http://192.168.100.156:3031/getUsuarios')
+    fetch('http://192.168.1.38:3031/getUsuarios')
       .then(response => response.json())
       .then(data => setUsuarios(data));
   }, []);
@@ -31,10 +37,6 @@ export default function UserList() {
             </View>
           ) : (
             <View style={styles.singleContainer}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Usuarios</Text>
-              </View>
-              
               <View style={styles.columnsContainer}>
                 <View style={styles.column}>
                   <View style={styles.columnContent}>
@@ -47,7 +49,6 @@ export default function UserList() {
                       data.append('foto', item.foto.replace('./', ''));
                       data.append('isGoogleUser', item.isGoogleUser ? 'true' : 'false');
                       
-                      // Agregar documentos si existen
                       if (item.documento1) {
                         data.append('documento1', item.documento1.replace('./', ''));
                       }
@@ -71,7 +72,6 @@ export default function UserList() {
                       data.append('foto', item.foto.replace('./', ''));
                       data.append('isGoogleUser', item.isGoogleUser ? 'true' : 'false');
                       
-                      // Agregar documentos si existen
                       if (item.documento1) {
                         data.append('documento1', item.documento1.replace('./', ''));
                       }
@@ -99,17 +99,20 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: 15,
+    paddingHorizontal: isWeb ? 24 : isMediumScreen ? 20 : 16,
+    paddingTop: isWeb ? 24 : 20,
+    paddingBottom: 20,
   },
   headerSection: {
     paddingVertical: 20,
     alignItems: 'center',
+    marginBottom: 10,
   },
   welcomeTitle: {
-    fontSize: 22,
+    fontSize: isWeb ? 28 : isMediumScreen ? 24 : 22,
     fontWeight: 'bold',
     color: '#7B2CBF',
-    marginVertical: 10,
+    textAlign: 'center',
   },
   listContainer: {
     flex: 1,
@@ -121,47 +124,29 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   columnsContainer: {
-    flexDirection: 'row',
+    flexDirection: isWeb ? 'row' : 'column',
     justifyContent: 'space-between',
+    gap: isWeb ? 24 : 16,
     paddingVertical: 10,
-    gap: 12,
   },
   column: {
     flex: 1,
     alignItems: 'center',
-  },
-  sectionHeader: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 15,
-    paddingVertical: 12,
-    backgroundColor: '#7B2CBF',
-    borderRadius: 12,
-    shadowColor: '#7B2CBF',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 5,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    textAlign: 'center',
+    marginBottom: isWeb ? 0 : 16,
   },
   columnContent: {
     width: '100%',
     alignItems: 'center',
+    gap: isWeb ? 20 : 16,
   },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 50,
+    paddingVertical: 60,
   },
   emptyStateText: {
-    fontSize: 18,
+    fontSize: isWeb ? 18 : 16,
     color: '#666',
     textAlign: 'center',
   },
