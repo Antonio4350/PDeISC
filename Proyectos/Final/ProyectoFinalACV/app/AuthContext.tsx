@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (userData.token) {
           localStorage.setItem('token', userData.token);
         }
-        console.log('✅ Token guardado en localStorage para web');
+        console.log('Token guardado en localStorage para web');
       }
     } catch (error) {
       console.error('Error guardando usuario:', error);
@@ -66,7 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem('token');
       }
       
-      console.log('✅ Usuario y token removidos de storage');
+      console.log('Usuario y token removidos de storage');
     } catch (error) {
       console.error('Error removiendo usuario:', error);
     }
@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userString = localStorage.getItem('user');
         token = localStorage.getItem('token');
         if (userString && token) {
-          console.log('🌐 Usuario cargado desde localStorage (web)');
+          console.log('Usuario cargado desde localStorage (web)');
           const userData = JSON.parse(userString);
           userData.token = token;
           return userData;
@@ -117,7 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Login
   const login = async (userData: User, token?: string) => {
-    console.log('🔐 Iniciando login...', userData.email);
+    console.log('Iniciando login...', userData.email);
     
     const userWithToken = {
       ...userData,
@@ -128,12 +128,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthenticated(true);
     setAuthChecked(true); // Marcar como verificado
     await saveUserToStorage(userWithToken);
-    console.log(`✅ Usuario ${userData.email} logueado correctamente`);
+    console.log(`Usuario ${userData.email} logueado correctamente`);
   };
 
   // Logout
   const logout = async (): Promise<void> => {
-    console.log('🚪 Iniciando logout...');
+    console.log('Iniciando logout...');
     
     try {
       // 1. Limpiar storage
@@ -144,9 +144,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthenticated(false);
       setAuthChecked(true); // Marcar como verificado
       
-      console.log('✅ Logout completado');
+      console.log('Logout completado');
     } catch (error) {
-      console.error('❌ Error en logout:', error);
+      console.error('Error en logout:', error);
       // Forzar reset del estado
       setUser(null);
       setIsAuthenticated(false);
@@ -158,14 +158,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const checkAuth = async () => {
     try {
       setIsLoading(true);
-      console.log('🔍 Verificando autenticación...');
+      console.log('Verificando autenticación...');
       const savedUser = await loadUserFromStorage();
       if (savedUser) {
         setUser(savedUser);
         setIsAuthenticated(true);
-        console.log(`✅ Sesión recuperada: ${savedUser.email}`);
+        console.log(`Sesión recuperada: ${savedUser.email}`);
       } else {
-        console.log('🔍 No hay sesión guardada');
+        console.log('No hay sesión guardada');
         setUser(null);
         setIsAuthenticated(false);
       }
@@ -176,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
       setAuthChecked(true); // IMPORTANTE: marcar que ya se verificó
-      console.log('✅ Verificación de autenticación completada');
+      console.log('Verificación de autenticación completada');
     }
   };
 

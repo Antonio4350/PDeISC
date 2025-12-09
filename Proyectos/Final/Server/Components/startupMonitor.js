@@ -41,10 +41,9 @@ class StartupMonitor {
 
   // Mostrar información del sistema
   async displayStartupInfo(port) {
-    console.log('\n🚀 INICIANDO SERVIDOR ANTONIOPCBUILDER');
     
     // Verificar base de datos
-    console.log('🔍 Verificando conexión a la base de datos...');
+    console.log('Verificando conexión a la base de datos...');
     const dbStatus = await this.checkDatabaseConnection();
     console.log(`   Base de Datos: ${dbStatus.status}`);
     console.log(`   Ping: ${dbStatus.ping || 'N/A'}`);
@@ -52,13 +51,13 @@ class StartupMonitor {
     
     // Información de red
     const localIP = this.getLocalIP();
-    console.log('🌐 Información de red:');
+    console.log('Información de red:');
     console.log(`   Local: http://localhost:${port}`);
     console.log(`   Red: http://${localIP}:${port}`);
     console.log(`   Puerto: ${port}\n`);
     
     // Información del entorno
-    console.log('⚙️  Configuración:');
+    console.log('Configuración:');
     console.log(`   Entorno: ${process.env.NODE_ENV || 'development'}`);
     console.log(`   Base de datos: PostgreSQL (Neon)`);
     console.log(`   Host BD: ${process.env.DATABASE_URL ? 'Neon Cloud' : 'No configurado'}\n`);
@@ -73,12 +72,12 @@ class StartupMonitor {
   // Mostrar información cuando el servidor esté listo
   displayServerReady(info) {
     console.log('SERVIDOR INICIADO CORRECTAMENTE');
-    console.log(`📍 URL Local: http://localhost:${info.port}`);
-    console.log(`📍 URL Red: http://${info.localIP}:${info.port}`);
-    console.log(`⏰ Iniciado: ${new Date().toLocaleString()}`);
+    console.log(`URL Local: http://localhost:${info.port}`);
+    console.log(`URL Red: http://${info.localIP}:${info.port}`);
+    console.log(`Iniciado: ${new Date().toLocaleString()}`);
     
     // Resumen final
-    console.log('📋 RESUMEN INICIAL:');
+    console.log('RESUMEN INICIAL:');
     console.log(`   Backend: ACTIVO`);
     console.log(`   Base de Datos: ${info.dbStatus.status}`);
     if (info.dbStatus.ping) {

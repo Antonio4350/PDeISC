@@ -1,4 +1,3 @@
-// Components/componentController.js - VERSIÓN COMPLETA
 import pool from './database.js';
 
 class ComponentController {
@@ -7,7 +6,7 @@ class ComponentController {
   
   async getProcessors(req, res) {
     try {
-      console.log('🔍 Obteniendo lista de procesadores...');
+      console.log('Obteniendo lista de procesadores...');
       const { rows } = await pool.query('SELECT * FROM procesadores ORDER BY marca, modelo');
       
       res.json({
@@ -16,7 +15,7 @@ class ComponentController {
         count: rows.length
       });
     } catch (error) {
-      console.error('❌ Error obteniendo procesadores:', error);
+      console.error('Error obteniendo procesadores:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener procesadores'
@@ -27,7 +26,7 @@ class ComponentController {
   async getProcessorById(req, res) {
     try {
       const { id } = req.params;
-      console.log(`🔍 Obteniendo procesador ID: ${id}`);
+      console.log(`Obteniendo procesador ID: ${id}`);
       
       const { rows } = await pool.query(
         'SELECT * FROM procesadores WHERE id = $1',
@@ -46,7 +45,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error obteniendo procesador:', error);
+      console.error('Error obteniendo procesador:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener procesador'
@@ -99,7 +98,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error creando procesador:', error);
+      console.error('Error creando procesador:', error);
       res.status(500).json({
         success: false,
         error: 'Error al crear procesador'
@@ -111,7 +110,7 @@ class ComponentController {
     try {
       const { id } = req.params;
       const processorData = req.body;
-      console.log(`✏️ Actualizando procesador ID: ${id}`);
+      console.log(`Actualizando procesador ID: ${id}`);
       
       const setClauses = [];
       const values = [];
@@ -164,7 +163,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error actualizando procesador:', error);
+      console.error('Error actualizando procesador:', error);
       res.status(500).json({
         success: false,
         error: 'Error al actualizar procesador'
@@ -175,7 +174,7 @@ class ComponentController {
   async deleteProcessor(req, res) {
     try {
       const { id } = req.params;
-      console.log(`🗑️ Eliminando procesador ID: ${id}`);
+      console.log(`Eliminando procesador ID: ${id}`);
       
       const { rows } = await pool.query(
         'DELETE FROM procesadores WHERE id = $1 RETURNING *',
@@ -194,7 +193,7 @@ class ComponentController {
         message: 'Procesador eliminado exitosamente'
       });
     } catch (error) {
-      console.error('❌ Error eliminando procesador:', error);
+      console.error('Error eliminando procesador:', error);
       res.status(500).json({
         success: false,
         error: 'Error al eliminar procesador'
@@ -206,7 +205,7 @@ class ComponentController {
   
   async getMotherboards(req, res) {
     try {
-      console.log('🔍 Obteniendo lista de motherboards...');
+      console.log('Obteniendo lista de motherboards...');
       const { rows } = await pool.query('SELECT * FROM motherboards ORDER BY marca, modelo');
       
       res.json({
@@ -215,7 +214,7 @@ class ComponentController {
         count: rows.length
       });
     } catch (error) {
-      console.error('❌ Error obteniendo motherboards:', error);
+      console.error('Error obteniendo motherboards:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener motherboards'
@@ -226,7 +225,7 @@ class ComponentController {
   async getMotherboardById(req, res) {
     try {
       const { id } = req.params;
-      console.log(`🔍 Obteniendo motherboard ID: ${id}`);
+      console.log(`Obteniendo motherboard ID: ${id}`);
       
       const { rows } = await pool.query(
         'SELECT * FROM motherboards WHERE id = $1',
@@ -245,7 +244,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error obteniendo motherboard:', error);
+      console.error('Error obteniendo motherboard:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener motherboard'
@@ -298,7 +297,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error creando motherboard:', error);
+      console.error('Error creando motherboard:', error);
       res.status(500).json({
         success: false,
         error: 'Error al crear motherboard'
@@ -310,7 +309,7 @@ class ComponentController {
     try {
       const { id } = req.params;
       const motherboardData = req.body;
-      console.log(`✏️ Actualizando motherboard ID: ${id}`);
+      console.log(`Actualizando motherboard ID: ${id}`);
       
       const setClauses = [];
       const values = [];
@@ -363,7 +362,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error actualizando motherboard:', error);
+      console.error('Error actualizando motherboard:', error);
       res.status(500).json({
         success: false,
         error: 'Error al actualizar motherboard'
@@ -374,7 +373,7 @@ class ComponentController {
   async deleteMotherboard(req, res) {
     try {
       const { id } = req.params;
-      console.log(`🗑️ Eliminando motherboard ID: ${id}`);
+      console.log(`Eliminando motherboard ID: ${id}`);
       
       const { rows } = await pool.query(
         'DELETE FROM motherboards WHERE id = $1 RETURNING *',
@@ -393,7 +392,7 @@ class ComponentController {
         message: 'Motherboard eliminada exitosamente'
       });
     } catch (error) {
-      console.error('❌ Error eliminando motherboard:', error);
+      console.error('Error eliminando motherboard:', error);
       res.status(500).json({
         success: false,
         error: 'Error al eliminar motherboard'
@@ -405,7 +404,7 @@ class ComponentController {
   
   async getRAM(req, res) {
     try {
-      console.log('🔍 Obteniendo lista de memorias RAM...');
+      console.log('Obteniendo lista de memorias RAM...');
       const { rows } = await pool.query('SELECT * FROM memorias_ram ORDER BY marca, modelo');
       
       res.json({
@@ -414,7 +413,7 @@ class ComponentController {
         count: rows.length
       });
     } catch (error) {
-      console.error('❌ Error obteniendo memorias RAM:', error);
+      console.error('Error obteniendo memorias RAM:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener memorias RAM'
@@ -425,7 +424,7 @@ class ComponentController {
   async getRAMById(req, res) {
     try {
       const { id } = req.params;
-      console.log(`🔍 Obteniendo RAM ID: ${id}`);
+      console.log(`Obteniendo RAM ID: ${id}`);
       
       const { rows } = await pool.query(
         'SELECT * FROM memorias_ram WHERE id = $1',
@@ -444,7 +443,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error obteniendo RAM:', error);
+      console.error('Error obteniendo RAM:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener RAM'
@@ -490,7 +489,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error creando memoria RAM:', error);
+      console.error('Error creando memoria RAM:', error);
       res.status(500).json({
         success: false,
         error: 'Error al crear memoria RAM'
@@ -502,7 +501,7 @@ class ComponentController {
     try {
       const { id } = req.params;
       const ramData = req.body;
-      console.log(`✏️ Actualizando RAM ID: ${id}`);
+      console.log(`Actualizando RAM ID: ${id}`);
       
       const setClauses = [];
       const values = [];
@@ -552,7 +551,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error actualizando RAM:', error);
+      console.error('Error actualizando RAM:', error);
       res.status(500).json({
         success: false,
         error: 'Error al actualizar memoria RAM'
@@ -563,7 +562,7 @@ class ComponentController {
   async deleteRAM(req, res) {
     try {
       const { id } = req.params;
-      console.log(`🗑️ Eliminando RAM ID: ${id}`);
+      console.log(`Eliminando RAM ID: ${id}`);
       
       const { rows } = await pool.query(
         'DELETE FROM memorias_ram WHERE id = $1 RETURNING *',
@@ -582,7 +581,7 @@ class ComponentController {
         message: 'Memoria RAM eliminada exitosamente'
       });
     } catch (error) {
-      console.error('❌ Error eliminando RAM:', error);
+      console.error('Error eliminando RAM:', error);
       res.status(500).json({
         success: false,
         error: 'Error al eliminar memoria RAM'
@@ -594,7 +593,7 @@ class ComponentController {
 
   async getGPUs(req, res) {
     try {
-      console.log('🔍 Obteniendo lista de tarjetas gráficas...');
+      console.log('Obteniendo lista de tarjetas gráficas...');
       const { rows } = await pool.query('SELECT * FROM tarjetas_graficas ORDER BY marca, modelo');
       
       res.json({
@@ -603,7 +602,7 @@ class ComponentController {
         count: rows.length
       });
     } catch (error) {
-      console.error('❌ Error obteniendo tarjetas gráficas:', error);
+      console.error('Error obteniendo tarjetas gráficas:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener tarjetas gráficas'
@@ -614,7 +613,7 @@ class ComponentController {
   async getGPUById(req, res) {
     try {
       const { id } = req.params;
-      console.log(`🔍 Obteniendo GPU ID: ${id}`);
+      console.log(`Obteniendo GPU ID: ${id}`);
       
       const { rows } = await pool.query(
         'SELECT * FROM tarjetas_graficas WHERE id = $1',
@@ -633,7 +632,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error obteniendo GPU:', error);
+      console.error('Error obteniendo GPU:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener tarjeta gráfica'
@@ -687,7 +686,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error creando GPU:', error);
+      console.error('Error creando GPU:', error);
       res.status(500).json({
         success: false,
         error: 'Error al crear tarjeta gráfica'
@@ -699,7 +698,7 @@ class ComponentController {
     try {
       const { id } = req.params;
       const gpuData = req.body;
-      console.log(`✏️ Actualizando GPU ID: ${id}`);
+      console.log(`Actualizando GPU ID: ${id}`);
       
       const setClauses = [];
       const values = [];
@@ -752,7 +751,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error actualizando GPU:', error);
+      console.error('Error actualizando GPU:', error);
       res.status(500).json({
         success: false,
         error: 'Error al actualizar tarjeta gráfica'
@@ -763,7 +762,7 @@ class ComponentController {
   async deleteGPU(req, res) {
     try {
       const { id } = req.params;
-      console.log(`🗑️ Eliminando GPU ID: ${id}`);
+      console.log(`Eliminando GPU ID: ${id}`);
       
       const { rows } = await pool.query(
         'DELETE FROM tarjetas_graficas WHERE id = $1 RETURNING *',
@@ -782,7 +781,7 @@ class ComponentController {
         message: 'Tarjeta gráfica eliminada exitosamente'
       });
     } catch (error) {
-      console.error('❌ Error eliminando GPU:', error);
+      console.error('Error eliminando GPU:', error);
       res.status(500).json({
         success: false,
         error: 'Error al eliminar tarjeta gráfica'
@@ -794,7 +793,7 @@ class ComponentController {
 
   async getStorage(req, res) {
     try {
-      console.log('🔍 Obteniendo lista de almacenamiento...');
+      console.log('Obteniendo lista de almacenamiento...');
       const { rows } = await pool.query('SELECT * FROM almacenamiento ORDER BY marca, modelo');
       
       res.json({
@@ -803,7 +802,7 @@ class ComponentController {
         count: rows.length
       });
     } catch (error) {
-      console.error('❌ Error obteniendo almacenamiento:', error);
+      console.error('Error obteniendo almacenamiento:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener almacenamiento'
@@ -814,7 +813,7 @@ class ComponentController {
   async getStorageById(req, res) {
     try {
       const { id } = req.params;
-      console.log(`🔍 Obteniendo almacenamiento ID: ${id}`);
+      console.log(`Obteniendo almacenamiento ID: ${id}`);
       
       const { rows } = await pool.query(
         'SELECT * FROM almacenamiento WHERE id = $1',
@@ -833,7 +832,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error obteniendo almacenamiento:', error);
+      console.error('Error obteniendo almacenamiento:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener almacenamiento'
@@ -878,7 +877,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error creando almacenamiento:', error);
+      console.error('Error creando almacenamiento:', error);
       res.status(500).json({
         success: false,
         error: 'Error al crear almacenamiento'
@@ -890,7 +889,7 @@ class ComponentController {
     try {
       const { id } = req.params;
       const storageData = req.body;
-      console.log(`✏️ Actualizando almacenamiento ID: ${id}`);
+      console.log(`Actualizando almacenamiento ID: ${id}`);
       
       const setClauses = [];
       const values = [];
@@ -940,7 +939,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error actualizando almacenamiento:', error);
+      console.error('Error actualizando almacenamiento:', error);
       res.status(500).json({
         success: false,
         error: 'Error al actualizar almacenamiento'
@@ -951,7 +950,7 @@ class ComponentController {
   async deleteStorage(req, res) {
     try {
       const { id } = req.params;
-      console.log(`🗑️ Eliminando almacenamiento ID: ${id}`);
+      console.log(`Eliminando almacenamiento ID: ${id}`);
       
       const { rows } = await pool.query(
         'DELETE FROM almacenamiento WHERE id = $1 RETURNING *',
@@ -970,7 +969,7 @@ class ComponentController {
         message: 'Almacenamiento eliminado exitosamente'
       });
     } catch (error) {
-      console.error('❌ Error eliminando almacenamiento:', error);
+      console.error('Error eliminando almacenamiento:', error);
       res.status(500).json({
         success: false,
         error: 'Error al eliminar almacenamiento'
@@ -982,7 +981,7 @@ class ComponentController {
 
   async getPSUs(req, res) {
     try {
-      console.log('🔍 Obteniendo lista de fuentes de poder...');
+      console.log('Obteniendo lista de fuentes de poder...');
       const { rows } = await pool.query('SELECT * FROM fuentes_poder ORDER BY marca, modelo');
       
       res.json({
@@ -991,7 +990,7 @@ class ComponentController {
         count: rows.length
       });
     } catch (error) {
-      console.error('❌ Error obteniendo fuentes de poder:', error);
+      console.error('Error obteniendo fuentes de poder:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener fuentes de poder'
@@ -1002,7 +1001,7 @@ class ComponentController {
   async getPSUById(req, res) {
     try {
       const { id } = req.params;
-      console.log(`🔍 Obteniendo PSU ID: ${id}`);
+      console.log(`Obteniendo PSU ID: ${id}`);
       
       const { rows } = await pool.query(
         'SELECT * FROM fuentes_poder WHERE id = $1',
@@ -1021,7 +1020,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error obteniendo PSU:', error);
+      console.error('Error obteniendo PSU:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener fuente de poder'
@@ -1067,7 +1066,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error creando PSU:', error);
+      console.error('Error creando PSU:', error);
       res.status(500).json({
         success: false,
         error: 'Error al crear fuente de poder'
@@ -1079,7 +1078,7 @@ class ComponentController {
     try {
       const { id } = req.params;
       const psuData = req.body;
-      console.log(`✏️ Actualizando PSU ID: ${id}`);
+      console.log(`Actualizando PSU ID: ${id}`);
       
       const setClauses = [];
       const values = [];
@@ -1130,7 +1129,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error actualizando PSU:', error);
+      console.error('Error actualizando PSU:', error);
       res.status(500).json({
         success: false,
         error: 'Error al actualizar fuente de poder'
@@ -1141,7 +1140,7 @@ class ComponentController {
   async deletePSU(req, res) {
     try {
       const { id } = req.params;
-      console.log(`🗑️ Eliminando PSU ID: ${id}`);
+      console.log(`Eliminando PSU ID: ${id}`);
       
       const { rows } = await pool.query(
         'DELETE FROM fuentes_poder WHERE id = $1 RETURNING *',
@@ -1160,7 +1159,7 @@ class ComponentController {
         message: 'Fuente de poder eliminada exitosamente'
       });
     } catch (error) {
-      console.error('❌ Error eliminando PSU:', error);
+      console.error('Error eliminando PSU:', error);
       res.status(500).json({
         success: false,
         error: 'Error al eliminar fuente de poder'
@@ -1172,7 +1171,7 @@ class ComponentController {
 
   async getCases(req, res) {
     try {
-      console.log('🔍 Obteniendo lista de gabinetes...');
+      console.log('Obteniendo lista de gabinetes...');
       const { rows } = await pool.query('SELECT * FROM gabinetes ORDER BY marca, modelo');
       
       res.json({
@@ -1181,7 +1180,7 @@ class ComponentController {
         count: rows.length
       });
     } catch (error) {
-      console.error('❌ Error obteniendo gabinetes:', error);
+      console.error('Error obteniendo gabinetes:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener gabinetes'
@@ -1192,7 +1191,7 @@ class ComponentController {
   async getCaseById(req, res) {
     try {
       const { id } = req.params;
-      console.log(`🔍 Obteniendo gabinete ID: ${id}`);
+      console.log(`Obteniendo gabinete ID: ${id}`);
       
       const { rows } = await pool.query(
         'SELECT * FROM gabinetes WHERE id = $1',
@@ -1211,7 +1210,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error obteniendo gabinete:', error);
+      console.error('Error obteniendo gabinete:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener gabinete'
@@ -1262,7 +1261,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error creando gabinete:', error);
+      console.error('Error creando gabinete:', error);
       res.status(500).json({
         success: false,
         error: 'Error al crear gabinete'
@@ -1274,7 +1273,7 @@ class ComponentController {
     try {
       const { id } = req.params;
       const caseData = req.body;
-      console.log(`✏️ Actualizando gabinete ID: ${id}`);
+      console.log(`Actualizando gabinete ID: ${id}`);
       
       const setClauses = [];
       const values = [];
@@ -1326,7 +1325,7 @@ class ComponentController {
         data: rows[0]
       });
     } catch (error) {
-      console.error('❌ Error actualizando gabinete:', error);
+      console.error('Error actualizando gabinete:', error);
       res.status(500).json({
         success: false,
         error: 'Error al actualizar gabinete'
@@ -1337,7 +1336,7 @@ class ComponentController {
   async deleteCase(req, res) {
     try {
       const { id } = req.params;
-      console.log(`🗑️ Eliminando gabinete ID: ${id}`);
+      console.log(`Eliminando gabinete ID: ${id}`);
       
       const { rows } = await pool.query(
         'DELETE FROM gabinetes WHERE id = $1 RETURNING *',
@@ -1356,7 +1355,7 @@ class ComponentController {
         message: 'Gabinete eliminado exitosamente'
       });
     } catch (error) {
-      console.error('❌ Error eliminando gabinete:', error);
+      console.error('Error eliminando gabinete:', error);
       res.status(500).json({
         success: false,
         error: 'Error al eliminar gabinete'
@@ -1369,7 +1368,7 @@ class ComponentController {
   async getComponentsByType(req, res) {
     try {
       const { type } = req.params;
-      console.log(`🔍 Obteniendo componentes de tipo: ${type}`);
+      console.log(`Obteniendo componentes de tipo: ${type}`);
       
       const tableMap = {
         'procesadores': 'procesadores',
@@ -1408,7 +1407,7 @@ class ComponentController {
         type: type
       });
     } catch (error) {
-      console.error(`❌ Error obteniendo componentes tipo ${req.params.type}:`, error);
+      console.error(`Error obteniendo componentes tipo ${req.params.type}:`, error);
       res.status(500).json({
         success: false,
         error: `Error al obtener ${req.params.type}`
@@ -1419,7 +1418,7 @@ class ComponentController {
   async checkCompatibility(req, res) {
     try {
       const { cpuId, motherboardId } = req.body;
-      console.log(`🔍 Verificando compatibilidad CPU:${cpuId} - Mother:${motherboardId}`);
+      console.log(`Verificando compatibilidad CPU:${cpuId} - Mother:${motherboardId}`);
       
       if (!cpuId || !motherboardId) {
         return res.status(400).json({
@@ -1466,12 +1465,12 @@ class ComponentController {
           cpu: cpu,
           motherboard: mobo,
           message: isCompatible 
-            ? `✅ Compatible: ${cpu.socket} = ${mobo.socket}` 
-            : `❌ Incompatible: ${cpu.socket} ≠ ${mobo.socket}`
+            ? `Compatible: ${cpu.socket} = ${mobo.socket}` 
+            : `Incompatible: ${cpu.socket} ≠ ${mobo.socket}`
         }
       });
     } catch (error) {
-      console.error('❌ Error verificando compatibilidad:', error);
+      console.error('Error verificando compatibilidad:', error);
       res.status(500).json({
         success: false,
         error: 'Error al verificar compatibilidad'
@@ -1481,7 +1480,7 @@ class ComponentController {
 
   async getComponentStats(req, res) {
     try {
-      console.log('📊 Obteniendo estadísticas de componentes...');
+      console.log('Obteniendo estadísticas de componentes...');
       
       // Obtener conteos de cada tipo de componente
       const counts = {
@@ -1499,7 +1498,7 @@ class ComponentController {
         data: counts
       });
     } catch (error) {
-      console.error('❌ Error obteniendo estadísticas:', error);
+      console.error('Error obteniendo estadísticas:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener estadísticas'
@@ -1546,7 +1545,7 @@ class ComponentController {
         data: options
       });
     } catch (error) {
-      console.error('❌ Error obteniendo opciones:', error);
+      console.error('Error obteniendo opciones:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener opciones'

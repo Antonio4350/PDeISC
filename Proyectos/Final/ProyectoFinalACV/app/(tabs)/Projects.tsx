@@ -163,13 +163,13 @@ export default function Projects() {
             style={styles.createButton}
             onPress={() => router.push('/(tabs)/Login')}
           >
-            <Text style={styles.createButtonText}>🚀 Iniciar Sesión</Text>
+            <Text style={styles.createButtonText}>Iniciar Sesión</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.createButton, styles.armarPcButton]}
             onPress={() => router.push('/(tabs)/PcBuilder')}
           >
-            <Text style={styles.armarPcButtonText}>🔧 Armar PC</Text>
+            <Text style={styles.armarPcButtonText}>Armar PC</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -197,7 +197,7 @@ export default function Projects() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>🗑️ Eliminar Proyecto</Text>
+              <Text style={styles.modalTitle}>Eliminar Proyecto</Text>
             </View>
             
             <View style={styles.modalBody}>
@@ -237,7 +237,7 @@ export default function Projects() {
       </Modal>
 
       <View style={styles.header}>
-        <Text style={styles.title}>📂 Mis Proyectos</Text>
+        <Text style={styles.title}>Mis Proyectos</Text>
         <Text style={styles.subtitle}>
           Hola {user?.nombre || user?.email?.split('@')[0]}, gestioná tus builds de PC
         </Text>
@@ -245,7 +245,6 @@ export default function Projects() {
 
       {projects.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>🛠️</Text>
           <Text style={styles.emptyTitle}>No tenés proyectos aún</Text>
           <Text style={styles.emptyText}>
             Creá tu primer build de PC personalizada
@@ -254,7 +253,7 @@ export default function Projects() {
             style={styles.createButton}
             onPress={handleCreateProject}
           >
-            <Text style={styles.createButtonText}>🚀 Crear Primer Proyecto</Text>
+            <Text style={styles.createButtonText}>Crear Primer Proyecto</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -272,7 +271,7 @@ export default function Projects() {
         >
           <View style={styles.statsCard}>
             <Text style={styles.statsText}>
-              📊 Tenés {projects.length} proyecto{projects.length !== 1 ? 's' : ''} guardado{projects.length !== 1 ? 's' : ''}
+              Tenés {projects.length} proyecto{projects.length !== 1 ? 's' : ''} guardado{projects.length !== 1 ? 's' : ''}
             </Text>
             <TouchableOpacity 
               style={styles.refreshButton}
@@ -280,7 +279,7 @@ export default function Projects() {
               disabled={refreshing}
             >
               <Text style={styles.refreshButtonText}>
-                {refreshing ? '🔄' : '🔄 Actualizar'}
+                {refreshing ? '🔄' : 'Actualizar'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -327,7 +326,7 @@ export default function Projects() {
               
               <View style={styles.projectInfo}>
                 <View style={styles.projectDateContainer}>
-                  <Text style={styles.projectDateIcon}>📅</Text>
+                  <Text style={styles.projectDateIcon}></Text>
                   <Text style={styles.projectDate}>
                     {formatDate(project.fecha_actualizacion || project.fecha_creacion)}
                   </Text>

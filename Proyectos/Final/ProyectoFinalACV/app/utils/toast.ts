@@ -45,19 +45,19 @@ class ToastService {
   }
 
   success(message: string) {
-    this.show(`✅ ${message}`);
+    this.show(` ✔ ${message}`);
   }
 
   error(message: string) {
-    this.show(`❌ ${message}`);
+    this.show(`X ${message}`);
   }
 
   info(message: string) {
-    this.show(`ℹ️ ${message}`);
+    this.show(`🛈 ${message}`);
   }
 
   warning(message: string) {
-    this.show(`⚠️ ${message}`);
+    this.show(`⚠ ${message}`);
   }
 }
 

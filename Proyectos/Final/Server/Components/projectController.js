@@ -6,7 +6,7 @@ class ProjectController {
   async getUserProjects(req, res) {
     try {
       const userId = req.user.id;
-      console.log(`📋 Obteniendo proyectos para usuario: ${userId}`);
+      console.log(`Obteniendo proyectos para usuario: ${userId}`);
       
       const { rows: projects } = await pool.query(
         `SELECT p.*, 
@@ -24,7 +24,7 @@ class ProjectController {
         data: projects
       });
     } catch (error) {
-      console.error('❌ Error obteniendo proyectos:', error);
+      console.error('Error obteniendo proyectos:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener proyectos'
@@ -38,9 +38,9 @@ class ProjectController {
       const userId = req.user.id;
       const { nombre, descripcion, componentes } = req.body;
       
-      console.log(`🛠️ Creando proyecto para usuario: ${userId}`);
-      console.log(`📝 Nombre: ${nombre}`);
-      console.log(`🔧 Componentes recibidos:`, componentes);
+      console.log(`Creando proyecto para usuario: ${userId}`);
+      console.log(`Nombre: ${nombre}`);
+      console.log(`Componentes recibidos:`, componentes);
 
       if (!nombre) {
         return res.status(400).json({
@@ -68,7 +68,7 @@ class ProjectController {
         }
       }
       
-      console.log(`🔍 Componentes únicos:`, componentesUnicos.length, 'de', componentes.length);
+      console.log(`Componentes únicos:`, componentesUnicos.length, 'de', componentes.length);
 
       // Iniciar transacción
       await pool.query('BEGIN');
@@ -82,7 +82,7 @@ class ProjectController {
       );
 
       const proyectoId = projectRows[0].id;
-      console.log(`✅ Proyecto creado con ID: ${proyectoId}`);
+      console.log(`Proyecto creado con ID: ${proyectoId}`);
 
       // 2. Insertar los componentes del proyecto (SIN DUPLICADOS)
       for (const componente of componentesUnicos) {
@@ -107,7 +107,7 @@ class ProjectController {
 
         // Verificar que el componente existe en su tabla
         const checkQuery = `SELECT id FROM ${tablaReal} WHERE id = $1`;
-        console.log(`🔍 Verificando componente: ${tablaReal}.id = ${componente_id}`);
+        console.log(`Verificando componente: ${tablaReal}.id = ${componente_id}`);
         
         try {
           const { rows: compRows } = await pool.query(checkQuery, [componente_id]);
@@ -123,9 +123,9 @@ class ProjectController {
             [proyectoId, tipo_componente, componente_id]
           );
           
-          console.log(`✅ Componente agregado: ${tipo_componente} (ID: ${componente_id})`);
+          console.log(`Componente agregado: ${tipo_componente} (ID: ${componente_id})`);
         } catch (error) {
-          console.error(`❌ Error con componente ${tipo_componente}-${componente_id}:`, error.message);
+          console.error(`Error con componente ${tipo_componente}-${componente_id}:`, error.message);
           throw error;
         }
       }
@@ -162,7 +162,7 @@ class ProjectController {
       const project = fullProject[0];
       project.componentes = projectComponents;
 
-      console.log(`🎉 Proyecto ${proyectoId} creado exitosamente con ${projectComponents.length} componentes`);
+      console.log(`Proyecto ${proyectoId} creado exitosamente con ${projectComponents.length} componentes`);
 
       res.status(201).json({
         success: true,
@@ -174,8 +174,8 @@ class ProjectController {
       // Rollback en caso de error
       await pool.query('ROLLBACK');
       
-      console.error('❌ Error creando proyecto:', error.message);
-      console.error('❌ Error stack:', error.stack);
+      console.error('Error creando proyecto:', error.message);
+      console.error('Error stack:', error.stack);
       
       res.status(500).json({
         success: false,
@@ -185,16 +185,15 @@ class ProjectController {
     }
   }
 
-  // ✅ NUEVO: Actualizar proyecto existente
   async updateProject(req, res) {
     try {
       const { id } = req.params;
       const userId = req.user.id;
       const { nombre, descripcion, componentes } = req.body;
       
-      console.log(`🔄 Actualizando proyecto ID: ${id} para usuario: ${userId}`);
-      console.log(`📝 Nuevo nombre: ${nombre}`);
-      console.log(`🔧 Componentes recibidos:`, componentes);
+      console.log(`Actualizando proyecto ID: ${id} para usuario: ${userId}`);
+      console.log(`Nuevo nombre: ${nombre}`);
+      console.log(`Componentes recibidos:`, componentes);
 
       if (!nombre) {
         return res.status(400).json({
@@ -235,7 +234,7 @@ class ProjectController {
         }
       }
       
-      console.log(`🔍 Componentes únicos:`, componentesUnicos.length, 'de', componentes.length);
+      console.log(`Componentes únicos:`, componentesUnicos.length, 'de', componentes.length);
 
       // Iniciar transacción
       await pool.query('BEGIN');
@@ -249,7 +248,7 @@ class ProjectController {
         [nombre, descripcion || '', id, userId]
       );
 
-      console.log(`✅ Proyecto actualizado: ${updatedProject[0].nombre}`);
+      console.log(`Proyecto actualizado: ${updatedProject[0].nombre}`);
 
       // 2. Eliminar todos los componentes existentes del proyecto
       await pool.query(
@@ -257,7 +256,7 @@ class ProjectController {
         [id]
       );
 
-      console.log(`🗑️ Componentes anteriores eliminados`);
+      console.log(`Componentes anteriores eliminados`);
 
       // 3. Insertar los nuevos componentes del proyecto
       for (const componente of componentesUnicos) {
@@ -297,9 +296,9 @@ class ProjectController {
             [id, tipo_componente, componente_id]
           );
           
-          console.log(`✅ Componente agregado: ${tipo_componente} (ID: ${componente_id})`);
+          console.log(`Componente agregado: ${tipo_componente} (ID: ${componente_id})`);
         } catch (error) {
-          console.error(`❌ Error con componente ${tipo_componente}-${componente_id}:`, error.message);
+          console.error(`Error con componente ${tipo_componente}-${componente_id}:`, error.message);
           throw error;
         }
       }
@@ -336,7 +335,7 @@ class ProjectController {
       const project = fullProject[0];
       project.componentes = projectComponents;
 
-      console.log(`🎉 Proyecto ${id} actualizado exitosamente con ${projectComponents.length} componentes`);
+      console.log(`Proyecto ${id} actualizado exitosamente con ${projectComponents.length} componentes`);
 
       res.json({
         success: true,
@@ -348,8 +347,8 @@ class ProjectController {
       // Rollback en caso de error
       await pool.query('ROLLBACK');
       
-      console.error('❌ Error actualizando proyecto:', error.message);
-      console.error('❌ Error stack:', error.stack);
+      console.error('Error actualizando proyecto:', error.message);
+      console.error('Error stack:', error.stack);
       
       res.status(500).json({
         success: false,
@@ -365,7 +364,7 @@ class ProjectController {
       const { id } = req.params;
       const userId = req.user.id;
       
-      console.log(`📋 Obteniendo proyecto ID: ${id} para usuario: ${userId}`);
+      console.log(`Obteniendo proyecto ID: ${id} para usuario: ${userId}`);
 
       // Obtener información del proyecto
       const { rows: projects } = await pool.query(
@@ -418,7 +417,7 @@ class ProjectController {
         data: project
       });
     } catch (error) {
-      console.error('❌ Error obteniendo proyecto:', error);
+      console.error('Error obteniendo proyecto:', error);
       res.status(500).json({
         success: false,
         error: 'Error al obtener proyecto'
@@ -426,20 +425,19 @@ class ProjectController {
     }
   }
   
-// ✅ VERSIÓN CORREGIDA CON LOGS: Eliminar proyecto
 async deleteProject(req, res) {
   try {
-    console.log('\n=== 🗑️ INICIANDO ELIMINACIÓN DE PROYECTO ===');
+    console.log('\n=== INICIANDO ELIMINACIÓN DE PROYECTO ===');
     const { id } = req.params;
     const userId = req.user.id;
     
-    console.log(`📋 Datos recibidos:`);
+    console.log(`Datos recibidos:`);
     console.log(`   Proyecto ID: ${id}`);
     console.log(`   Usuario ID: ${userId}`);
     console.log(`   Usuario email: ${req.user.email}`);
 
     if (!id || isNaN(id)) {
-      console.log('❌ Error: ID de proyecto inválido');
+      console.log('Error: ID de proyecto inválido');
       return res.status(400).json({
         success: false,
         error: 'ID de proyecto inválido'
@@ -447,7 +445,7 @@ async deleteProject(req, res) {
     }
 
     if (!userId) {
-      console.log('❌ Error: Usuario no autenticado');
+      console.log('Error: Usuario no autenticado');
       return res.status(401).json({
         success: false,
         error: 'Usuario no autenticado'
@@ -455,21 +453,21 @@ async deleteProject(req, res) {
     }
 
     // Iniciar transacción
-    console.log('🔄 Iniciando transacción...');
+    console.log('Iniciando transacción...');
     await pool.query('BEGIN');
 
     // 1. Verificar que el proyecto existe y pertenece al usuario
-    console.log(`🔍 Verificando existencia del proyecto ${id} para usuario ${userId}...`);
+    console.log(`Verificando existencia del proyecto ${id} para usuario ${userId}...`);
     const { rows: existingProject } = await pool.query(
       'SELECT id, nombre FROM proyectos WHERE id = $1 AND usuario_id = $2',
       [id, userId]
     );
 
-    console.log(`📊 Resultado verificación: ${existingProject.length} proyectos encontrados`);
+    console.log(`Resultado verificación: ${existingProject.length} proyectos encontrados`);
     
     if (existingProject.length === 0) {
       await pool.query('ROLLBACK');
-      console.log('❌ Proyecto no encontrado o no pertenece al usuario');
+      console.log('Proyecto no encontrado o no pertenece al usuario');
       return res.status(404).json({
         success: false,
         error: 'Proyecto no encontrado'
@@ -477,19 +475,19 @@ async deleteProject(req, res) {
     }
 
     const projectName = existingProject[0].nombre;
-    console.log(`✅ Proyecto encontrado: "${projectName}" (ID: ${id})`);
+    console.log(`Proyecto encontrado: "${projectName}" (ID: ${id})`);
 
     // 2. Eliminar todos los componentes del proyecto
-    console.log(`🗑️ Eliminando componentes del proyecto ${id}...`);
+    console.log(`Eliminando componentes del proyecto ${id}...`);
     const deleteComponentsResult = await pool.query(
       'DELETE FROM proyecto_componentes WHERE proyecto_id = $1 RETURNING id',
       [id]
     );
 
-    console.log(`✅ Componentes eliminados: ${deleteComponentsResult.rowCount}`);
+    console.log(`Componentes eliminados: ${deleteComponentsResult.rowCount}`);
 
     // 3. Eliminar el proyecto
-    console.log(`🗑️ Eliminando proyecto ${id}...`);
+    console.log(`Eliminando proyecto ${id}...`);
     const deleteProjectResult = await pool.query(
       'DELETE FROM proyectos WHERE id = $1 AND usuario_id = $2 RETURNING *',
       [id, userId]
@@ -497,7 +495,7 @@ async deleteProject(req, res) {
 
     if (deleteProjectResult.rowCount === 0) {
       await pool.query('ROLLBACK');
-      console.log('❌ Error: No se pudo eliminar el proyecto');
+      console.log('Error: No se pudo eliminar el proyecto');
       return res.status(500).json({
         success: false,
         error: 'Error al eliminar proyecto'
@@ -506,10 +504,10 @@ async deleteProject(req, res) {
 
     // Commit de la transacción
     await pool.query('COMMIT');
-    console.log(`✅ Transacción completada exitosamente`);
+    console.log(`Transacción completada exitosamente`);
 
-    console.log(`🎉 Proyecto "${projectName}" (ID: ${id}) eliminado completamente.`);
-    console.log(`📊 Resumen: ${deleteComponentsResult.rowCount} componentes eliminados`);
+    console.log(`Proyecto "${projectName}" (ID: ${id}) eliminado completamente.`);
+    console.log(`Resumen: ${deleteComponentsResult.rowCount} componentes eliminados`);
     console.log('=== FIN ELIMINACIÓN ===\n');
 
     res.json({
@@ -522,7 +520,7 @@ async deleteProject(req, res) {
     // Rollback en caso de error
     await pool.query('ROLLBACK');
     
-    console.error('\n💥💥💥 ERROR ELIMINANDO PROYECTO 💥💥💥');
+    console.error('\n ERROR ELIMINANDO PROYECTO ');
     console.error('Error:', error.message);
     console.error('Stack:', error.stack);
     console.error('=== FIN ERROR ===\n');
@@ -588,7 +586,7 @@ async deleteProject(req, res) {
         message: 'Componente agregado al proyecto'
       });
     } catch (error) {
-      console.error('❌ Error agregando componente:', error);
+      console.error('Error agregando componente:', error);
       res.status(500).json({
         success: false,
         error: 'Error al agregar componente'
@@ -633,7 +631,7 @@ async deleteProject(req, res) {
         message: 'Componente removido del proyecto'
       });
     } catch (error) {
-      console.error('❌ Error removiendo componente:', error);
+      console.error('Error removiendo componente:', error);
       res.status(500).json({
         success: false,
         error: 'Error al remover componente'
@@ -647,7 +645,7 @@ async deleteProject(req, res) {
       const { projectId } = req.params;
       const userId = req.user.id;
       
-      console.log(`🔍 Verificando compatibilidad para proyecto: ${projectId}`);
+      console.log(`Verificando compatibilidad para proyecto: ${projectId}`);
 
       // Obtener componentes del proyecto
       const { rows: components } = await pool.query(
@@ -711,7 +709,7 @@ async deleteProject(req, res) {
         }
       });
     } catch (error) {
-      console.error('❌ Error verificando compatibilidad:', error);
+      console.error('Error verificando compatibilidad:', error);
       res.status(500).json({
         success: false,
         error: 'Error al verificar compatibilidad'

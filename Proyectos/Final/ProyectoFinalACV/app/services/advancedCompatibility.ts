@@ -265,9 +265,6 @@ class AdvancedCompatibilityService {
     }
   }
 
-  /**
-   * Obtener resumen en español
-   */
   getSummaryInSpanish(validation: BuildValidationResult): string {
     const { compatible, summary, issues, warnings } = validation;
 

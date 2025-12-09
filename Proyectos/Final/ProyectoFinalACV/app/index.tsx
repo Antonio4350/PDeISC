@@ -255,7 +255,7 @@ export default function Index() {
                   </TouchableOpacity>
                   <View style={styles.userInfo}>
                     <Text style={styles.userWelcome}>
-                      👋 {user.nombre || user.email?.split('@')[0] || 'Usuario'}
+                      {user.nombre || user.email?.split('@')[0] || 'Usuario'}
                     </Text>
                   </View>
                 </View>
@@ -352,7 +352,7 @@ export default function Index() {
               activeOpacity={0.9}
             >
               <Text style={styles.ctaButtonText}>
-                {user ? '🚀 Continuar Construyendo' : '🎯 Empezar Ahora'}
+                {user ? 'Continuar Construyendo' : 'Empezar Ahora'}
               </Text>
             </TouchableOpacity>
           </View>

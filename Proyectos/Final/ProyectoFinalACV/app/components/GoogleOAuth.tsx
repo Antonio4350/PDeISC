@@ -44,11 +44,11 @@ export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
   );
 
   useEffect(() => {
-    console.log('🔍 Respuesta de Google:', response);
+    console.log('Respuesta de Google:', response);
     
     if (response?.type === 'success') {
       const { id_token, access_token } = response.params;
-      console.log('🔍 Tokens recibidos:', { 
+      console.log('Tokens recibidos:', { 
         has_id_token: !!id_token, 
         has_access_token: !!access_token 
       });
@@ -62,7 +62,7 @@ export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
   async function handleGoogleLogin(tokens: any) {
     try {
       setLoading(true);
-      console.log('🔍 Enviando tokens al backend...', tokens);
+      console.log('Enviando tokens al backend...', tokens);
       
       const res = await fetch(`${API_URL}/googleLogin`, {
         method: 'POST',
@@ -73,22 +73,22 @@ export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
         body: JSON.stringify(tokens),
       });
 
-      console.log('🔍 Respuesta del servidor status:', res.status);
+      console.log('Respuesta del servidor status:', res.status);
       
       const data = await res.json();
-      console.log('🔍 Respuesta del servidor:', data);
+      console.log('Respuesta del servidor:', data);
 
       if (data.success) {
-        console.log('✅ Login Google exitoso');
+        console.log('Login Google exitoso');
         
         if (onSuccess && data.user) {
           onSuccess(data);
         }
       } else {
-        console.error('❌ Error del servidor:', data.error);
+        console.error('Error del servidor:', data.error);
       }
     } catch (e) {
-      console.error('❌ Error en handleGoogleLogin:', e);
+      console.error('Error en handleGoogleLogin:', e);
     } finally {
       setLoading(false);
     }
@@ -96,10 +96,10 @@ export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
 
   const handlePress = async () => {
     try {
-      console.log('🔍 Iniciando flujo de Google OAuth...');
+      console.log('Iniciando flujo de Google OAuth...');
       await promptAsync();
     } catch (error) {
-      console.error('❌ Error iniciando OAuth:', error);
+      console.error('Error iniciando OAuth:', error);
     }
   };
 

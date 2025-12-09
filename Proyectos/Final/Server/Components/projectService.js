@@ -1,4 +1,3 @@
-// services/projectService.js - CORREGIDO
 const API_URL = "http://localhost:5000";
 
 class ProjectService {

@@ -23,7 +23,7 @@ export default function TabsLayout() {
         <Stack.Screen 
           name="Login" 
           options={{ 
-            title: '🚀 Iniciar Sesión',
+            title: 'Iniciar Sesión',
             headerBackTitle: 'Volver',
           }} 
         />

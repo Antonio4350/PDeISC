@@ -155,7 +155,7 @@ export default function Register() {
         >
           <View style={styles.header}>
             <Text style={[styles.title, dynamicStyles.title]}>
-              🚀 Crear Cuenta
+              Crear Cuenta
             </Text>
             <Text style={styles.subtitle}>
               Unite a nuestra comunidad de builders
@@ -165,7 +165,7 @@ export default function Register() {
           <View style={styles.form}>
             <View style={[styles.row, dynamicStyles.row]}>
               <View style={styles.halfInput}>
-                <Text style={styles.label}>👤 Nombre *</Text>
+                <Text style={styles.label}>Nombre *</Text>
                 <TextInput
                   style={[styles.input, dynamicStyles.input]}
                   placeholder="Tu nombre"
@@ -175,7 +175,7 @@ export default function Register() {
                 />
               </View>
               <View style={styles.halfInput}>
-                <Text style={styles.label}>👥 Apellido *</Text>
+                <Text style={styles.label}>Apellido *</Text>
                 <TextInput
                   style={[styles.input, dynamicStyles.input]}
                   placeholder="Tu apellido"
@@ -187,7 +187,7 @@ export default function Register() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>📧 Email *</Text>
+              <Text style={styles.label}>Email *</Text>
               <TextInput
                 style={[styles.input, dynamicStyles.input]}
                 placeholder="tu@email.com"
@@ -200,7 +200,7 @@ export default function Register() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>📞 Teléfono</Text>
+              <Text style={styles.label}>Teléfono</Text>
               <TextInput
                 style={[styles.input, dynamicStyles.input]}
                 placeholder="+54 11 1234-5678"
@@ -212,7 +212,7 @@ export default function Register() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>🔒 Contraseña *</Text>
+              <Text style={styles.label}>Contraseña *</Text>
               <TextInput
                 style={[styles.input, dynamicStyles.input]}
                 placeholder="Mínimo 6 caracteres"
@@ -241,7 +241,7 @@ export default function Register() {
               disabled={loading}
             >
               <Text style={styles.registerButtonText}>
-                {loading ? '🔄 Creando cuenta...' : '🎯 Crear Cuenta'}
+                {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -265,7 +265,7 @@ export default function Register() {
           </View>
 
           <View style={styles.infoBox}>
-            <Text style={styles.infoIcon}>💡</Text>
+            <Text style={styles.infoIcon}></Text>
             <Text style={styles.infoText}>
               Al crear una cuenta aceptás nuestros términos y condiciones de uso.
             </Text>

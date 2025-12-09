@@ -1,5 +1,5 @@
 import apiConfig from '../config/apiConfig';
-const API_URL = apiConfig.apiUrl; // ✓
+const API_URL = apiConfig.apiUrl;
 
 export interface User {
   id: number;

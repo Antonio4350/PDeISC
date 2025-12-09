@@ -6,7 +6,7 @@ const client = new OAuth2Client(CLIENT_ID);
 
 async function googleLogin(idToken, accessToken) {
   try {
-    console.log('🔍 GoogleAuth.js - Iniciando verificación...');
+    console.log('GoogleAuth.js - Iniciando verificación...');
     console.log('CLIENT_ID:', CLIENT_ID);
     console.log('Tiene idToken?:', !!idToken);
     console.log('Tiene accessToken?:', !!accessToken);
@@ -15,7 +15,7 @@ async function googleLogin(idToken, accessToken) {
     
     // PRIMERO: Intentar con idToken (más confiable)
     if (idToken) {
-      console.log('🔑 Usando ID Token...');
+      console.log('Usando ID Token...');
       try {
         const ticket = await client.verifyIdToken({
           idToken: idToken,
@@ -32,11 +32,11 @@ async function googleLogin(idToken, accessToken) {
         googleId = payload.sub;
         picture = payload.picture;
         
-        console.log('✅ ID Token verificado - Email:', email);
+        console.log('ID Token verificado - Email:', email);
         console.log('Payload completo:', payload);
         
       } catch (idTokenError) {
-        console.error('❌ Error con ID Token:', idTokenError.message);
+        console.error('Error con ID Token:', idTokenError.message);
         // Continuar con accessToken
       }
     }
@@ -46,7 +46,7 @@ async function googleLogin(idToken, accessToken) {
       console.log('🔑 Usando Access Token (fallback)...');
       try {
         // Hacer la request a Google API
-        console.log('🌐 Llamando a Google API...');
+        console.log('Llamando a Google API...');
         const userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
           headers: { 
             Authorization: `Bearer ${accessToken}`,
@@ -54,17 +54,17 @@ async function googleLogin(idToken, accessToken) {
           },
         });
         
-        console.log('📊 Google API Status:', userInfoRes.status);
-        console.log('📊 Google API Headers:', [...userInfoRes.headers.entries()]);
+        console.log('Google API Status:', userInfoRes.status);
+        console.log('Google API Headers:', [...userInfoRes.headers.entries()]);
         
         if (!userInfoRes.ok) {
           const errorText = await userInfoRes.text();
-          console.error('❌ Google API Error response:', errorText);
+          console.error('Google API Error response:', errorText);
           throw new Error(`Google API Error: ${userInfoRes.status} - ${errorText}`);
         }
         
         const userInfo = await userInfoRes.json();
-        console.log('✅ Google API Response:', userInfo);
+        console.log('Google API Response:', userInfo);
         
         if (!userInfo.email) {
           throw new Error('No se pudo obtener email del usuario');
@@ -75,24 +75,24 @@ async function googleLogin(idToken, accessToken) {
         googleId = userInfo.sub;
         picture = userInfo.picture;
         
-        console.log('✅ Usuario obtenido con Access Token:', email);
+        console.log('Usuario obtenido con Access Token:', email);
         
       } catch (accessTokenError) {
-        console.error('❌ Error con Access Token:', accessTokenError.message);
+        console.error('Error con Access Token:', accessTokenError.message);
         throw accessTokenError;
       }
     }
     
     // Si no tenemos email de ningún método
     if (!email) {
-      console.error('❌ No se pudo obtener email de ningún método');
+      console.error('No se pudo obtener email de ningún método');
       return { 
         success: false, 
         error: "No se pudo autenticar con Google. Intenta nuevamente." 
       };
     }
 
-    console.log(`✅ Usuario Google autenticado: ${email}, Nombre: ${name}`);
+    console.log(`Usuario Google autenticado: ${email}, Nombre: ${name}`);
 
     return { 
       success: true, 
@@ -104,7 +104,7 @@ async function googleLogin(idToken, accessToken) {
     };
     
   } catch (err) {
-    console.error('💥 Error en googleLogin:', err);
+    console.error('Error en googleLogin:', err);
     console.error('Stack:', err.stack);
     return { 
       success: false, 

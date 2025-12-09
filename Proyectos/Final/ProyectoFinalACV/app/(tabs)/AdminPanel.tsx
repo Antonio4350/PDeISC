@@ -19,22 +19,22 @@ export default function AdminPanel() {
   const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
-    console.log('🔄 AdminPanel useEffect ejecutándose');
+    console.log('AdminPanel useEffect ejecutándose');
     console.log('authLoading:', authLoading);
     console.log('authChecked:', authChecked);
     console.log('user:', user);
     
     // Esperar a que la verificación de autenticación haya terminado
     if (!authChecked) {
-      console.log('⏳ Esperando verificación de autenticación...');
+      console.log('Esperando verificación de autenticación...');
       return;
     }
 
     const verifyPermissions = () => {
-      console.log('🔍 Verificando permisos de admin...');
+      console.log('Verificando permisos de admin...');
       
       if (!user) {
-        console.log('❌ No hay usuario autenticado');
+        console.log('No hay usuario autenticado');
         toast.error('Debés iniciar sesión para acceder');
         setAccessDenied(true);
         setTimeout(() => {
@@ -47,7 +47,7 @@ export default function AdminPanel() {
       console.log('Es admin?', adminCheck);
       
       if (!adminCheck) {
-        console.log('❌ Usuario no es admin');
+        console.log('Usuario no es admin');
         toast.error('No tenés permisos de administrador');
         setAccessDenied(true);
         setTimeout(() => {
@@ -60,7 +60,7 @@ export default function AdminPanel() {
         return false;
       }
       
-      console.log('✅ Permisos de admin verificados correctamente');
+      console.log('Permisos de admin verificados correctamente');
       return true;
     };
 
@@ -73,12 +73,8 @@ export default function AdminPanel() {
 
   const loadStats = async () => {
   try {
-    console.log('📊 Cargando estadísticas...');
+    console.log('Cargando estadísticas...');
     
-    // ❌ EL PROBLEMA: componentService.getStats() usa un endpoint que no existe
-    // ✅ SOLUCIÓN: Obtener stats manualmente contando componentes
-    
-    // 1. Cargar TODOS los componentes como hace ComponentsCatalog
     const [
       processorsRes,
       mothersRes,
@@ -108,11 +104,11 @@ export default function AdminPanel() {
       gabinetes: casesRes.success && casesRes.data ? casesRes.data.length : 0
     };
 
-    console.log('✅ Estadísticas calculadas:', manualStats);
+    console.log('Estadísticas calculadas:', manualStats);
     setStats(manualStats);
     
   } catch (error) {
-    console.error('💥 Error cargando estadísticas:', error);
+    console.error('Error cargando estadísticas:', error);
     
     // Valores por defecto si falla
     const defaultStats = {

@@ -1,4 +1,3 @@
-// services/components.ts - VERSIÓN COMPLETA CORREGIDA
 import apiConfig from '../config/apiConfig';
 
 const API_URL = apiConfig.apiUrl;

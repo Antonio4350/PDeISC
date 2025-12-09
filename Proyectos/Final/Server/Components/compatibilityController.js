@@ -2,9 +2,6 @@ import compatibilityService from './compatibilityService.js';
 
 class CompatibilityController {
 
-  /**
-   * Validar compatibilidad de Socket CPU vs Motherboard
-   */
   async validateSocket(req, res) {
     try {
       const { cpuId, motherboardId } = req.body;

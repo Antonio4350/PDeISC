@@ -127,7 +127,7 @@ export default function Login() {
         >
           <View style={styles.header}>
             <Text style={[styles.title, dynamicStyles.title]}>
-              🚀 Iniciar Sesión
+              Iniciar Sesión
             </Text>
             <Text style={styles.subtitle}>
               Ingresá a tu cuenta para comenzar a construir
@@ -136,7 +136,7 @@ export default function Login() {
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>📧 Email</Text>
+              <Text style={styles.label}>Email</Text>
               <TextInput
                 style={[styles.input, dynamicStyles.input]}
                 placeholder="tu@email.com"
@@ -169,7 +169,7 @@ export default function Login() {
               disabled={loading}
             >
               <Text style={styles.loginButtonText}>
-                {loading ? '🔄 Iniciando sesión...' : '🎯 Ingresar a Mi Cuenta'}
+                {loading ? 'Iniciando sesión...' : '🎯 Ingresar a Mi Cuenta'}
               </Text>
             </TouchableOpacity>
           </View>

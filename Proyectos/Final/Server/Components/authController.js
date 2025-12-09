@@ -1,5 +1,3 @@
-// === authController.js - VERSIÓN COMPLETA Y CORREGIDA ===
-
 import userService from './userService.js';
 import { googleLogin as googleAuth } from './GoogleAuth.js';
 import jwt from 'jsonwebtoken';

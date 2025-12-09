@@ -360,7 +360,7 @@ export default function HamburgerMenu({ isVisible, onClose }: HamburgerMenuProps
             </View>
             <View style={styles.userDetails}>
               <Text style={styles.userWelcome}>
-                👋 Hola, {user.nombre || user.email.split('@')[0]}
+                Hola, {user.nombre || user.email.split('@')[0]}
               </Text>
               <Text style={styles.userEmail}>{user.email}</Text>
               <View style={styles.userBadges}>

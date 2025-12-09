@@ -1,4 +1,3 @@
-// app/(tabs)/ComponentsList.tsx - VERSIÓN COMPLETA CORREGIDA
 import React, { useState, useEffect } from 'react';
 import { 
   View, 
@@ -43,7 +42,7 @@ export default function ComponentsList() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    console.log('🔄 useEffect ejecutándose');
+    console.log('useEffect ejecutándose');
     console.log('authLoading:', authLoading);
     console.log('authChecked:', authChecked);
     console.log('user:', user);
@@ -51,15 +50,15 @@ export default function ComponentsList() {
     
     // Esperar a que la verificación de autenticación haya terminado
     if (!authChecked) {
-      console.log('⏳ Esperando verificación de autenticación...');
+      console.log('Esperando verificación de autenticación...');
       return;
     }
 
     const verifyPermissions = () => {
-      console.log('🔍 Verificando permisos...');
+      console.log('Verificando permisos...');
       
       if (!user) {
-        console.log('❌ No hay usuario autenticado');
+        console.log('No hay usuario autenticado');
         toast.error('Debés iniciar sesión para acceder');
         setAccessDenied(true);
         setTimeout(() => {
@@ -72,7 +71,7 @@ export default function ComponentsList() {
       console.log('Es admin?', adminCheck);
       
       if (!adminCheck) {
-        console.log('❌ Usuario no es admin');
+        console.log('Usuario no es admin');
         toast.error('No tenés permisos de administrador');
         setAccessDenied(true);
         setTimeout(() => {
@@ -85,7 +84,7 @@ export default function ComponentsList() {
         return false;
       }
       
-      console.log('✅ Permisos verificados correctamente');
+      console.log('Permisos verificados correctamente');
       setPermissionChecked(true);
       return true;
     };
@@ -104,11 +103,11 @@ export default function ComponentsList() {
   const loadComponents = async () => {
     try {
       setLoading(true);
-      console.log(`📥 Cargando componentes de tipo: ${componentType}`);
+      console.log(`Cargando componentes de tipo: ${componentType}`);
       
       let result: any;
       
-      // ✅ USAR LOS MÉTODOS CORRECTOS (como en PcBuilder)
+      // USAR LOS MÉTODOS CORRECTOS (como en PcBuilder)
       switch (componentType) {
         case 'procesadores':
           result = await componentService.getProcessors();
@@ -132,7 +131,7 @@ export default function ComponentsList() {
           result = await componentService.getCases();
           break;
         default:
-          console.error(`❌ Tipo no soportado: ${componentType}`);
+          console.error(`Tipo no soportado: ${componentType}`);
           toast.error('Tipo de componente no válido');
           setComponents([]);
           setFilteredComponents([]);
@@ -140,7 +139,7 @@ export default function ComponentsList() {
       }
       
       if (result.success && result.data) {
-        console.log(`✅ Encontrados ${result.data.length} componentes`);
+        console.log(`Encontrados ${result.data.length} componentes`);
         // Mapear los componentes con el tipo correcto
         const mappedComponents = result.data.map((comp: any) => ({
           ...comp,
@@ -150,13 +149,13 @@ export default function ComponentsList() {
         setComponents(mappedComponents);
         setFilteredComponents(mappedComponents);
       } else {
-        console.error('❌ Error en la respuesta:', result.error);
+        console.error('Error en la respuesta:', result.error);
         toast.error(result.error || 'Error cargando componentes');
         setComponents([]);
         setFilteredComponents([]);
       }
     } catch (error) {
-      console.error('💥 Error cargando componentes:', error);
+      console.error('Error cargando componentes:', error);
       toast.error('Error de conexión');
       setComponents([]);
       setFilteredComponents([]);
@@ -216,7 +215,7 @@ export default function ComponentsList() {
       
       let result: any;
       
-      // ✅ USAR LOS MÉTODOS REALES DEL COMPONENT SERVICE
+      // USAR LOS MÉTODOS REALES DEL COMPONENT SERVICE
       switch (componentType) {
         case 'procesadores':
           result = await componentService.deleteProcessor(componentToDelete.id);
@@ -240,19 +239,18 @@ export default function ComponentsList() {
           result = await componentService.deleteCase(componentToDelete.id);
           break;
         default:
-          toast.error(`❌ Tipo no soportado: ${componentType}`);
+          toast.error(`Tipo no soportado: ${componentType}`);
           setDeleteModalVisible(false);
           setComponentToDelete(null);
           setDeleting(false);
           return;
       }
 
-      console.log(`📋 Resultado eliminación:`, result);
+      console.log(`Resultado eliminación:`, result);
 
       if (result?.success) {
-        toast.success(`✅ ${componentToDelete.marca} ${componentToDelete.modelo} eliminado!`);
+        toast.success(`${componentToDelete.marca} ${componentToDelete.modelo} eliminado!`);
         
-        // ACTUALIZAR EL ESTADO LOCAL (eliminar el componente de la lista)
         const updatedComponents = components.filter(
           comp => comp.id !== componentToDelete.id
         );
@@ -260,11 +258,11 @@ export default function ComponentsList() {
         setFilteredComponents(updatedComponents);
         
       } else {
-        toast.error(`❌ Error: ${result?.error || 'Error al eliminar'}`);
+        toast.error(`Error: ${result?.error || 'Error al eliminar'}`);
       }
     } catch (err: any) {
-      console.error(`💥 Error eliminando:`, err);
-      toast.error(`❌ Error de conexión: ${err.message || 'Verifica el backend'}`);
+      console.error(`Error eliminando:`, err);
+      toast.error(`Error de conexión: ${err.message || 'Verifica el backend'}`);
     } finally {
       setDeleting(false);
       setDeleteModalVisible(false);

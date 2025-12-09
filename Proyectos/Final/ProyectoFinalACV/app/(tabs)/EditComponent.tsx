@@ -1,4 +1,3 @@
-// app/(tabs)/EditComponent.tsx - VERSIÓN COMPLETA
 import React, { useState, useEffect } from 'react';
 import { 
   View, 
@@ -54,8 +53,6 @@ export default function EditComponent() {
   try {
     const result = await componentService.getFormOptions();
     if (result.success) {
-      // ✅ COINCIDIR CON EL SERVICIO components.ts
-      // El servicio devuelve: { procesadores: {...}, motherboards: {...}, ... }
       const optionsForType = result.data[componentType] || {};
       
       // Convertir a formato plano
@@ -71,12 +68,12 @@ export default function EditComponent() {
       });
       
       setFormOptions(flattenedOptions);
-      console.log(`✅ Opciones para ${componentType}:`, flattenedOptions);
+      console.log(`Opciones para ${componentType}:`, flattenedOptions);
     } else {
-      console.error('❌ Error obteniendo opciones:', result.error);
+      console.error('Error obteniendo opciones:', result.error);
     }
   } catch (error) {
-    console.error('❌ Error cargando opciones:', error);
+    console.error('Error cargando opciones:', error);
   } finally {
     setOptionsLoading(false);
   }
@@ -86,13 +83,13 @@ const loadComponent = async () => {
   try {
     const id = Number(componentId);
     if (!id || id <= 0) {
-      console.error('❌ ID inválido:', componentId);
+      console.error('ID inválido:', componentId);
       toast.error('ID de componente inválido');
       router.back();
       return;
     }
 
-    console.log(`📥 Cargando componente: ${componentType} ID: ${id}`);
+    console.log(`Cargando componente: ${componentType} ID: ${id}`);
     
     // SOLUCIÓN TEMPORAL: Obtener TODOS los componentes y filtrar por ID
     let result: any;
@@ -125,14 +122,14 @@ const loadComponent = async () => {
         return;
     }
 
-    console.log(`✅ Resultado obtenido para ${componentType}:`, result);
+    console.log(`Resultado obtenido para ${componentType}:`, result);
     
     if (result.success && result.data) {
       // Buscar el componente específico por ID
       const component = result.data.find((comp: any) => comp.id === id);
       
       if (component) {
-        console.log(`✅ Componente encontrado:`, component);
+        console.log(`Componente encontrado:`, component);
         
         // Asegurar que los valores booleanos se conviertan correctamente
         const processedData = { ...component };
@@ -146,17 +143,17 @@ const loadComponent = async () => {
         
         setFormData(processedData);
       } else {
-        console.error(`❌ Componente ID ${id} no encontrado en la lista`);
+        console.error(`Componente ID ${id} no encontrado en la lista`);
         toast.error('Componente no encontrado');
         router.back();
       }
     } else {
-      console.error('❌ Error cargando componentes:', result.error);
+      console.error('Error cargando componentes:', result.error);
       toast.error(result.error || 'Error cargando componente');
       router.back();
     }
   } catch (error) {
-    console.error('💥 Error cargando componente:', error);
+    console.error('Error cargando componente:', error);
     toast.error('Error de conexión con el servidor');
     router.back();
   }
@@ -363,13 +360,13 @@ const loadComponent = async () => {
       }
 
       if (result.success) {
-        toast.success('✅ Componente actualizado exitosamente');
+        toast.success('Componente actualizado exitosamente');
         router.back();
       } else {
-        toast.error(result.error || '❌ Error al actualizar componente');
+        toast.error(result.error || 'Error al actualizar componente');
       }
     } catch (error) {
-      console.error('❌ Error actualizando componente:', error);
+      console.error('Error actualizando componente:', error);
       toast.error('Error de conexión');
     } finally {
       setLoading(false);
@@ -427,7 +424,7 @@ const loadComponent = async () => {
         toast.error(result.error || 'Error al eliminar componente');
       }
     } catch (error) {
-      console.error('❌ Error eliminando componente:', error);
+      console.error('Error eliminando componente:', error);
       toast.error('Error de conexión');
     } finally {
       setLoading(false);
@@ -571,7 +568,7 @@ const loadComponent = async () => {
             disabled={loading}
           >
             <Text style={styles.submitButtonText}>
-              {loading ? '🔄 Actualizando...' : '💾 Actualizar Componente'}
+              {loading ? 'Actualizando...' : 'Actualizar Componente'}
             </Text>
           </TouchableOpacity>
 

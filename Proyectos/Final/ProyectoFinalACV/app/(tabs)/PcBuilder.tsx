@@ -1,4 +1,3 @@
-// pcbuilder.tsx - VERSIÓN CORREGIDA CON CARGA DE PROYECTOS FUNCIONAL
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -84,28 +83,27 @@ export default function PcBuilder() {
     { type: 'case', name: 'Gabinetes', icon: '🖥️', color: '#DDA0DD', endpoint: 'gabinetes' }
   ];
 
-  // 🔄 CARGAR COMPONENTES Y PROYECTO (SI EXISTE)
   useEffect(() => {
     const init = async () => {
       try {
         setLoading(true);
         
         if (projectId) {
-          console.log(`📂 Inicializando con proyecto ID: ${projectId}`);
+          console.log(`Inicializando con proyecto ID: ${projectId}`);
           // Cargar proyecto existente Y componentes
           await Promise.all([
             loadExistingProject(parseInt(projectId)),
             loadAllComponents()
           ]);
         } else {
-          console.log('🆕 Inicializando nuevo proyecto');
+          console.log('Inicializando nuevo proyecto');
           // Solo cargar componentes para nuevo proyecto
           await loadAllComponents();
           setProjectName(`Mi Build ${new Date().toLocaleDateString()}`);
           setProjectDescription(`Build creada el ${new Date().toLocaleString()}`);
         }
       } catch (error) {
-        console.error('💥 Error en inicialización:', error);
+        console.error('Error en inicialización:', error);
         toast.error('Error al cargar');
       } finally {
         setLoading(false);
@@ -115,16 +113,15 @@ export default function PcBuilder() {
     init();
   }, [projectId]);
 
-  // 🔍 FILTRAR COMPONENTES POR COMPATIBILIDAD
   useEffect(() => {
     if (Object.keys(allComponents).length > 0) {
-      console.log('🔄 Aplicando filtros de compatibilidad');
+      console.log('Aplicando filtros de compatibilidad');
       filterComponentsByCompatibility();
     }
   }, [build, allComponents]);
 
   const filterComponentsByCompatibility = useCallback(() => {
-    console.log('🔍 Filtrando componentes por compatibilidad');
+    console.log('Filtrando componentes por compatibilidad');
     
     const cpu = build.find(item => item.type === 'cpu')?.component;
     const motherboard = build.find(item => item.type === 'motherboard')?.component;
@@ -212,7 +209,7 @@ export default function PcBuilder() {
           }
 
           if (result.success && result.data) {
-            console.log(`✅ ${category.name}: ${result.data.length} componentes recibidos`);
+            console.log(`${category.name}: ${result.data.length} componentes recibidos`);
             componentsData[category.type] = result.data.map((comp: any) => ({
               ...comp,
               id: comp.id,
@@ -226,31 +223,30 @@ export default function PcBuilder() {
               imagen_url: comp.imagen_url,
             }));
           } else {
-            console.warn(`⚠️ ${category.name}: Sin datos - ${result.error}`);
+            console.warn(`${category.name}: Sin datos - ${result.error}`);
             componentsData[category.type] = [];
           }
         } catch (error) {
-          console.error(`❌ Error cargando ${category.name}:`, error);
+          console.error(`Error cargando ${category.name}:`, error);
           componentsData[category.type] = [];
         }
       }
 
-      console.log('🎯 Todos los componentes cargados en memoria');
+      console.log('Todos los componentes cargados en memoria');
       setAllComponents(componentsData);
       setFilteredComponents(componentsData);
       return componentsData;
       
     } catch (error) {
-      console.error('💥 Error general cargando componentes:', error);
+      console.error('Error general cargando componentes:', error);
       toast.error('Error cargando componentes');
       return {};
     }
   };
 
-  // ✅ CORREGIDO: Función para cargar proyecto existente
   const loadExistingProject = async (id: number) => {
     try {
-      console.log(`📂 Cargando proyecto con ID: ${id}`);
+      console.log(`Cargando proyecto con ID: ${id}`);
       
       const result = await projectService.getProjectById(id);
       
@@ -265,26 +261,25 @@ export default function PcBuilder() {
         setProjectDescription(project.descripcion || 'Sin descripción');
         setIsEditingProject(true);
         
-        console.log(`📊 Proyecto "${project.nombre}" cargado`);
-        console.log(`📦 Componentes del proyecto:`, project.componentes);
+        console.log(`Proyecto "${project.nombre}" cargado`);
+        console.log(`Componentes del proyecto:`, project.componentes);
         
         // Retornar los datos del proyecto para procesarlos después
         return project;
       } else {
-        console.error('❌ Error en respuesta del proyecto:', result);
+        console.error('Error en respuesta del proyecto:', result);
         toast.error(result.error || 'Error cargando proyecto');
         return null;
       }
     } catch (error) {
-      console.error('💥 Error cargando proyecto:', error);
+      console.error('Error cargando proyecto:', error);
       toast.error('Error cargando proyecto');
       return null;
     }
   };
 
-  // 🔄 FUNCIÓN PARA ACTUALIZAR BUILD CON COMPONENTES DEL PROYECTO
   const updateBuildWithProjectComponents = (projectComponents: any[], allComponentsData: any) => {
-    console.log('🔄 Actualizando build con componentes del proyecto');
+    console.log('Actualizando build con componentes del proyecto');
     console.log('Componentes del proyecto:', projectComponents);
     console.log('Todos los componentes cargados:', allComponentsData);
     
@@ -307,14 +302,14 @@ export default function PcBuilder() {
           componentsByType[tipo] = [];
         }
         componentsByType[tipo].push(foundComponent);
-        console.log(`✅ Componente ${tipo} ID ${projectComp.componente_id} encontrado`);
+        console.log(`Componente ${tipo} ID ${projectComp.componente_id} encontrado`);
       } else {
-        console.warn(`⚠️ Componente ${tipo} ID ${projectComp.componente_id} no encontrado en datos cargados`);
+        console.warn(`Componente ${tipo} ID ${projectComp.componente_id} no encontrado en datos cargados`);
         console.warn('Disponibles:', componentsList.map((c: Component) => ({id: c.id, modelo: c.modelo})));
       }
     });
     
-    console.log('📊 Componentes agrupados por tipo:', Object.keys(componentsByType).map(k => `${k}: ${componentsByType[k].length}`));
+    console.log('Componentes agrupados por tipo:', Object.keys(componentsByType).map(k => `${k}: ${componentsByType[k].length}`));
     
     // Actualizar build con los componentes encontrados
     const updatedBuild = build.map(buildItem => {
@@ -342,7 +337,7 @@ export default function PcBuilder() {
       return buildItem;
     });
     
-    console.log('✅ Build actualizada:', updatedBuild.map(item => ({
+    console.log('Build actualizada:', updatedBuild.map(item => ({
       type: item.type,
       hasComponent: !!item.component,
       count: item.components.length
@@ -352,16 +347,15 @@ export default function PcBuilder() {
     checkCompatibility(updatedBuild);
   };
 
-  // 🔄 EFECTO PARA SINCRONIZAR PROYECTO CON COMPONENTES
   useEffect(() => {
     const syncProjectWithComponents = async () => {
       if (initialProjectData && Object.keys(allComponents).length > 0) {
-        console.log('🔄 Sincronizando proyecto cargado con componentes...');
+        console.log('Sincronizando proyecto cargado con componentes...');
         if (initialProjectData.componentes && initialProjectData.componentes.length > 0) {
           updateBuildWithProjectComponents(initialProjectData.componentes, allComponents);
-          toast.success(`✅ Proyecto "${initialProjectData.nombre}" cargado con componentes`);
+          toast.success(`Proyecto "${initialProjectData.nombre}" cargado con componentes`);
         } else {
-          console.warn('⚠️ Proyecto cargado pero sin componentes');
+          console.warn('Proyecto cargado pero sin componentes');
         }
       }
     };
@@ -500,7 +494,7 @@ export default function PcBuilder() {
   };
 
   const checkCompatibility = (currentBuild: BuildComponent[]) => {
-    console.log('🔍 Verificando compatibilidad...');
+    console.log('Verificando compatibilidad...');
     
     const cpu = currentBuild.find(i => i.type === 'cpu')?.component;
     const motherboard = currentBuild.find(i => i.type === 'motherboard')?.component;
@@ -553,12 +547,11 @@ export default function PcBuilder() {
     });
 
     const incompatibles = updatedBuild.filter(item => !item.compatible).length;
-    console.log(`📊 Compatibilidad: ${incompatibles} incompatibles de ${updatedBuild.length}`);
+    console.log(`Compatibilidad: ${incompatibles} incompatibles de ${updatedBuild.length}`);
     
     setBuild(updatedBuild);
   };
 
-  // ✅ FUNCIÓN PARA GUARDAR BUILD
   const handleSaveBuild = async () => {
     if (!user) {
       Alert.alert('Iniciar sesión requerido', 'Para guardar tu build necesitás iniciar sesión.', [
@@ -619,22 +612,22 @@ export default function PcBuilder() {
 
     try {
       setSaving(true);
-      console.log('📤 Guardando proyecto:', projectData);
+      console.log('Guardando proyecto:', projectData);
       
       let result;
       
       if (isEditingProject && projectId) {
-        console.log(`🔄 Actualizando proyecto ID: ${projectId}`);
+        console.log(`Actualizando proyecto ID: ${projectId}`);
         result = await projectService.updateProject(parseInt(projectId), projectData);
       } else {
-        console.log('📝 Creando nuevo proyecto');
+        console.log('Creando nuevo proyecto');
         result = await projectService.createProject(projectData);
       }
       
-      console.log('📥 Respuesta del servidor:', result);
+      console.log('Respuesta del servidor:', result);
       
       if (result.success) {
-        const successMessage = isEditingProject ? '✅ Proyecto actualizado exitosamente!' : '✅ Build guardada exitosamente!';
+        const successMessage = isEditingProject ? 'Proyecto actualizado exitosamente!' : 'Build guardada exitosamente!';
         toast.success(successMessage);
         
         setTimeout(() => {
@@ -642,7 +635,7 @@ export default function PcBuilder() {
         }, 1500);
         
       } else {
-        console.error('❌ Error en la respuesta:', result);
+        console.error('Error en la respuesta:', result);
         Alert.alert(
           'Error',
           `No se pudo ${isEditingProject ? 'actualizar' : 'guardar'} la build: ${result.error || 'Error desconocido'}`,
@@ -651,7 +644,7 @@ export default function PcBuilder() {
       }
       
     } catch (error: any) {
-      console.error('💥 Error en la solicitud:', error);
+      console.error('Error en la solicitud:', error);
       Alert.alert(
         'Error de conexión',
         'No se pudo conectar al servidor. Verificá tu conexión a internet.',
@@ -664,16 +657,15 @@ export default function PcBuilder() {
 
   const getCurrentCategoryComponents = (): Component[] => {
     const components = filteredComponents[selectedCategory] || allComponents[selectedCategory] || [];
-    console.log(`📊 Mostrando ${components.length} componentes de ${selectedCategory}`);
+    console.log(`Mostrando ${components.length} componentes de ${selectedCategory}`);
     return components;
   };
 
-  // ✅ COMPONENTE ProjectInfoSection
   const ProjectInfoSection = () => {
     return (
       <View style={styles.projectInfoSection}>
         <Text style={styles.projectInfoTitle}>
-          {isEditingProject ? '📝 Editando Proyecto' : '📝 Nueva Build'}
+          {isEditingProject ? 'Editando Proyecto' : 'Nueva Build'}
         </Text>
         
         <View style={styles.inputContainer}>
@@ -733,7 +725,7 @@ export default function PcBuilder() {
   const selectedComponentsCount = build.filter(item => item.component || item.components.length > 0).length;
   const incompatibleComponentsCount = build.filter(item => !item.compatible && (item.component || item.components.length > 0)).length;
 
-  console.log('📊 Estado actual de la build:', {
+  console.log('Estado actual de la build:', {
     totalComponentes: selectedComponentsCount,
     incompatibles: incompatibleComponentsCount,
     build: build.map(item => ({
@@ -977,7 +969,6 @@ export default function PcBuilder() {
     );
   }
 
-  // ✅ Render para Desktop
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -1125,7 +1116,6 @@ export default function PcBuilder() {
   );
 }
 
-// ✅ ESTILOS CORREGIDOS
 const styles = StyleSheet.create({
   container: {
     flex: 1,

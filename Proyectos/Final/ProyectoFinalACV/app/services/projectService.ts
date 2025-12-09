@@ -1,11 +1,11 @@
 import apiConfig from '../config/apiConfig';
-const API_URL = apiConfig.apiUrl; // ✓
+const API_URL = apiConfig.apiUrl;
 
 class ProjectService {
   
   async createProject(projectData: any): Promise<any> {
     try {
-      console.log('📤 Enviando proyecto...');
+      console.log('Enviando proyecto...');
       
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       
@@ -24,11 +24,11 @@ class ProjectService {
         body: JSON.stringify(projectData),
       });
       
-      console.log('📥 Status:', response.status);
+      console.log('Status:', response.status);
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Error:', errorText);
+        console.error('Error:', errorText);
         
         if (response.status === 401 || response.status === 403) {
           return { 
@@ -44,11 +44,11 @@ class ProjectService {
       }
       
       const result = await response.json();
-      console.log('✅ Proyecto creado:', result);
+      console.log('Proyecto creado:', result);
       return result;
       
     } catch (error: any) {
-      console.error('❌ Error:', error);
+      console.error('Error:', error);
       return { 
         success: false, 
         error: error.message || 'Error de conexión' 
@@ -76,7 +76,7 @@ class ProjectService {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Error obteniendo proyectos:', errorText);
+        console.error('Error obteniendo proyectos:', errorText);
         
         return { 
           success: false, 
@@ -91,7 +91,7 @@ class ProjectService {
     }
   }
 
-  // ✅ NUEVO MÉTODO: Obtener proyecto por ID
+  // NUEVO MÉTODO: Obtener proyecto por ID
   async getProjectById(projectId: number): Promise<any> {
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -112,7 +112,7 @@ class ProjectService {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Error obteniendo proyecto:', errorText);
+        console.error('Error obteniendo proyecto:', errorText);
         
         if (response.status === 404) {
           return { 
@@ -134,7 +134,7 @@ class ProjectService {
     }
   }
 
-  // ✅ NUEVO MÉTODO: Eliminar proyecto
+  // NUEVO MÉTODO: Eliminar proyecto
   async deleteProject(projectId: number): Promise<any> {
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -155,7 +155,7 @@ class ProjectService {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Error eliminando proyecto:', errorText);
+        console.error('Error eliminando proyecto:', errorText);
         
         return { 
           success: false, 
@@ -164,7 +164,7 @@ class ProjectService {
       }
       
       const result = await response.json();
-      console.log('✅ Proyecto eliminado:', result);
+      console.log('Proyecto eliminado:', result);
       return result;
       
     } catch (error: any) {
@@ -173,10 +173,10 @@ class ProjectService {
     }
   }
 
-  // ✅ NUEVO MÉTODO: Actualizar proyecto
+  // NUEVO MÉTODO: Actualizar proyecto
   async updateProject(projectId: number, projectData: any): Promise<any> {
     try {
-      console.log('🔄 Actualizando proyecto...');
+      console.log('Actualizando proyecto...');
       
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       
@@ -195,11 +195,11 @@ class ProjectService {
         body: JSON.stringify(projectData),
       });
       
-      console.log('📥 Status:', response.status);
+      console.log('Status:', response.status);
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Error actualizando proyecto:', errorText);
+        console.error('Error actualizando proyecto:', errorText);
         
         return { 
           success: false, 
@@ -208,11 +208,11 @@ class ProjectService {
       }
       
       const result = await response.json();
-      console.log('✅ Proyecto actualizado:', result);
+      console.log('Proyecto actualizado:', result);
       return result;
       
     } catch (error: any) {
-      console.error('❌ Error actualizando proyecto:', error);
+      console.error('Error actualizando proyecto:', error);
       return { 
         success: false, 
         error: error.message || 'Error de conexión' 

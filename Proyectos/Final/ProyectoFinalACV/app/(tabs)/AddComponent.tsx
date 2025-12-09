@@ -62,8 +62,6 @@ export default function AddComponent() {
   try {
     const result = await componentService.getFormOptions();
     if (result.success) {
-      // ✅ COINCIDIR CON EL SERVICIO components.ts
-      // El servicio devuelve: { procesadores: {...}, motherboards: {...}, ... }
       const optionsForType = result.data[componentType] || {};
       
       // Convertir a formato plano
@@ -79,12 +77,12 @@ export default function AddComponent() {
       });
       
       setFormOptions(flattenedOptions);
-      console.log(`✅ Opciones para ${componentType}:`, flattenedOptions);
+      console.log(`Opciones para ${componentType}:`, flattenedOptions);
     } else {
-      console.error('❌ Error obteniendo opciones:', result.error);
+      console.error('Error obteniendo opciones:', result.error);
     }
   } catch (error) {
-    console.error('❌ Error cargando opciones:', error);
+    console.error('Error cargando opciones:', error);
   } finally {
     setOptionsLoading(false);
   }
