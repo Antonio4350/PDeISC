@@ -162,9 +162,6 @@ export default function Login() {
               />
             </View>
 
-            <TouchableOpacity style={styles.forgotPassword}>
-              <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
-            </TouchableOpacity>
 
             <TouchableOpacity 
               style={[styles.loginButton, dynamicStyles.loginButton, loading && styles.loginButtonDisabled]} 

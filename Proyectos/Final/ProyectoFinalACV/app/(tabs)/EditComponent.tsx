@@ -387,82 +387,52 @@ const loadComponent = async () => {
     );
   };
 
- const deleteComponent = async () => {
-  setLoading(true);
-  try {
-    console.log(`🗑️ Intentando eliminar ${componentType} ID: ${componentId}`);
-    
-    // SOLUCIÓN: Primero verificamos que el componente existe
-    let allComponentsResult: any;
-    
-    switch (componentType) {
-      case 'procesadores':
-        allComponentsResult = await componentService.getProcessors();
-        break;
-      case 'motherboards':
-        allComponentsResult = await componentService.getMotherboards();
-        break;
-      case 'memorias_ram':
-        allComponentsResult = await componentService.getRAM();
-        break;
-      case 'tarjetas_graficas':
-        allComponentsResult = await componentService.getGPUs();
-        break;
-      case 'almacenamiento':
-        allComponentsResult = await componentService.getStorage();
-        break;
-      case 'fuentes_poder':
-        allComponentsResult = await componentService.getPSUs();
-        break;
-      case 'gabinetes':
-        allComponentsResult = await componentService.getCases();
-        break;
-      default:
-        toast.error('Tipo de componente no soportado');
-        setLoading(false);
-        return;
-    }
+  const deleteComponent = async () => {
+    setLoading(true);
+    try {
+      let result;
+      console.log(`🗑️ Eliminando ${componentType} ID: ${componentId}`);
+      
+      switch (componentType) {
+        case 'procesadores':
+          result = await componentService.deleteProcessor(Number(componentId));
+          break;
+        case 'motherboards':
+          result = await componentService.deleteMotherboard(Number(componentId));
+          break;
+        case 'memorias_ram':
+          result = await componentService.deleteRAM(Number(componentId));
+          break;
+        case 'tarjetas_graficas':
+          result = await componentService.deleteGPU(Number(componentId));
+          break;
+        case 'almacenamiento':
+          result = await componentService.deleteStorage(Number(componentId));
+          break;
+        case 'fuentes_poder':
+          result = await componentService.deletePSU(Number(componentId));
+          break;
+        case 'gabinetes':
+          result = await componentService.deleteCase(Number(componentId));
+          break;
+        default:
+          toast.error('Tipo de componente no soportado');
+          return;
+      }
 
-    if (!allComponentsResult.success) {
-      toast.error(`❌ Error: ${allComponentsResult.error || 'Error al verificar componente'}`);
+      if (result.success) {
+        toast.success('🗑️ Componente eliminado exitosamente');
+        router.back();
+      } else {
+        toast.error(result.error || 'Error al eliminar componente');
+      }
+    } catch (error) {
+      console.error('❌ Error eliminando componente:', error);
+      toast.error('Error de conexión');
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // Verificar que el componente existe
-    const componentExists = allComponentsResult.data.some(
-      (comp: any) => comp.id === Number(componentId)
-    );
-    
-    if (!componentExists) {
-      toast.error(`❌ El componente ya no existe`);
-      router.back();
-      return;
-    }
-
-    // ADVERTENCIA: El endpoint de eliminación no existe
-    console.warn(`⚠️ DELETE endpoint para ${componentType}/${componentId} no implementado`);
-    
-    // Mostrar mensaje informativo
-    toast.warning(`La funcionalidad de eliminación requiere endpoints en el backend`, {
-      duration: 3000,
-    });
-    
-    // Simular éxito (en producción necesitas el endpoint real)
-    toast.success(`✅ ${formData.marca} ${formData.modelo} marcado para eliminación`);
-    
-    // Redirigir después de un breve delay
-    setTimeout(() => {
-      router.back();
-    }, 1500);
-    
-  } catch (error) {
-    console.error('❌ Error eliminando componente:', error);
-    toast.error('Error de conexión con el backend');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const renderSelectButton = (field: any) => {
     const value = formData[field.name];
