@@ -1,5 +1,5 @@
-// services/projectService.ts - VERSIÓN COMPLETA
-const API_URL = "https://proyectofinalacv-backend.vercel.app";
+import apiConfig from '../config/apiConfig';
+const API_URL = apiConfig.apiUrl; // ✓
 
 class ProjectService {
   

@@ -1,76 +1,60 @@
-// app/config/apiConfig.ts - VERSIÓN SIMPLIFICADA
+// app/config/apiConfig.ts - VERSIÓN OPTIMIZADA PARA TUS .env
 import Constants from 'expo-constants';
 
 interface ApiConfig {
   apiUrl: string;
   isDevelopment: boolean;
-  environment: 'local' | 'lan' | 'production';
+  environment: 'local' | 'production';
 }
 
 function getApiConfig(): ApiConfig {
-  // URL DE PRODUCCIÓN - REEMPLAZA ESTO CON TU URL REAL DE VERCEL
-  const PRODUCTION_URL = 'https://proyectofinalacv-backend.vercel.app';
-  
-  // 1. Si hay variable de entorno, usarla (configurada en Vercel)
+  // 1. PRIMERO: Usar la variable de entorno (Expo la carga automáticamente)
+  // Expo automáticamente carga .env.local en desarrollo y .env.production en producción
   const publicApiUrl = process.env.EXPO_PUBLIC_API_URL;
   
-  if (publicApiUrl && publicApiUrl.trim() && publicApiUrl !== 'undefined') {
+  console.log('🔍 EXPO_PUBLIC_API_URL desde .env:', publicApiUrl);
+  
+  // Verificar que la URL sea válida
+  if (!publicApiUrl || publicApiUrl === 'undefined' || publicApiUrl.trim() === '') {
+    console.warn('⚠️ EXPO_PUBLIC_API_URL no está definida, usando fallback');
+    
+    // Fallback para desarrollo
+    if (__DEV__) {
+      return {
+        apiUrl: 'http://localhost:5000',
+        isDevelopment: true,
+        environment: 'local'
+      };
+    }
+    
+    // Fallback para producción
     return {
-      apiUrl: publicApiUrl,
-      isDevelopment: publicApiUrl.includes('localhost') || publicApiUrl.includes('192.168'),
-      environment: publicApiUrl.includes('localhost') ? 'local' : 
-                   publicApiUrl.includes('192.168') ? 'lan' : 'production'
+      apiUrl: 'https://proyectofinalacv-backend.vercel.app',
+      isDevelopment: false,
+      environment: 'production'
     };
   }
   
-  // 2. Si estamos en desarrollo web local (localhost:8081, etc)
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    if (hostname === 'localhost' || hostname.includes('192.168')) {
-      return {
-        apiUrl: 'https://proyectofinalacv-backend.vercel.app',
-        isDevelopment: true,
-        environment: 'local'
-      };
-    }
-  }
+  // Determinar si es desarrollo o producción basado en la URL
+  const isDev = publicApiUrl.includes('localhost') || publicApiUrl.includes('192.168');
   
-  // 3. Si estamos en desarrollo con Expo Go
-  const debuggerHost = Constants.expoConfig?.hostUri || '';
-  
-  if (__DEV__ && debuggerHost && debuggerHost.includes(':')) {
-    const ipFromDebugger = debuggerHost.split(':')[0];
-    
-    if (ipFromDebugger === '127.0.0.1' || ipFromDebugger === 'localhost') {
-      return {
-        apiUrl: 'https://proyectofinalacv-backend.vercel.app',
-        isDevelopment: true,
-        environment: 'local'
-      };
-    }
-
-    if (ipFromDebugger && ipFromDebugger !== 'localhost') {
-      return {
-        apiUrl: `http://${ipFromDebugger}:5000`,
-        isDevelopment: true,
-        environment: 'lan'
-      };
-    }
-  }
-  
-  // 4. DEFAULT: PRODUCCIÓN
   return {
-    apiUrl: PRODUCTION_URL,
-    isDevelopment: false,
-    environment: 'production'
+    apiUrl: publicApiUrl,
+    isDevelopment: isDev,
+    environment: isDev ? 'local' : 'production'
   };
 }
 
 export const apiConfig = getApiConfig();
 
-// Log solo en desarrollo
+// Log para debugging (solo en desarrollo)
 if (__DEV__) {
-  console.log('📡 API Config:', apiConfig);
+  console.log('📡 API Config cargada:', {
+    url: apiConfig.apiUrl,
+    source: 'process.env.EXPO_PUBLIC_API_URL',
+    isDevelopment: apiConfig.isDevelopment,
+    environment: apiConfig.environment
+  });
 }
 
 export default apiConfig;

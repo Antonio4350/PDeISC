@@ -1,5 +1,5 @@
-// app/services/api.ts - VERSIÓN SUPER SIMPLE
-const API_URL = "https://proyecto-final-back-zeta.vercel.app";
+import apiConfig from '../config/apiConfig';
+const API_URL = apiConfig.apiUrl; // ✓
 
 export interface User {
   id: number;

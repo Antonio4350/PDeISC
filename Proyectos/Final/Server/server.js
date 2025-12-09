@@ -4,9 +4,36 @@ import 'dotenv/config';
 
 const app = express();
 
-// ========== MIDDLEWARE ==========
-// Configuración de CORS SIMPLIFICADA
-app.use(cors());
+// ========== CONFIGURACIÓN CORS CORREGIDA ==========
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Permitir todos los orígenes en desarrollo
+    if (process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } 
+    // En producción, permitir solo ciertos orígenes
+    else {
+      const allowedOrigins = [
+        'https://proyecto-final-front-xi.vercel.app',
+        'https://proyectofinalacv-backend.vercel.app'
+      ];
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range']
+};
+
+app.use(cors(corsOptions));
+
+// MANEJAR EXPLÍCITAMENTE OPTIONS PARA TODAS LAS RUTAS
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 
@@ -15,6 +42,13 @@ app.use((req, res, next) => {
   console.log(`\n=== 🌐 REQUEST ${req.method} ${req.url} ===`);
   console.log('📋 Origin:', req.headers.origin);
   console.log('📦 Body:', req.body);
+  
+  // Headers para debugging CORS
+  console.log('🔍 Headers:', {
+    'access-control-request-method': req.headers['access-control-request-method'],
+    'access-control-request-headers': req.headers['access-control-request-headers']
+  });
+  
   next();
 });
 
