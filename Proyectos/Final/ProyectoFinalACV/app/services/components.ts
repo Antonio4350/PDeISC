@@ -1,6 +1,24 @@
 import apiConfig from '../config/apiConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 const API_URL = apiConfig.apiUrl;
+
+// ✅ Función auxiliar para obtener token (compatible web y mobile)
+const getToken = async (): Promise<string | null> => {
+  try {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      // Web: usar localStorage
+      return localStorage.getItem('token');
+    } else {
+      // Mobile: usar AsyncStorage
+      return await AsyncStorage.getItem('token');
+    }
+  } catch (error) {
+    console.error('❌ Error obteniendo token:', error);
+    return null;
+  }
+};
 
 export interface Componente {
   id?: number;
@@ -132,12 +150,20 @@ class ComponentService {
   async getComponents(type: string): Promise<ApiResponse<any[]>> {
     try {
       console.log(`[GET] Obteniendo componentes tipo: ${type}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/${type}`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -157,12 +183,20 @@ class ComponentService {
   async getFormOptions(): Promise<ApiResponse<any>> {
     try {
       console.log('[GET] Obteniendo opciones de formulario...');
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/form-options`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -179,12 +213,20 @@ class ComponentService {
   async getStats(): Promise<ApiResponse<any>> {
     try {
       console.log('[GET] Obteniendo estadísticas...');
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/stats`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -203,12 +245,20 @@ class ComponentService {
   async getProcessors(): Promise<ApiResponse<Procesador[]>> {
     try {
       console.log('[GET] Obteniendo procesadores...');
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/processors`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -225,12 +275,20 @@ class ComponentService {
   async getProcessorById(id: number): Promise<ApiResponse<Procesador>> {
     try {
       console.log(`[GET] Obteniendo procesador ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/processors/${id}`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -247,12 +305,20 @@ class ComponentService {
   async createProcessor(processorData: Procesador): Promise<ApiResponse<Procesador>> {
     try {
       console.log('[POST] Creando procesador:', processorData.marca, processorData.modelo);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/processors`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(processorData),
       });
       
@@ -270,12 +336,20 @@ class ComponentService {
   async updateProcessor(id: number, processorData: Procesador): Promise<ApiResponse<Procesador>> {
     try {
       console.log(`[PUT] Actualizando procesador ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/processors/${id}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(processorData),
       });
       
@@ -293,12 +367,20 @@ class ComponentService {
   async deleteProcessor(id: number): Promise<ApiResponse<void>> {
     try {
       console.log(`[DELETE] Eliminando procesador ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/processors/${id}`, {
         method: 'DELETE',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -317,12 +399,20 @@ class ComponentService {
   async getMotherboards(): Promise<ApiResponse<Motherboard[]>> {
     try {
       console.log('[GET] Obteniendo motherboards...');
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/motherboards`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -339,12 +429,20 @@ class ComponentService {
   async getMotherboardById(id: number): Promise<ApiResponse<Motherboard>> {
     try {
       console.log(`[GET] Obteniendo motherboard ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/motherboards/${id}`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -361,12 +459,20 @@ class ComponentService {
   async createMotherboard(motherboardData: Motherboard): Promise<ApiResponse<Motherboard>> {
     try {
       console.log('[POST] Creando motherboard:', motherboardData.marca, motherboardData.modelo);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/motherboards`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(motherboardData),
       });
       
@@ -384,12 +490,20 @@ class ComponentService {
   async updateMotherboard(id: number, motherboardData: Motherboard): Promise<ApiResponse<Motherboard>> {
     try {
       console.log(`[PUT] Actualizando motherboard ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/motherboards/${id}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(motherboardData),
       });
       
@@ -407,12 +521,20 @@ class ComponentService {
   async deleteMotherboard(id: number): Promise<ApiResponse<void>> {
     try {
       console.log(`[DELETE] Eliminando motherboard ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/motherboards/${id}`, {
         method: 'DELETE',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -431,12 +553,20 @@ class ComponentService {
   async getRAM(): Promise<ApiResponse<RAM[]>> {
     try {
       console.log('[GET] Obteniendo RAM...');
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/ram`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -453,12 +583,20 @@ class ComponentService {
   async getRAMById(id: number): Promise<ApiResponse<RAM>> {
     try {
       console.log(`[GET] Obteniendo RAM ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/ram/${id}`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -475,12 +613,20 @@ class ComponentService {
   async createRAM(ramData: RAM): Promise<ApiResponse<RAM>> {
     try {
       console.log('[POST] Creando RAM:', ramData.marca, ramData.modelo);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/ram`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(ramData),
       });
       
@@ -498,12 +644,20 @@ class ComponentService {
   async updateRAM(id: number, ramData: RAM): Promise<ApiResponse<RAM>> {
     try {
       console.log(`[PUT] Actualizando RAM ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/ram/${id}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(ramData),
       });
       
@@ -521,12 +675,20 @@ class ComponentService {
   async deleteRAM(id: number): Promise<ApiResponse<void>> {
     try {
       console.log(`[DELETE] Eliminando RAM ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/ram/${id}`, {
         method: 'DELETE',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -545,12 +707,20 @@ class ComponentService {
   async getGPUs(): Promise<ApiResponse<GPU[]>> {
     try {
       console.log('[GET] Obteniendo tarjetas gráficas...');
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/tarjetas_graficas`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -570,12 +740,20 @@ class ComponentService {
   async getGPUById(id: number): Promise<ApiResponse<GPU>> {
     try {
       console.log(`[GET] Obteniendo GPU ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/tarjetas_graficas/${id}`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -599,12 +777,20 @@ class ComponentService {
   async createGPU(gpuData: GPU): Promise<ApiResponse<GPU>> {
     try {
       console.log('[POST] Creando GPU:', gpuData.marca, gpuData.modelo);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/tarjetas_graficas`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(gpuData),
       });
       
@@ -622,12 +808,20 @@ class ComponentService {
   async updateGPU(id: number, gpuData: GPU): Promise<ApiResponse<GPU>> {
     try {
       console.log(`[PUT] Actualizando GPU ID: ${id}`, gpuData);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/tarjetas_graficas/${id}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(gpuData),
       });
       
@@ -652,12 +846,20 @@ class ComponentService {
   async deleteGPU(id: number): Promise<ApiResponse<void>> {
     try {
       console.log(`[DELETE] Eliminando GPU ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/tarjetas_graficas/${id}`, {
         method: 'DELETE',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -676,12 +878,20 @@ class ComponentService {
   async getStorage(): Promise<ApiResponse<Almacenamiento[]>> {
     try {
       console.log('[GET] Obteniendo almacenamiento...');
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/almacenamiento`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -701,12 +911,20 @@ class ComponentService {
   async getStorageById(id: number): Promise<ApiResponse<Almacenamiento>> {
     try {
       console.log(`[GET] Obteniendo almacenamiento ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/almacenamiento/${id}`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -730,12 +948,20 @@ class ComponentService {
   async createStorage(storageData: Almacenamiento): Promise<ApiResponse<Almacenamiento>> {
     try {
       console.log('[POST] Creando almacenamiento:', storageData.marca, storageData.modelo);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/almacenamiento`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(storageData),
       });
       
@@ -753,12 +979,20 @@ class ComponentService {
   async updateStorage(id: number, storageData: Almacenamiento): Promise<ApiResponse<Almacenamiento>> {
     try {
       console.log(`[PUT] Actualizando almacenamiento ID: ${id}`, storageData);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/almacenamiento/${id}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(storageData),
       });
       
@@ -783,12 +1017,20 @@ class ComponentService {
   async deleteStorage(id: number): Promise<ApiResponse<void>> {
     try {
       console.log(`[DELETE] Eliminando almacenamiento ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/almacenamiento/${id}`, {
         method: 'DELETE',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -807,12 +1049,20 @@ class ComponentService {
   async getPSUs(): Promise<ApiResponse<FuentePoder[]>> {
     try {
       console.log('[GET] Obteniendo fuentes de poder...');
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/fuentes_poder`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -832,12 +1082,20 @@ class ComponentService {
   async getPSUById(id: number): Promise<ApiResponse<FuentePoder>> {
     try {
       console.log(`[GET] Obteniendo PSU ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/fuentes_poder/${id}`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -861,12 +1119,20 @@ class ComponentService {
   async createPSU(psuData: FuentePoder): Promise<ApiResponse<FuentePoder>> {
     try {
       console.log('[POST] Creando PSU:', psuData.marca, psuData.modelo);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/fuentes_poder`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(psuData),
       });
       
@@ -884,12 +1150,20 @@ class ComponentService {
   async updatePSU(id: number, psuData: FuentePoder): Promise<ApiResponse<FuentePoder>> {
     try {
       console.log(`[PUT] Actualizando PSU ID: ${id}`, psuData);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/fuentes_poder/${id}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(psuData),
       });
       
@@ -914,12 +1188,20 @@ class ComponentService {
   async deletePSU(id: number): Promise<ApiResponse<void>> {
     try {
       console.log(`[DELETE] Eliminando PSU ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/fuentes_poder/${id}`, {
         method: 'DELETE',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -938,12 +1220,20 @@ class ComponentService {
   async getCases(): Promise<ApiResponse<Gabinete[]>> {
     try {
       console.log('[GET] Obteniendo gabinetes...');
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/gabinetes`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -963,12 +1253,20 @@ class ComponentService {
   async getCaseById(id: number): Promise<ApiResponse<Gabinete>> {
     try {
       console.log(`[GET] Obteniendo gabinete ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/gabinetes/${id}`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -992,12 +1290,20 @@ class ComponentService {
   async createCase(caseData: Gabinete): Promise<ApiResponse<Gabinete>> {
     try {
       console.log('[POST] Creando gabinete:', caseData.marca, caseData.modelo);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/gabinetes`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(caseData),
       });
       
@@ -1015,12 +1321,20 @@ class ComponentService {
   async updateCase(id: number, caseData: Gabinete): Promise<ApiResponse<Gabinete>> {
     try {
       console.log(`[PUT] Actualizando gabinete ID: ${id}`, caseData);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/gabinetes/${id}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(caseData),
       });
       
@@ -1045,12 +1359,20 @@ class ComponentService {
   async deleteCase(id: number): Promise<ApiResponse<void>> {
     try {
       console.log(`[DELETE] Eliminando gabinete ID: ${id}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/gabinetes/${id}`, {
         method: 'DELETE',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -1069,12 +1391,20 @@ class ComponentService {
   async getPropertiesByType(type: string): Promise<ApiResponse<any>> {
     try {
       console.log(`[GET] Obteniendo propiedades tipo: ${type}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/properties/${type}`, {
         method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
       });
       
       if (!response.ok) {
@@ -1093,12 +1423,20 @@ class ComponentService {
   async checkCompatibility(cpuId: number, motherboardId: number): Promise<ApiResponse<any>> {
     try {
       console.log(`[POST] Verificando compatibilidad CPU:${cpuId}, Mobo:${motherboardId}`);
+      const token = await getToken();
+      
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/components/compatibility`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify({ cpuId, motherboardId }),
       });
       

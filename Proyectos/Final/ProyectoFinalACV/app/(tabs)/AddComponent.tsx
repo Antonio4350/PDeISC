@@ -1,4 +1,4 @@
-// app/(tabs)/AddComponent.tsx - COMPLETAMENTE ACTUALIZADO CON TODOS LOS COMPONENTES
+// app/(tabs)/AddComponent.tsx - CORREGIDO EL ERROR DE undefined
 import React, { useState, useEffect } from 'react';
 import { 
   View, 
@@ -10,7 +10,8 @@ import {
   ActivityIndicator,
   Modal,
   FlatList,
-  useWindowDimensions
+  useWindowDimensions,
+  Alert
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../AuthContext';
@@ -29,8 +30,10 @@ export default function AddComponent() {
   const [formOptions, setFormOptions] = useState<any>({});
   const [optionsLoading, setOptionsLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
+  const [manualInputModal, setManualInputModal] = useState(false);
   const [currentField, setCurrentField] = useState<any>(null);
   const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
+  const [manualInputValue, setManualInputValue] = useState('');
 
   // Verificar permisos de admin
   React.useEffect(() => {
@@ -59,34 +62,34 @@ export default function AddComponent() {
   }, []);
 
   const loadFormOptions = async () => {
-  try {
-    const result = await componentService.getFormOptions();
-    if (result.success) {
-      const optionsForType = result.data[componentType] || {};
-      
-      // Convertir a formato plano
-      const flattenedOptions: any = {};
-      Object.keys(optionsForType).forEach(key => {
-        // Los valores vienen como objetos {id, valor} o como strings
-        const items = optionsForType[key];
-        if (Array.isArray(items) && items.length > 0 && typeof items[0] === 'object') {
-          flattenedOptions[key] = items.map((item: any) => item.valor || item.nombre || String(item));
-        } else {
-          flattenedOptions[key] = items || [];
-        }
-      });
-      
-      setFormOptions(flattenedOptions);
-      console.log(`Opciones para ${componentType}:`, flattenedOptions);
-    } else {
-      console.error('Error obteniendo opciones:', result.error);
+    try {
+      const result = await componentService.getFormOptions();
+      if (result.success) {
+        const optionsForType = result.data[componentType] || {};
+        
+        // Convertir a formato plano
+        const flattenedOptions: any = {};
+        Object.keys(optionsForType).forEach(key => {
+          // Los valores vienen como objetos {id, valor} o como strings
+          const items = optionsForType[key];
+          if (Array.isArray(items) && items.length > 0 && typeof items[0] === 'object') {
+            flattenedOptions[key] = items.map((item: any) => item.valor || item.nombre || String(item));
+          } else {
+            flattenedOptions[key] = items || [];
+          }
+        });
+        
+        setFormOptions(flattenedOptions);
+        console.log(`Opciones para ${componentType}:`, flattenedOptions);
+      } else {
+        console.error('Error obteniendo opciones:', result.error);
+      }
+    } catch (error) {
+      console.error('Error cargando opciones:', error);
+    } finally {
+      setOptionsLoading(false);
     }
-  } catch (error) {
-    console.error('Error cargando opciones:', error);
-  } finally {
-    setOptionsLoading(false);
-  }
-};
+  };
 
   // Función para mapear y convertir datos
   const mapFormDataToAPI = (formData: any, componentType: string) => {
@@ -101,20 +104,55 @@ export default function AddComponent() {
       'memoria', 'bus_memoria', 'velocidad_memoria', 'nucleos_cuda',
       'frecuencia_base', 'frecuencia_boost', 'longitud_mm', 'altura_mm',
       'slots_ocupados', 'peso_kg', 'potencia', 'conectores_sata', 'conectores_molex',
-      'longitud_max_gpu', 'altura_max_cooler', 'bahias_35', 'bahias_25', 'slots_expansion'
+      'longitud_max_gpu', 'altura_max_cooler', 'bahias_35', 'bahias_25', 'slots_expansion',
+      'rpm', 'velocidad_lectura', 'velocidad_escritura'
     ];
 
     numericFields.forEach(field => {
-      if (mappedData[field] && typeof mappedData[field] === 'string') {
+      if (mappedData[field] !== undefined && mappedData[field] !== null && mappedData[field] !== '') {
         if (field.includes('frecuencia') || field === 'voltaje') {
           mappedData[field] = parseFloat(mappedData[field]);
         } else {
           mappedData[field] = parseInt(mappedData[field]);
         }
+      } else {
+        // Si el campo no está definido, lo eliminamos para que no vaya null
+        delete mappedData[field];
+      }
+    });
+
+    // Limpiar campos vacíos
+    Object.keys(mappedData).forEach(key => {
+      if (mappedData[key] === '' || mappedData[key] === null || mappedData[key] === undefined) {
+        delete mappedData[key];
       }
     });
 
     return mappedData;
+  };
+
+  // Campos realmente obligatorios para cada tipo
+  const getRequiredFields = (type: string) => {
+    const baseRequired = ['marca', 'modelo'];
+    
+    switch (type) {
+      case 'procesadores':
+        return [...baseRequired, 'socket', 'tecnologia'];
+      case 'motherboards':
+        return [...baseRequired, 'socket'];
+      case 'memorias_ram':
+        return [...baseRequired, 'tipo', 'capacidad'];
+      case 'tarjetas_graficas':
+        return baseRequired;
+      case 'almacenamiento':
+        return [...baseRequired, 'tipo', 'capacidad'];
+      case 'fuentes_poder':
+        return [...baseRequired, 'potencia'];
+      case 'gabinetes':
+        return baseRequired;
+      default:
+        return baseRequired;
+    }
   };
 
   const componentForms: { [key: string]: any } = {
@@ -161,41 +199,41 @@ export default function AddComponent() {
           name: 'nucleos', 
           label: 'Núcleos', 
           type: 'number', 
-          placeholder: 'Ej: 24'
+          placeholder: 'Ej: 24 (opcional)'
         },
         { 
           name: 'hilos', 
           label: 'Hilos', 
           type: 'number', 
-          placeholder: 'Ej: 32'
+          placeholder: 'Ej: 32 (opcional)'
         },
         { 
           name: 'frecuencia_base', 
           label: 'Frecuencia Base (GHz)', 
           type: 'number', 
-          placeholder: 'Ej: 3.5'
+          placeholder: 'Ej: 3.5 (opcional)'
         },
         { 
           name: 'frecuencia_turbo', 
           label: 'Frecuencia Turbo (GHz)', 
           type: 'number', 
-          placeholder: 'Ej: 5.8'
+          placeholder: 'Ej: 5.8 (opcional)'
         },
         { 
           name: 'cache', 
           label: 'Cache', 
-          placeholder: 'Ej: 36MB'
+          placeholder: 'Ej: 36MB (opcional)'
         },
         { 
           name: 'tdp', 
           label: 'TDP (W)', 
           type: 'number', 
-          placeholder: 'Ej: 125'
+          placeholder: 'Ej: 125 (opcional)'
         },
         { 
           name: 'tipo_memoria', 
           label: 'Tipo Memoria', 
-          placeholder: 'Ej: DDR5, DDR4',
+          placeholder: 'Ej: DDR5, DDR4 (opcional)',
           type: 'select',
           optionsKey: 'memoryTypes'
         },
@@ -203,7 +241,7 @@ export default function AddComponent() {
           name: 'velocidad_memoria_max', 
           label: 'Velocidad Memoria Max (MHz)', 
           type: 'number', 
-          placeholder: 'Ej: 5600'
+          placeholder: 'Ej: 5600 (opcional)'
         },
         { 
           name: 'graficos_integrados', 
@@ -213,7 +251,7 @@ export default function AddComponent() {
         { 
           name: 'modelo_graficos', 
           label: 'Modelo Gráficos', 
-          placeholder: 'Ej: UHD Graphics, Radeon'
+          placeholder: 'Ej: UHD Graphics, Radeon (opcional)'
         },
         { 
           name: 'tecnologia', 
@@ -253,21 +291,21 @@ export default function AddComponent() {
         { 
           name: 'chipset', 
           label: 'Chipset', 
-          placeholder: 'Ej: Z790, X870',
+          placeholder: 'Ej: Z790, X870 (opcional)',
           type: 'select',
           optionsKey: 'chipsets'
         },
         { 
           name: 'formato', 
           label: 'Formato', 
-          placeholder: 'Ej: ATX, Micro-ATX',
+          placeholder: 'Ej: ATX, Micro-ATX (opcional)',
           type: 'select',
           optionsKey: 'formats'
         },
         { 
           name: 'tipo_memoria', 
           label: 'Tipo Memoria', 
-          placeholder: 'Ej: DDR5, DDR4',
+          placeholder: 'Ej: DDR5, DDR4 (opcional)',
           type: 'select',
           optionsKey: 'memoryTypes'
         },
@@ -275,30 +313,30 @@ export default function AddComponent() {
           name: 'slots_memoria', 
           label: 'Slots Memoria', 
           type: 'number', 
-          placeholder: 'Ej: 4'
+          placeholder: 'Ej: 4 (opcional)'
         },
         { 
           name: 'memoria_maxima', 
           label: 'Memoria Máxima (GB)', 
           type: 'number', 
-          placeholder: 'Ej: 128'
+          placeholder: 'Ej: 128 (opcional)'
         },
         { 
           name: 'velocidad_memoria_soportada', 
           label: 'Velocidad Memoria (MHz)', 
           type: 'number', 
-          placeholder: 'Ej: 6000'
+          placeholder: 'Ej: 6000 (opcional)'
         },
         { 
           name: 'slots_pcie', 
           label: 'Slots PCIe', 
           type: 'number', 
-          placeholder: 'Ej: 3'
+          placeholder: 'Ej: 3 (opcional)'
         },
         { 
           name: 'version_pcie', 
           label: 'Versión PCIe', 
-          placeholder: 'Ej: 5.0, 4.0',
+          placeholder: 'Ej: 5.0, 4.0 (opcional)',
           type: 'select',
           optionsKey: 'versionesPCIe'
         },
@@ -306,29 +344,28 @@ export default function AddComponent() {
           name: 'puertos_sata', 
           label: 'Puertos SATA', 
           type: 'number', 
-          placeholder: 'Ej: 6'
+          placeholder: 'Ej: 6 (opcional)'
         },
         { 
           name: 'puertos_m2', 
           label: 'Puertos M.2', 
           type: 'number', 
-          placeholder: 'Ej: 4'
+          placeholder: 'Ej: 4 (opcional)'
         },
         { 
           name: 'conectividad_red', 
           label: 'Conectividad Red', 
-          placeholder: 'Ej: 2.5G LAN, WiFi 6E'
+          placeholder: 'Ej: 2.5G LAN, WiFi 6E (opcional)'
         },
         { 
           name: 'audio', 
           label: 'Audio', 
-          placeholder: 'Ej: Realtek ALC4080'
+          placeholder: 'Ej: Realtek ALC4080 (opcional)'
         },
         { 
           name: 'usb_puertos', 
           label: 'USB Puertos', 
-          placeholder: 'Ej: USB 3.2, USB-C',
-          required: true
+          placeholder: 'Ej: USB 3.2, USB-C (opcional)'
         }
       ]
     },
@@ -368,29 +405,29 @@ export default function AddComponent() {
           name: 'velocidad_mhz', 
           label: 'Velocidad (MHz)', 
           type: 'number', 
-          placeholder: 'Ej: 6000'
+          placeholder: 'Ej: 6000 (opcional)'
         },
         { 
           name: 'velocidad_mt', 
           label: 'Velocidad (MT/s)', 
           type: 'number', 
-          placeholder: 'Ej: 12000'
+          placeholder: 'Ej: 12000 (opcional)'
         },
         { 
           name: 'latencia', 
           label: 'Latencia', 
-          placeholder: 'Ej: CL30, CL16-18-18-38'
+          placeholder: 'Ej: CL30, CL16-18-18-38 (opcional)'
         },
         { 
           name: 'voltaje', 
           label: 'Voltaje (V)', 
           type: 'number', 
-          placeholder: 'Ej: 1.35'
+          placeholder: 'Ej: 1.35 (opcional)'
         },
         { 
           name: 'formato', 
           label: 'Formato', 
-          placeholder: 'Ej: DIMM, SODIMM'
+          placeholder: 'Ej: DIMM, SODIMM (opcional)'
         },
         { 
           name: 'rgb', 
@@ -419,18 +456,18 @@ export default function AddComponent() {
         { 
           name: 'fabricante', 
           label: 'Fabricante', 
-          placeholder: 'Ej: ASUS, Gigabyte, MSI'
+          placeholder: 'Ej: ASUS, Gigabyte, MSI (opcional)'
         },
         { 
           name: 'memoria', 
           label: 'Memoria (GB)', 
           type: 'number', 
-          placeholder: 'Ej: 24'
+          placeholder: 'Ej: 24 (opcional)'
         },
         { 
           name: 'tipo_memoria', 
           label: 'Tipo Memoria', 
-          placeholder: 'Ej: GDDR6X, GDDR6',
+          placeholder: 'Ej: GDDR6X, GDDR6 (opcional)',
           type: 'select',
           optionsKey: 'tiposMemoriaGPU'
         },
@@ -438,72 +475,71 @@ export default function AddComponent() {
           name: 'bus_memoria', 
           label: 'Bus Memoria (bit)', 
           type: 'number', 
-          placeholder: 'Ej: 384'
+          placeholder: 'Ej: 384 (opcional)'
         },
         { 
           name: 'velocidad_memoria', 
           label: 'Velocidad Memoria (MHz)', 
           type: 'number', 
-          placeholder: 'Ej: 21000'
+          placeholder: 'Ej: 21000 (opcional)'
         },
         { 
           name: 'nucleos_cuda', 
           label: 'Núcleos CUDA', 
           type: 'number', 
-          placeholder: 'Ej: 16384'
+          placeholder: 'Ej: 16384 (opcional)'
         },
         { 
           name: 'frecuencia_base', 
           label: 'Frecuencia Base (MHz)', 
           type: 'number', 
-          placeholder: 'Ej: 2235'
+          placeholder: 'Ej: 2235 (opcional)'
         },
         { 
           name: 'frecuencia_boost', 
           label: 'Frecuencia Boost (MHz)', 
           type: 'number', 
-          placeholder: 'Ej: 2520'
+          placeholder: 'Ej: 2520 (opcional)'
         },
         { 
           name: 'tdp', 
           label: 'TDP (W)', 
           type: 'number', 
-          placeholder: 'Ej: 450'
+          placeholder: 'Ej: 450 (opcional)'
         },
         { 
           name: 'conectores_alimentacion', 
           label: 'Conectores Alimentación', 
-          placeholder: 'Ej: 16-pin, 2x8-pin'
+          placeholder: 'Ej: 16-pin, 2x8-pin (opcional)'
         },
         { 
           name: 'salidas_video', 
           label: 'Salidas Video', 
-          placeholder: 'Ej: 3xDP, 1xHDMI'
+          placeholder: 'Ej: 3xDP, 1xHDMI (opcional)'
         },
         { 
           name: 'longitud_mm', 
           label: 'Longitud (mm)', 
           type: 'number', 
-          placeholder: 'Ej: 304'
+          placeholder: 'Ej: 304 (opcional)'
         },
         { 
           name: 'altura_mm', 
           label: 'Altura (mm)', 
           type: 'number', 
-          placeholder: 'Ej: 137'
+          placeholder: 'Ej: 137 (opcional)'
         },
         { 
           name: 'slots_ocupados', 
           label: 'Slots Ocupados', 
           type: 'number', 
-          placeholder: 'Ej: 3'
+          placeholder: 'Ej: 3 (opcional)'
         },
         { 
           name: 'peso_kg', 
           label: 'Peso (kg)', 
           type: 'number', 
-          placeholder: 'Ej: 2.2',
-          required: true
+          placeholder: 'Ej: 2.2 (opcional)'
         }
       ]
     },
@@ -542,7 +578,7 @@ export default function AddComponent() {
         { 
           name: 'interfaz', 
           label: 'Interfaz', 
-          placeholder: 'Ej: PCIe 4.0, SATA III',
+          placeholder: 'Ej: PCIe 4.0, SATA III (opcional)',
           type: 'select',
           optionsKey: 'interfacesAlmacenamiento'
         },
@@ -550,25 +586,24 @@ export default function AddComponent() {
           name: 'velocidad_lectura', 
           label: 'Velocidad Lectura (MB/s)', 
           type: 'number', 
-          placeholder: 'Ej: 7450'
+          placeholder: 'Ej: 7450 (opcional)'
         },
         { 
           name: 'velocidad_escritura', 
           label: 'Velocidad Escritura (MB/s)', 
           type: 'number', 
-          placeholder: 'Ej: 6900'
+          placeholder: 'Ej: 6900 (opcional)'
         },
         { 
           name: 'formato', 
           label: 'Formato', 
-          placeholder: 'Ej: M.2, 2.5", 3.5"'
+          placeholder: 'Ej: M.2, 2.5", 3.5" (opcional)'
         },
         { 
           name: 'rpm', 
           label: 'RPM (solo HDD)', 
           type: 'number', 
-          placeholder: 'Ej: 7200',
-          required: true
+          placeholder: 'Ej: 7200 (opcional)'
         }
       ]
     },
@@ -599,44 +634,43 @@ export default function AddComponent() {
         { 
           name: 'certificacion', 
           label: 'Certificación', 
-          placeholder: 'Ej: 80 Plus Gold',
+          placeholder: 'Ej: 80 Plus Gold (opcional)',
           type: 'select',
           optionsKey: 'certificacionesFuente'
         },
         { 
           name: 'modular', 
           label: 'Modular', 
-          placeholder: 'Ej: Full, Semi',
+          placeholder: 'Ej: Full, Semi (opcional)',
           type: 'select',
           optionsKey: 'tiposModular'
         },
         { 
           name: 'conectores_pcie', 
           label: 'Conectores PCIe', 
-          placeholder: 'Ej: 6x8-pin, PCIe 5.0'
+          placeholder: 'Ej: 6x8-pin, PCIe 5.0 (opcional)'
         },
         { 
           name: 'conectores_sata', 
           label: 'Conectores SATA', 
           type: 'number', 
-          placeholder: 'Ej: 12'
+          placeholder: 'Ej: 12 (opcional)'
         },
         { 
           name: 'conectores_molex', 
           label: 'Conectores Molex', 
           type: 'number', 
-          placeholder: 'Ej: 4'
+          placeholder: 'Ej: 4 (opcional)'
         },
         { 
           name: 'formato', 
           label: 'Formato', 
-          placeholder: 'Ej: ATX'
+          placeholder: 'Ej: ATX (opcional)'
         },
         { 
           name: 'protecciones', 
           label: 'Protecciones', 
-          placeholder: 'Ej: OPP, OVP, UVP',
-          required: true
+          placeholder: 'Ej: OPP, OVP, UVP (opcional)'
         }
       ]
     },
@@ -660,70 +694,69 @@ export default function AddComponent() {
         { 
           name: 'formato', 
           label: 'Formato', 
-          placeholder: 'Ej: Mid Tower, Full Tower',
+          placeholder: 'Ej: Mid Tower, Full Tower (opcional)',
           type: 'select',
           optionsKey: 'formatosGabinete'
         },
         { 
           name: 'motherboards_soportadas', 
           label: 'Motherboards Soportadas', 
-          placeholder: 'Ej: ATX, Micro-ATX, Mini-ITX'
+          placeholder: 'Ej: ATX, Micro-ATX, Mini-ITX (opcional)'
         },
         { 
           name: 'longitud_max_gpu', 
           label: 'Longitud Máx GPU (mm)', 
           type: 'number', 
-          placeholder: 'Ej: 455'
+          placeholder: 'Ej: 455 (opcional)'
         },
         { 
           name: 'altura_max_cooler', 
           label: 'Altura Máx Cooler (mm)', 
           type: 'number', 
-          placeholder: 'Ej: 185'
+          placeholder: 'Ej: 185 (opcional)'
         },
         { 
           name: 'bahias_35', 
           label: 'Bahías 3.5"', 
           type: 'number', 
-          placeholder: 'Ej: 2'
+          placeholder: 'Ej: 2 (opcional)'
         },
         { 
           name: 'bahias_25', 
           label: 'Bahías 2.5"', 
           type: 'number', 
-          placeholder: 'Ej: 4'
+          placeholder: 'Ej: 4 (opcional)'
         },
         { 
           name: 'slots_expansion', 
           label: 'Slots Expansión', 
           type: 'number', 
-          placeholder: 'Ej: 8'
+          placeholder: 'Ej: 8 (opcional)'
         },
         { 
           name: 'ventiladores_incluidos', 
           label: 'Ventiladores Incluidos', 
-          placeholder: 'Ej: 3x120mm'
+          placeholder: 'Ej: 3x120mm (opcional)'
         },
         { 
           name: 'ventiladores_soportados', 
           label: 'Ventiladores Soportados', 
-          placeholder: 'Ej: 10'
+          placeholder: 'Ej: 10 (opcional)'
         },
         { 
           name: 'radiador_soportado', 
           label: 'Radiador Soportado', 
-          placeholder: 'Ej: 360mm'
+          placeholder: 'Ej: 360mm (opcional)'
         },
         { 
           name: 'panel_frontal', 
           label: 'Panel Frontal', 
-          placeholder: 'Ej: Vidrio, Malla'
+          placeholder: 'Ej: Vidrio, Malla (opcional)'
         },
         { 
           name: 'material', 
           label: 'Material', 
-          placeholder: 'Ej: Acero, Vidrio',
-          required: true
+          placeholder: 'Ej: Acero, Vidrio (opcional)'
         }
       ]
     }
@@ -731,18 +764,35 @@ export default function AddComponent() {
 
   const currentForm = componentForms[componentType] || componentForms.procesadores;
 
-  const handleInputChange = (field: string, value: string | boolean | number) => {
-    setFormData((prev: any) => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleInputChange = (field: string, value: string | number | boolean | undefined) => {
+    setFormData((prev: any) => {
+      const newData = { ...prev };
+      
+      if (value === undefined) {
+        // Si el valor es undefined, eliminamos el campo
+        delete newData[field];
+      } else {
+        // Si tiene valor, lo asignamos
+        newData[field] = value;
+      }
+      
+      return newData;
+    });
   };
 
   const openModal = (field: any) => {
     setCurrentField(field);
     const options = formOptions[field.optionsKey] || [];
     setFilteredOptions(options);
+    setManualInputModal(false);
     setModalVisible(true);
+  };
+
+  const openManualInput = (field: any) => {
+    setCurrentField(field);
+    setManualInputValue(formData[field.name] || '');
+    setModalVisible(false);
+    setManualInputModal(true);
   };
 
   const selectOption = (option: string) => {
@@ -750,13 +800,41 @@ export default function AddComponent() {
     setModalVisible(false);
   };
 
+  const saveManualInput = () => {
+    if (manualInputValue.trim()) {
+      handleInputChange(currentField.name, manualInputValue.trim());
+      setManualInputModal(false);
+      
+      // Agregar la nueva opción a las opciones disponibles para futuras selecciones
+      if (currentField?.optionsKey) {
+        const currentOptions = formOptions[currentField.optionsKey] || [];
+        if (!currentOptions.includes(manualInputValue.trim())) {
+          setFormOptions((prev: any) => ({
+            ...prev,
+            [currentField.optionsKey]: [...currentOptions, manualInputValue.trim()]
+          }));
+        }
+      }
+    } else {
+      Alert.alert('Error', 'Por favor ingresa un valor válido');
+    }
+  };
+
   const handleSubmit = async () => {
-    // Validar campos requeridos
-    const requiredFields = currentForm.fields.filter((field: any) => field.required);
-    const missingFields = requiredFields.filter((field: any) => !formData[field.name]);
+    // Validar solo campos realmente obligatorios
+    const requiredFields = getRequiredFields(componentType);
+    const missingFields = requiredFields.filter(field => {
+      const value = formData[field];
+      return !value || value.toString().trim() === '';
+    });
     
     if (missingFields.length > 0) {
-      toast.error(`Completá: ${missingFields.map((f: any) => f.label).join(', ')}`);
+      const fieldLabels = missingFields.map(fieldName => {
+        const field = currentForm.fields.find((f: any) => f.name === fieldName);
+        return field ? field.label : fieldName;
+      });
+      
+      toast.error(`Completá los campos obligatorios: ${fieldLabels.join(', ')}`);
       return;
     }
 
@@ -811,24 +889,32 @@ export default function AddComponent() {
   const renderSelectButton = (field: any) => {
     const value = formData[field.name];
     const options = formOptions[field.optionsKey] || [];
+    const hasOptions = options.length > 0;
     
-    // Si no hay valor seleccionado, mostrar la primera opción como sugerencia
-    const displayValue = value || (options.length > 0 ? `${options[0]} (${options.length} opciones)` : 'Sin opciones disponibles');
-
     return (
-      <TouchableOpacity
-        style={[styles.selectButton, !options.length && styles.selectButtonDisabled]}
-        onPress={() => options.length > 0 && openModal(field)}
-        disabled={!options.length}
-      >
-        <Text style={[
-          styles.selectButtonText,
-          !value && styles.selectButtonPlaceholder
-        ]}>
-          {displayValue}
-        </Text>
-        <Text style={styles.selectButtonIcon}>▼</Text>
-      </TouchableOpacity>
+      <View style={styles.selectContainer}>
+        <TouchableOpacity
+          style={[styles.selectButton, !hasOptions && styles.selectButtonNoOptions]}
+          onPress={() => hasOptions ? openModal(field) : openManualInput(field)}
+        >
+          <Text style={[
+            styles.selectButtonText,
+            !value && styles.selectButtonPlaceholder
+          ]}>
+            {value || (hasOptions ? `Seleccionar ${field.label.toLowerCase()}...` : 'Ingresar manualmente...')}
+          </Text>
+          <Text style={styles.selectButtonIcon}>▼</Text>
+        </TouchableOpacity>
+        
+        {hasOptions && (
+          <TouchableOpacity
+            style={styles.manualButton}
+            onPress={() => openManualInput(field)}
+          >
+            <Text style={styles.manualButtonText}>✏️ Manual</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     );
   };
 
@@ -838,6 +924,7 @@ export default function AddComponent() {
         <View style={styles.inputContainer}>
           <Text style={styles.label}>
             {field.label} {field.required && ' *'}
+            {!field.required && <Text style={styles.optionalText}> (opcional)</Text>}
           </Text>
           {renderSelectButton(field)}
         </View>
@@ -847,7 +934,10 @@ export default function AddComponent() {
     if (field.type === 'boolean') {
       return (
         <View style={styles.booleanField}>
-          <Text style={styles.label}>{field.label}</Text>
+          <Text style={styles.label}>
+            {field.label}
+            <Text style={styles.optionalText}> (opcional)</Text>
+          </Text>
           <View style={styles.booleanOptions}>
             <TouchableOpacity
               style={[
@@ -873,6 +963,18 @@ export default function AddComponent() {
                 formData[field.name] === false && styles.booleanOptionTextSelected
               ]}>No</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.booleanOption,
+                formData[field.name] === undefined && styles.booleanOptionSelected
+              ]}
+              onPress={() => handleInputChange(field.name, undefined)}
+            >
+              <Text style={[
+                styles.booleanOptionText,
+                formData[field.name] === undefined && styles.booleanOptionTextSelected
+              ]}>NS/NC</Text>
+            </TouchableOpacity>
           </View>
         </View>
       );
@@ -882,6 +984,7 @@ export default function AddComponent() {
       <View style={styles.inputContainer}>
         <Text style={styles.label}>
           {field.label} {field.required && ' *'}
+          {!field.required && <Text style={styles.optionalText}> (opcional)</Text>}
         </Text>
         <TextInput
           style={styles.input}
@@ -921,6 +1024,13 @@ export default function AddComponent() {
       </View>
 
       <ScrollView style={styles.form}>
+        <View style={styles.infoBox}>
+          <Text style={styles.infoText}>
+            💡 <Text style={styles.infoBold}>Nota:</Text> Solo los campos marcados con * son obligatorios. 
+            Podés dejar los demás vacíos y completarlos después.
+          </Text>
+        </View>
+
         {currentForm.fields.map((field: any, index: number) => (
           <View key={index}>
             {renderField(field)}
@@ -951,12 +1061,20 @@ export default function AddComponent() {
               <Text style={styles.modalTitle}>
                 Seleccionar {currentField?.label}
               </Text>
-              <TouchableOpacity 
-                style={styles.closeButton}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.closeButtonText}>✕</Text>
-              </TouchableOpacity>
+              <View style={styles.modalHeaderButtons}>
+                <TouchableOpacity 
+                  style={styles.modalManualButton}
+                  onPress={() => openManualInput(currentField)}
+                >
+                  <Text style={styles.modalManualButtonText}>✏️ Manual</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.closeButton}
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text style={styles.closeButtonText}>✕</Text>
+                </TouchableOpacity>
+              </View>
             </View>
             
             <FlatList
@@ -971,7 +1089,65 @@ export default function AddComponent() {
                 </TouchableOpacity>
               )}
               style={styles.optionsList}
+              ListEmptyComponent={
+                <View style={styles.emptyOptions}>
+                  <Text style={styles.emptyOptionsText}>
+                    No hay opciones disponibles
+                  </Text>
+                </View>
+              }
             />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal para entrada manual */}
+      <Modal
+        visible={manualInputModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setManualInputModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                Ingresar {currentField?.label} manualmente
+              </Text>
+              <TouchableOpacity 
+                style={styles.closeButton}
+                onPress={() => setManualInputModal(false)}
+              >
+                <Text style={styles.closeButtonText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.manualInputContainer}>
+              <TextInput
+                style={styles.manualInput}
+                placeholder={`Ingresa el ${currentField?.label?.toLowerCase()}...`}
+                placeholderTextColor="#8b9cb3"
+                value={manualInputValue}
+                onChangeText={setManualInputValue}
+                autoFocus={true}
+              />
+              
+              <View style={styles.manualButtons}>
+                <TouchableOpacity
+                  style={[styles.manualActionButton, styles.cancelButton]}
+                  onPress={() => setManualInputModal(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.manualActionButton, styles.saveButton]}
+                  onPress={saveManualInput}
+                >
+                  <Text style={styles.saveButtonText}>Guardar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         </View>
       </Modal>
@@ -999,7 +1175,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 20,
   },
   backButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -1022,6 +1198,23 @@ const styles = StyleSheet.create({
   form: {
     flex: 1,
   },
+  infoBox: {
+    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#667eea',
+  },
+  infoText: {
+    color: '#8b9cb3',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  infoBold: {
+    fontWeight: '700',
+    color: '#667eea',
+  },
   inputContainer: {
     marginBottom: 20,
   },
@@ -1030,6 +1223,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
     color: '#ffffff',
+  },
+  optionalText: {
+    fontSize: 14,
+    color: '#8b9cb3',
+    fontWeight: '400',
   },
   input: {
     borderWidth: 1,
@@ -1040,7 +1238,13 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
   },
+  selectContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   selectButton: {
+    flex: 1,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 12,
@@ -1050,10 +1254,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  selectButtonDisabled: {
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
-    borderColor: 'rgba(255, 0, 0, 0.2)',
-    opacity: 0.6,
+  selectButtonNoOptions: {
+    borderColor: '#667eea',
+    backgroundColor: 'rgba(102, 126, 234, 0.1)',
   },
   selectButtonText: {
     color: '#ffffff',
@@ -1067,12 +1270,25 @@ const styles = StyleSheet.create({
     color: '#8b9cb3',
     fontSize: 12,
   },
+  manualButton: {
+    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+    paddingHorizontal: 15,
+    paddingVertical: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#667eea',
+  },
+  manualButtonText: {
+    color: '#667eea',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   booleanField: {
     marginBottom: 20,
   },
   booleanOptions: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
   booleanOption: {
     flex: 1,
@@ -1130,11 +1346,29 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
+  modalHeaderButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: '#ffffff',
     flex: 1,
+  },
+  modalManualButton: {
+    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#667eea',
+  },
+  modalManualButtonText: {
+    color: '#667eea',
+    fontSize: 12,
+    fontWeight: '600',
   },
   closeButton: {
     padding: 4,
@@ -1155,5 +1389,55 @@ const styles = StyleSheet.create({
   optionText: {
     color: '#ffffff',
     fontSize: 16,
+  },
+  emptyOptions: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyOptionsText: {
+    color: '#8b9cb3',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  manualInputContainer: {
+    padding: 20,
+  },
+  manualInput: {
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    color: '#ffffff',
+    padding: 16,
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  manualButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  manualActionButton: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  saveButton: {
+    backgroundColor: '#667eea',
+  },
+  cancelButtonText: {
+    color: '#8b9cb3',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

@@ -16,12 +16,14 @@ interface GoogleOAuthProps {
 export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
   const [loading, setLoading] = React.useState(false);
   
-  // Configurar la URI de redirección
+  // ✅ CORRECCIÓN: Configurar la URI de redirección específica para Android
   const redirectUri = Platform.OS === 'web'
     ? AuthSession.makeRedirectUri({ useProxy: false } as any)
-    : AuthSession.makeRedirectUri({ useProxy: true } as any);
+    : AuthSession.makeRedirectUri({ 
+        scheme: 'com.antonio4350.ProyectoFinalACV',
+      });
     
-  // Configurar la solicitud de autenticación (igual que en el proyecto que funciona)
+  // ✅ CORRECCIÓN: Configurar la solicitud de autenticación con clientId específico para Android
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
     Platform.OS === 'web'
       ? {
@@ -33,11 +35,16 @@ export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
           usePKCE: false,
         }
       : {
-          clientId: "58585220959-fltgp46dkjjrcdo144gqeib2c5tqg58c",
+          // ✅ Android usa este clientId específico
+          clientId: "58585220959-8capru7gmaertcnsvoervkm3vsef6q3l",
           redirectUri,
           scopes: ['profile', 'email'],
           responseType: 'id_token',
-          extraParams: { nonce: 'random_string' },
+          // ✅ Añadir 'prompt' también en Android
+          extraParams: { 
+            nonce: 'random_string',
+            prompt: 'select_account'
+          },
           usePKCE: false,
         },
     { authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth' }
@@ -45,24 +52,39 @@ export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
 
   useEffect(() => {
     console.log('Respuesta de Google:', response);
+    console.log('Plataforma:', Platform.OS);
+    console.log('URI de redirección:', redirectUri);
     
     if (response?.type === 'success') {
       const { id_token, access_token } = response.params;
       console.log('Tokens recibidos:', { 
         has_id_token: !!id_token, 
-        has_access_token: !!access_token 
+        has_access_token: !!access_token,
+        platform: Platform.OS
       });
       
       if (id_token || access_token) {
-        handleGoogleLogin({ idToken: id_token, accessToken: access_token });
+        handleGoogleLogin({ 
+          idToken: id_token, 
+          accessToken: access_token,
+          platform: Platform.OS 
+        });
+      } else {
+        console.error('No se recibieron tokens válidos');
       }
+    } else if (response?.type === 'error') {
+      console.error('Error en OAuth:', response.error);
+      console.error('Error details:', response.params);
     }
   }, [response]);
 
   async function handleGoogleLogin(tokens: any) {
     try {
       setLoading(true);
-      console.log('Enviando tokens al backend...', tokens);
+      console.log('Enviando tokens al backend...', {
+        ...tokens,
+        timestamp: new Date().toISOString()
+      });
       
       const res = await fetch(`${API_URL}/googleLogin`, {
         method: 'POST',
@@ -79,7 +101,7 @@ export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
       console.log('Respuesta del servidor:', data);
 
       if (data.success) {
-        console.log('Login Google exitoso');
+        console.log('Login Google exitoso en', Platform.OS);
         
         if (onSuccess && data.user) {
           onSuccess(data);
@@ -96,8 +118,13 @@ export default function GoogleOAuth({ type, onSuccess }: GoogleOAuthProps) {
 
   const handlePress = async () => {
     try {
-      console.log('Iniciando flujo de Google OAuth...');
-      await promptAsync();
+      console.log('Iniciando flujo de Google OAuth en', Platform.OS);
+      console.log('ClientId usado:', Platform.OS === 'web' 
+        ? "58585220959-fltgp46dkjjrcdo144gqeib2c5tqg58c" 
+        : "58585220959-8capru7gmaertcnsvoervkm3vsef6q3l");
+      
+      const result = await promptAsync();
+      console.log('Resultado de promptAsync:', result);
     } catch (error) {
       console.error('Error iniciando OAuth:', error);
     }

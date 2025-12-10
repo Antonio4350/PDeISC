@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "proyectofinalacv",
+    "scheme": "com.antonio4350.ProyectoFinalACV",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "extra": {
@@ -27,7 +27,19 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.antonio4350.ProyectoFinalACV"
+      "package": "com.antonio4350.ProyectoFinalACV",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "com.antonio4350.ProyectoFinalACV",
+              "host": "oauth2redirect"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "output": "static",

@@ -78,7 +78,7 @@ export default function HamburgerMenu({ isVisible, onClose }: HamburgerMenuProps
   }, [isVisible]);
 
   const menuItems: MenuItem[] = [
-    // Navegación principal
+    // Navegación principal - VISIBLE PARA TODOS
     { 
       id: 'home', 
       label: 'Inicio', 
@@ -92,7 +92,7 @@ export default function HamburgerMenu({ isVisible, onClose }: HamburgerMenuProps
       icon: '🔧', 
       route: 'components', 
       color: '#4ECDC4',
-      requiresAuth: true 
+      requiresAuth: false  // Cambiado a false para que sea visible sin autenticación
     },
     { 
       id: 'builder', 
@@ -104,11 +104,11 @@ export default function HamburgerMenu({ isVisible, onClose }: HamburgerMenuProps
     },
     { 
       id: 'projects', 
-      label: 'Mis Proyectos', 
+      label: 'Proyectos', 
       icon: '📂', 
       route: 'projects', 
       color: '#45B7D1',
-      requiresAuth: true 
+      requiresAuth: false  // Cambiado a false para que sea visible sin autenticación
     },
     
     // Administración
@@ -158,8 +158,11 @@ export default function HamburgerMenu({ isVisible, onClose }: HamburgerMenuProps
 
     // Pequeño delay para la animación
     setTimeout(() => {
+      // Si el item requiere autenticación y el usuario NO está autenticado
       if (!user && item.requiresAuth) {
+        // Redirigir al login para el constructor PC
         router.push('/(tabs)/Login');
+        toast.info('Iniciá sesión para usar el constructor de PC');
         return;
       }
 
@@ -218,10 +221,17 @@ export default function HamburgerMenu({ isVisible, onClose }: HamburgerMenuProps
   };
 
   const filteredMenuItems = menuItems.filter(item => {
-    if (!user && item.requiresAuth) return false;
+    // Si el usuario NO está autenticado
+    if (!user) {
+      // Mostrar: Home, Componentes, Proyectos, Login, Register
+      // NO mostrar: Builder (requiere auth), Admin, Logout
+      return ['home', 'components', 'projects', 'login', 'register'].includes(item.id);
+    }
+    
+    // Si el usuario ESTÁ autenticado
     if (item.adminOnly && !isAdmin()) return false;
     if (user && (item.id === 'login' || item.id === 'register')) return false;
-    if (!user && item.id === 'logout') return false;
+    
     return true;
   });
 
@@ -263,6 +273,9 @@ export default function HamburgerMenu({ isVisible, onClose }: HamburgerMenuProps
               {item.adminOnly && (
                 <Text style={styles.adminBadge}>ADMIN</Text>
               )}
+              {item.id === 'builder' && !user && (
+                <Text style={styles.authRequiredBadge}>LOGIN</Text>
+              )}
             </View>
             <Text style={styles.menuItemArrow}>›</Text>
           </View>
@@ -277,6 +290,37 @@ export default function HamburgerMenu({ isVisible, onClose }: HamburgerMenuProps
           )}
         </TouchableOpacity>
       </Animated.View>
+    );
+  };
+
+  const renderMenuSection = (title: string, itemIds: string[]) => {
+    const items = filteredMenuItems.filter(item => itemIds.includes(item.id));
+    
+    if (items.length === 0) return null;
+
+    return (
+      <>
+        <Animated.View 
+          style={[
+            styles.sectionHeader,
+            {
+              opacity: fadeAnim,
+              transform: [
+                { 
+                  translateX: slideAnim.interpolate({
+                    inputRange: [-SCREEN_WIDTH, 0],
+                    outputRange: [-30, 0]
+                  }) 
+                }
+              ]
+            }
+          ]}
+        >
+          <Text style={styles.sectionTitle}>{title}</Text>
+        </Animated.View>
+        
+        {items.map((item, index) => renderMenuItem(item, index))}
+      </>
     );
   };
 
@@ -318,13 +362,19 @@ export default function HamburgerMenu({ isVisible, onClose }: HamburgerMenuProps
       >
         {/* Header del Menú */}
         <View style={styles.menuHeader}>
-          <View style={styles.logoContainer}>
+          <TouchableOpacity 
+            style={styles.logoContainer}
+            onPress={() => {
+              onClose();
+              router.push('/');
+            }}
+          >
             <Text style={styles.logoIcon}>🛠️</Text>
             <View style={styles.logoTextContainer}>
               <Text style={styles.logoTitle}>AntonioPC</Text>
               <Text style={styles.logoSubtitle}>Builder</Text>
             </View>
-          </View>
+          </TouchableOpacity>
           
           <TouchableOpacity 
             style={styles.closeButton}
@@ -381,81 +431,81 @@ export default function HamburgerMenu({ isVisible, onClose }: HamburgerMenuProps
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.menuItemsContent}
         >
-          {/* Sección: Navegación */}
-          <Animated.View 
-            style={[
-              styles.sectionHeader,
-              {
-                opacity: fadeAnim,
-                transform: [
-                  { 
-                    translateX: slideAnim.interpolate({
-                      inputRange: [-SCREEN_WIDTH, 0],
-                      outputRange: [-30, 0]
-                    }) 
-                  }
-                ]
-              }
-            ]}
-          >
-            <Text style={styles.sectionTitle}>Navegación</Text>
-          </Animated.View>
+          {/* Sección: Navegación - VISIBLE PARA TODOS */}
+          {renderMenuSection('Navegación', ['home', 'components', 'projects'])}
           
-          {filteredMenuItems
-            .filter(item => ['home', 'components', 'builder', 'projects'].includes(item.id))
-            .map((item, index) => renderMenuItem(item, index))}
-
-          {/* Sección: Administración */}
-          {user && isAdmin() && (
-            <>
-              <Animated.View 
+          {/* Sección: Constructor PC - Solo visible con autenticación */}
+          {user && renderMenuSection('Constructor', ['builder'])}
+          {!user && (
+            <Animated.View 
+              style={[
+                styles.sectionHeader,
+                {
+                  opacity: fadeAnim,
+                  transform: [
+                    { 
+                      translateX: slideAnim.interpolate({
+                        inputRange: [-SCREEN_WIDTH, 0],
+                        outputRange: [-30, 0]
+                      }) 
+                    }
+                  ]
+                }
+              ]}
+            >
+              <Text style={styles.sectionTitle}>Constructor PC</Text>
+            </Animated.View>
+          )}
+          {!user && (
+            <Animated.View
+              style={[
+                styles.menuItemContainer,
+                {
+                  opacity: fadeAnim,
+                  transform: [
+                    { 
+                      translateX: slideAnim.interpolate({
+                        inputRange: [-SCREEN_WIDTH, 0],
+                        outputRange: [-50, 0]
+                      }) 
+                    }
+                  ]
+                }
+              ]}
+            >
+              <TouchableOpacity
                 style={[
-                  styles.sectionHeader,
-                  {
-                    opacity: fadeAnim,
-                    transform: [
-                      { 
-                        translateX: slideAnim.interpolate({
-                          inputRange: [-SCREEN_WIDTH, 0],
-                          outputRange: [-30, 0]
-                        }) 
-                      }
-                    ]
-                  }
+                  styles.menuItem,
+                  { borderLeftColor: '#FF6B6B', opacity: 0.7 }
                 ]}
+                onPress={() => {
+                  onClose();
+                  router.push('/(tabs)/Login');
+                  toast.info('Iniciá sesión para usar el constructor de PC');
+                }}
+                activeOpacity={0.7}
               >
-                <Text style={styles.sectionTitle}>Administración</Text>
-              </Animated.View>
-              
-              {filteredMenuItems
-                .filter(item => ['admin'].includes(item.id))
-                .map((item, index) => renderMenuItem(item, index + 4))}
-            </>
+                <View style={styles.menuItemContent}>
+                  <Text style={styles.menuItemIcon}>🛠️</Text>
+                  <View style={styles.menuItemTextContainer}>
+                    <Text style={[styles.menuItemLabel, { color: 'rgba(255, 255, 255, 0.6)' }]}>
+                      Constructor PC
+                    </Text>
+                    <Text style={styles.authRequiredBadge}>LOGIN REQUERIDO</Text>
+                  </View>
+                  <Text style={[styles.menuItemArrow, { color: 'rgba(139, 156, 179, 0.6)' }]}>›</Text>
+                </View>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
+          
+          {/* Sección: Administración - Solo para admins */}
+          {user && isAdmin() && (
+            renderMenuSection('Administración', ['admin'])
           )}
 
           {/* Sección: Cuenta */}
-          <Animated.View 
-            style={[
-              styles.sectionHeader,
-              {
-                opacity: fadeAnim,
-                transform: [
-                  { 
-                    translateX: slideAnim.interpolate({
-                      inputRange: [-SCREEN_WIDTH, 0],
-                      outputRange: [-30, 0]
-                    }) 
-                  }
-                ]
-              }
-            ]}
-          >
-            <Text style={styles.sectionTitle}>Cuenta</Text>
-          </Animated.View>
-          
-          {filteredMenuItems
-            .filter(item => user ? ['logout'].includes(item.id) : ['login', 'register'].includes(item.id))
-            .map((item, index) => renderMenuItem(item, index + 5))}
+          {renderMenuSection('Cuenta', user ? ['logout'] : ['login', 'register'])}
         </ScrollView>
 
         {/* Footer del Menú */}
@@ -672,6 +722,17 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontWeight: '800',
     backgroundColor: 'rgba(255, 215, 0, 0.2)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginLeft: 8,
+    textTransform: 'uppercase',
+  },
+  authRequiredBadge: {
+    color: '#FF6B6B',
+    fontSize: 8,
+    fontWeight: '800',
+    backgroundColor: 'rgba(255, 107, 107, 0.2)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -46,6 +46,23 @@ interface ComponentCategory {
   endpoint: string;
 }
 
+// Función debounce para limitar llamadas frecuentes (NO USADA DIRECTAMENTE EN RENDER)
+const useDebounce = (value: any, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  
+  return debouncedValue;
+};
+
 export default function PcBuilder() {
   const { user } = useAuth();
   const { projectId } = useLocalSearchParams<{ projectId?: string }>();
@@ -72,6 +89,10 @@ export default function PcBuilder() {
 
   const { width: screenWidth } = useWindowDimensions();
   const isMobile = screenWidth < 768;
+  
+  // Refs para los inputs
+  const projectNameRef = useRef<TextInput>(null);
+  const projectDescriptionRef = useRef<TextInput>(null);
 
   const componentCategories: ComponentCategory[] = [
     { type: 'cpu', name: 'Procesadores', icon: '⚡', color: '#FF6B6B', endpoint: 'processors' },
@@ -82,6 +103,9 @@ export default function PcBuilder() {
     { type: 'psu', name: 'Fuentes', icon: '🔋', color: '#FFEAA7', endpoint: 'fuentes_poder' },
     { type: 'case', name: 'Gabinetes', icon: '🖥️', color: '#DDA0DD', endpoint: 'gabinetes' }
   ];
+
+  // ELIMINADO: debouncedProjectName y debouncedProjectDescription 
+  // que causaban re-renders innecesarios
 
   useEffect(() => {
     const init = async () => {
@@ -113,6 +137,7 @@ export default function PcBuilder() {
     init();
   }, [projectId]);
 
+  // Separar el efecto de filtrado: solo se ejecuta cuando cambian componentes reales
   useEffect(() => {
     if (Object.keys(allComponents).length > 0) {
       console.log('Aplicando filtros de compatibilidad');
@@ -661,6 +686,15 @@ export default function PcBuilder() {
     return components;
   };
 
+  // Funciones optimizadas de manejo de texto - SIN DEBOUNCE
+  const handleProjectNameChange = (text: string) => {
+    setProjectName(text);
+  };
+
+  const handleProjectDescriptionChange = (text: string) => {
+    setProjectDescription(text);
+  };
+
   const ProjectInfoSection = () => {
     return (
       <View style={styles.projectInfoSection}>
@@ -671,15 +705,25 @@ export default function PcBuilder() {
         <View style={styles.inputContainer}>
           <Text style={styles.inputLabel}>Nombre de la Build *</Text>
           <TextInput
+            ref={projectNameRef}
             style={styles.textInput}
             value={projectName}
-            onChangeText={setProjectName}
+            onChangeText={handleProjectNameChange}
+            onBlur={() => {
+              // Solo validar cuando se pierde el foco
+              if (projectName.trim().length === 0 && !projectId) {
+                setProjectName(`Mi Build ${new Date().toLocaleDateString()}`);
+              }
+            }}
             placeholder="Ej: Mi PC Gaming 2024"
             placeholderTextColor="#8b9cb3"
             maxLength={100}
             autoCorrect={false}
             autoCapitalize="words"
-            returnKeyType="done"
+            returnKeyType="next"
+            onSubmitEditing={() => projectDescriptionRef.current?.focus()}
+            blurOnSubmit={false}
+            selectTextOnFocus={true}
           />
           {projectName.length === 0 && (
             <Text style={styles.inputErrorText}>El nombre es requerido</Text>
@@ -689,9 +733,10 @@ export default function PcBuilder() {
         <View style={styles.inputContainer}>
           <Text style={styles.inputLabel}>Descripción (opcional)</Text>
           <TextInput
+            ref={projectDescriptionRef}
             style={[styles.textInput, styles.textArea]}
             value={projectDescription}
-            onChangeText={setProjectDescription}
+            onChangeText={handleProjectDescriptionChange}
             placeholder="Describe tu build..."
             placeholderTextColor="#8b9cb3"
             multiline
@@ -700,7 +745,8 @@ export default function PcBuilder() {
             autoCorrect={true}
             autoCapitalize="sentences"
             returnKeyType="default"
-            blurOnSubmit={false}
+            blurOnSubmit={true}
+            selectTextOnFocus={true}
           />
           <Text style={styles.inputCharCount}>
             {projectDescription.length}/500 caracteres
@@ -865,7 +911,11 @@ export default function PcBuilder() {
         </View>
 
         {activeTab === 'build' ? (
-          <ScrollView style={styles.mobilePanel}>
+          <ScrollView 
+            style={styles.mobilePanel}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+          >
             <ProjectInfoSection />
 
             <View style={styles.buildSummary}>
@@ -928,7 +978,10 @@ export default function PcBuilder() {
                 {componentCategories.find(cat => cat.type === selectedCategory)?.name} ({currentComponents.length})
               </Text>
 
-              <ScrollView style={styles.componentsList}>
+              <ScrollView 
+                style={styles.componentsList}
+                keyboardShouldPersistTaps="handled"
+              >
                 {currentComponents.map((component) => (
                   <TouchableOpacity
                     key={component.id}
@@ -1000,7 +1053,12 @@ export default function PcBuilder() {
       <View style={styles.desktopContent}>
         {/* Panel izquierdo: Build */}
         <View style={styles.buildPanel}>
-          <ScrollView style={styles.buildPanelContent} showsVerticalScrollIndicator={true}>
+          <ScrollView 
+            style={styles.buildPanelContent} 
+            showsVerticalScrollIndicator={true}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+          >
             <ProjectInfoSection />
 
             <View style={styles.buildSummary}>
@@ -1070,6 +1128,7 @@ export default function PcBuilder() {
               style={styles.componentsList} 
               contentContainerStyle={styles.componentsListContent}
               showsVerticalScrollIndicator={true}
+              keyboardShouldPersistTaps="handled"
             >
               {currentComponents.map((component) => (
                 <TouchableOpacity
@@ -1218,7 +1277,7 @@ const styles = StyleSheet.create({
     color: '#667eea',
     fontWeight: '700',
   },
-  // Layout desktop - CORREGIDO
+  // Layout desktop
   desktopContent: {
     flex: 1,
     flexDirection: 'row',
@@ -1245,7 +1304,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1a1b27',
   },
-  // Información del proyecto - MEJORADO
+  // Información del proyecto
   projectInfoSection: {
     marginBottom: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',

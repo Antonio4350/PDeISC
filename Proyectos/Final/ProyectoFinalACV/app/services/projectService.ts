@@ -1,13 +1,17 @@
+// app/services/projectService.ts - VERSIÓN FINAL
 import apiConfig from '../config/apiConfig';
+import { getToken } from '../../storage'; // ✅ Usar la función del archivo común
+
 const API_URL = apiConfig.apiUrl;
 
 class ProjectService {
   
   async createProject(projectData: any): Promise<any> {
     try {
-      console.log('Enviando proyecto...');
+      console.log('📤 Enviando proyecto...');
       
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      // ✅ Usar función universal
+      const token = await getToken();
       
       const headers: any = {
         'Content-Type': 'application/json',
@@ -18,17 +22,20 @@ class ProjectService {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
+      console.log('📤 URL:', `${API_URL}/api/projects`);
+      console.log('📤 Token:', token ? 'Presente' : 'Ausente');
+      
       const response = await fetch(`${API_URL}/api/projects`, {
         method: 'POST',
         headers,
         body: JSON.stringify(projectData),
       });
       
-      console.log('Status:', response.status);
+      console.log('📥 Status:', response.status);
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error:', errorText);
+        console.error('❌ Error del servidor:', errorText);
         
         if (response.status === 401 || response.status === 403) {
           return { 
@@ -39,26 +46,27 @@ class ProjectService {
         
         return { 
           success: false, 
-          error: `Error ${response.status}: ${errorText}` 
+          error: `Error ${response.status}: ${errorText || 'Error desconocido'}` 
         };
       }
       
       const result = await response.json();
-      console.log('Proyecto creado:', result);
+      console.log('✅ Proyecto creado:', result);
       return result;
       
     } catch (error: any) {
-      console.error('Error:', error);
+      console.error('💥 Error de conexión:', error);
       return { 
         success: false, 
-        error: error.message || 'Error de conexión' 
+        error: error.message || 'Error de conexión con el servidor' 
       };
     }
   }
 
   async getUserProjects(): Promise<any> {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      // ✅ Usar función universal
+      const token = await getToken();
       
       const headers: any = {
         'Content-Type': 'application/json',
@@ -68,6 +76,8 @@ class ProjectService {
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
+      
+      console.log('📥 Solicitando proyectos...');
       
       const response = await fetch(`${API_URL}/api/projects`, {
         method: 'GET',
@@ -76,25 +86,28 @@ class ProjectService {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error obteniendo proyectos:', errorText);
+        console.error('❌ Error obteniendo proyectos:', errorText);
         
         return { 
           success: false, 
-          error: `Error ${response.status}: ${errorText}` 
+          error: `Error ${response.status}: ${errorText || 'Error desconocido'}` 
         };
       }
       
-      return await response.json();
+      const result = await response.json();
+      console.log('✅ Proyectos obtenidos:', result.data?.length || 0);
+      return result;
+      
     } catch (error: any) {
-      console.error('Error:', error);
-      return { success: false, error: 'Error de conexión' };
+      console.error('💥 Error de conexión:', error);
+      return { success: false, error: 'Error de conexión con el servidor' };
     }
   }
 
-  // NUEVO MÉTODO: Obtener proyecto por ID
   async getProjectById(projectId: number): Promise<any> {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      // ✅ Usar función universal
+      const token = await getToken();
       
       const headers: any = {
         'Content-Type': 'application/json',
@@ -105,6 +118,8 @@ class ProjectService {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
+      console.log(`📥 Obteniendo proyecto ID: ${projectId}`);
+      
       const response = await fetch(`${API_URL}/api/projects/${projectId}`, {
         method: 'GET',
         headers,
@@ -112,7 +127,7 @@ class ProjectService {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error obteniendo proyecto:', errorText);
+        console.error('❌ Error obteniendo proyecto:', errorText);
         
         if (response.status === 404) {
           return { 
@@ -123,21 +138,24 @@ class ProjectService {
         
         return { 
           success: false, 
-          error: `Error ${response.status}: ${errorText}` 
+          error: `Error ${response.status}: ${errorText || 'Error desconocido'}` 
         };
       }
       
-      return await response.json();
+      const result = await response.json();
+      console.log('✅ Proyecto obtenido');
+      return result;
+      
     } catch (error: any) {
-      console.error('Error obteniendo proyecto:', error);
-      return { success: false, error: 'Error de conexión' };
+      console.error('💥 Error obteniendo proyecto:', error);
+      return { success: false, error: 'Error de conexión con el servidor' };
     }
   }
 
-  // NUEVO MÉTODO: Eliminar proyecto
   async deleteProject(projectId: number): Promise<any> {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      // ✅ Usar función universal
+      const token = await getToken();
       
       const headers: any = {
         'Content-Type': 'application/json',
@@ -147,6 +165,8 @@ class ProjectService {
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
+      
+      console.log(`🗑️ Eliminando proyecto ID: ${projectId}`);
       
       const response = await fetch(`${API_URL}/api/projects/${projectId}`, {
         method: 'DELETE',
@@ -155,30 +175,30 @@ class ProjectService {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error eliminando proyecto:', errorText);
+        console.error('❌ Error eliminando proyecto:', errorText);
         
         return { 
           success: false, 
-          error: `Error ${response.status}: ${errorText}` 
+          error: `Error ${response.status}: ${errorText || 'Error desconocido'}` 
         };
       }
       
       const result = await response.json();
-      console.log('Proyecto eliminado:', result);
+      console.log('✅ Proyecto eliminado');
       return result;
       
     } catch (error: any) {
-      console.error('Error eliminando proyecto:', error);
-      return { success: false, error: 'Error de conexión' };
+      console.error('💥 Error eliminando proyecto:', error);
+      return { success: false, error: 'Error de conexión con el servidor' };
     }
   }
 
-  // NUEVO MÉTODO: Actualizar proyecto
   async updateProject(projectId: number, projectData: any): Promise<any> {
     try {
-      console.log('Actualizando proyecto...');
+      console.log('📝 Actualizando proyecto...');
       
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      // ✅ Usar función universal
+      const token = await getToken();
       
       const headers: any = {
         'Content-Type': 'application/json',
@@ -189,33 +209,35 @@ class ProjectService {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
+      console.log(`📝 Actualizando proyecto ID: ${projectId}`);
+      
       const response = await fetch(`${API_URL}/api/projects/${projectId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(projectData),
       });
       
-      console.log('Status:', response.status);
+      console.log('📥 Status:', response.status);
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error actualizando proyecto:', errorText);
+        console.error('❌ Error actualizando proyecto:', errorText);
         
         return { 
           success: false, 
-          error: `Error ${response.status}: ${errorText}` 
+          error: `Error ${response.status}: ${errorText || 'Error desconocido'}` 
         };
       }
       
       const result = await response.json();
-      console.log('Proyecto actualizado:', result);
+      console.log('✅ Proyecto actualizado');
       return result;
       
     } catch (error: any) {
-      console.error('Error actualizando proyecto:', error);
+      console.error('💥 Error actualizando proyecto:', error);
       return { 
         success: false, 
-        error: error.message || 'Error de conexión' 
+        error: error.message || 'Error de conexión con el servidor' 
       };
     }
   }

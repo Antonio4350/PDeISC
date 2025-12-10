@@ -1,4 +1,5 @@
 import apiConfig from '../config/apiConfig';
+import { getToken } from '../../storage'; // ✅ Agregar esta importación
 
 const API_URL = apiConfig.apiUrl;
 
@@ -25,18 +26,47 @@ export interface BuildValidationResult {
 
 class AdvancedCompatibilityService {
   
+  // ✅ Método helper para hacer requests con autenticación
+  private async makeRequest(endpoint: string, options: RequestInit = {}) {
+    try {
+      const token = await getToken();
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        headers,
+        ...options,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error ${response.status}: ${errorText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`Error en ${endpoint}:`, error);
+      throw error;
+    }
+  }
+
   /**
    * Validar Socket CPU vs Motherboard
    */
   async validateSocketCompatibility(cpuId: number, motherboardId: number): Promise<CompatibilityResult> {
     try {
-      const response = await fetch(`${API_URL}/compatibility/socket`, {
+      const data = await this.makeRequest('/compatibility/socket', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cpuId, motherboardId })
       });
 
-      const data = await response.json();
       if (!data.success) throw new Error(data.error);
 
       const { compatible, issue } = data.data;
@@ -60,13 +90,11 @@ class AdvancedCompatibilityService {
    */
   async validateRAMCompatibility(ramIds: number[], motherboardId: number): Promise<CompatibilityResult> {
     try {
-      const response = await fetch(`${API_URL}/compatibility/ram`, {
+      const data = await this.makeRequest('/compatibility/ram', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ramIds, motherboardId })
       });
 
-      const data = await response.json();
       if (!data.success) throw new Error(data.error);
 
       const { compatible, issues, warnings } = data.data;
@@ -94,13 +122,11 @@ class AdvancedCompatibilityService {
     caseId: number
   ): Promise<CompatibilityResult> {
     try {
-      const response = await fetch(`${API_URL}/compatibility/storage`, {
+      const data = await this.makeRequest('/compatibility/storage', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ storageIds, motherboardId, caseId })
       });
 
-      const data = await response.json();
       if (!data.success) throw new Error(data.error);
 
       const { compatible, issues, warnings } = data.data;
@@ -128,13 +154,11 @@ class AdvancedCompatibilityService {
     caseId: number
   ): Promise<CompatibilityResult> {
     try {
-      const response = await fetch(`${API_URL}/compatibility/gpu`, {
+      const data = await this.makeRequest('/compatibility/gpu', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gpuId, motherboardId, caseId })
       });
 
-      const data = await response.json();
       if (!data.success) throw new Error(data.error);
 
       const { compatible, issues, warnings } = data.data;
@@ -158,13 +182,11 @@ class AdvancedCompatibilityService {
    */
   async validateFormatCompatibility(motherboardId: number, caseId: number): Promise<CompatibilityResult> {
     try {
-      const response = await fetch(`${API_URL}/compatibility/format`, {
+      const data = await this.makeRequest('/compatibility/format', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ motherboardId, caseId })
       });
 
-      const data = await response.json();
       if (!data.success) throw new Error(data.error);
 
       const { compatible, issue } = data.data;
@@ -194,13 +216,11 @@ class AdvancedCompatibilityService {
     storageIds: number[] = []
   ): Promise<any> {
     try {
-      const response = await fetch(`${API_URL}/compatibility/power`, {
+      const data = await this.makeRequest('/compatibility/power', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cpuId, gpuId, ramIds, storageIds, psuId })
       });
 
-      const data = await response.json();
       if (!data.success) throw new Error(data.error);
 
       return {
@@ -238,13 +258,11 @@ class AdvancedCompatibilityService {
     caseId?: number;
   }): Promise<BuildValidationResult> {
     try {
-      const response = await fetch(`${API_URL}/compatibility/complete-build`, {
+      const data = await this.makeRequest('/compatibility/complete-build', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(buildData)
       });
 
-      const data = await response.json();
       if (!data.success) throw new Error(data.error);
 
       return data.data;
