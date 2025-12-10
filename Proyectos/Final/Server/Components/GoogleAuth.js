@@ -4,8 +4,7 @@ import { OAuth2Client } from 'google-auth-library';
 // ✅ TODOS los client IDs que usas
 const CLIENT_IDS = [
   "58585220959-8capru7gmaertcnsvoervkm3vsef6q3l",  // Android
-  "58585220959-fltgp46dkjjrcdo144gqeib2c5tqg58c",  // Web
-  "58585220959-2ii0sgs43cp9ja7rtm9gaemo4hqb7vvh"   // Actual (probablemente otro)
+  "58585220959-fltgp46dkjjrcdo144gqeib2c5tqg58c"
 ];
 
 // Crear cliente sin ID específico inicialmente

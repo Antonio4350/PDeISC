@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -46,22 +46,226 @@ interface ComponentCategory {
   endpoint: string;
 }
 
-// Función debounce para limitar llamadas frecuentes (NO USADA DIRECTAMENTE EN RENDER)
-const useDebounce = (value: any, delay: number) => {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-  
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-    
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-  
-  return debouncedValue;
-};
+// Componentes separados para evitar re-renders
+const ProjectNameInput = React.memo(({ 
+  value, 
+  onChangeText, 
+  isEditingProject, 
+  projectId 
+}: { 
+  value: string; 
+  onChangeText: (text: string) => void;
+  isEditingProject: boolean;
+  projectId?: string;
+}) => {
+  const inputRef = useRef<TextInput>(null);
+  const [localValue, setLocalValue] = useState(value);
+
+  const handleChange = (text: string) => {
+    setLocalValue(text);
+    onChangeText(text);
+  };
+
+  const handleBlur = () => {
+    if (localValue.trim().length === 0 && !projectId) {
+      const newValue = `Mi Build ${new Date().toLocaleDateString()}`;
+      setLocalValue(newValue);
+      onChangeText(newValue);
+    }
+  };
+
+  return (
+    <View style={styles.inputContainer}>
+      <Text style={styles.inputLabel}>Nombre de la Build *</Text>
+      <TextInput
+        ref={inputRef}
+        style={styles.textInput}
+        value={localValue}
+        onChangeText={handleChange}
+        onBlur={handleBlur}
+        placeholder="Ej: Mi PC Gaming 2024"
+        placeholderTextColor="#8b9cb3"
+        maxLength={100}
+        autoCorrect={false}
+        autoCapitalize="words"
+        returnKeyType="next"
+        selectTextOnFocus={true}
+      />
+      {localValue.length === 0 && (
+        <Text style={styles.inputErrorText}>El nombre es requerido</Text>
+      )}
+    </View>
+  );
+});
+
+const ProjectDescriptionInput = React.memo(({ 
+  value, 
+  onChangeText 
+}: { 
+  value: string; 
+  onChangeText: (text: string) => void;
+}) => {
+  const inputRef = useRef<TextInput>(null);
+  const [localValue, setLocalValue] = useState(value);
+
+  const handleChange = (text: string) => {
+    setLocalValue(text);
+    onChangeText(text);
+  };
+
+  return (
+    <View style={styles.inputContainer}>
+      <Text style={styles.inputLabel}>Descripción (opcional)</Text>
+      <TextInput
+        ref={inputRef}
+        style={[styles.textInput, styles.textArea]}
+        value={localValue}
+        onChangeText={handleChange}
+        placeholder="Describe tu build..."
+        placeholderTextColor="#8b9cb3"
+        multiline
+        numberOfLines={3}
+        maxLength={500}
+        autoCorrect={true}
+        autoCapitalize="sentences"
+        returnKeyType="default"
+        blurOnSubmit={true}
+        selectTextOnFocus={true}
+      />
+      <Text style={styles.inputCharCount}>
+        {localValue.length}/500 caracteres
+      </Text>
+    </View>
+  );
+});
+
+const ProjectInfoSection = React.memo(({ 
+  projectName, 
+  setProjectName, 
+  projectDescription, 
+  setProjectDescription,
+  isEditingProject,
+  projectId
+}: { 
+  projectName: string;
+  setProjectName: (text: string) => void;
+  projectDescription: string;
+  setProjectDescription: (text: string) => void;
+  isEditingProject: boolean;
+  projectId?: string;
+}) => {
+  return (
+    <View style={styles.projectInfoSection}>
+      <Text style={styles.projectInfoTitle}>
+        {isEditingProject ? 'Editando Proyecto' : 'Nueva Build'}
+      </Text>
+      
+      <ProjectNameInput
+        value={projectName}
+        onChangeText={setProjectName}
+        isEditingProject={isEditingProject}
+        projectId={projectId}
+      />
+      
+      <ProjectDescriptionInput
+        value={projectDescription}
+        onChangeText={setProjectDescription}
+      />
+    </View>
+  );
+});
+
+const BuildItem = React.memo(({ 
+  item, 
+  onRemove 
+}: { 
+  item: BuildComponent; 
+  onRemove: () => void;
+}) => (
+  <View style={[
+    styles.buildItem,
+    item.component || item.components.length > 0 ? 
+      (item.compatible ? styles.buildItemCompatible : styles.buildItemIncompatible) 
+      : styles.buildItemEmpty
+  ]}>
+    <View style={styles.buildItemHeader}>
+      <View style={styles.buildItemInfo}>
+        <Text style={styles.buildItemName}>{item.name}</Text>
+        {item.component ? (
+          <Text style={styles.buildItemModel}>
+            {item.component.marca} {item.component.modelo}
+          </Text>
+        ) : item.components.length > 0 ? (
+          <View>
+            <Text style={styles.buildItemModel}>
+              {item.components.length} {item.name.toLowerCase()}
+            </Text>
+            {item.components.length > 1 && (
+              <Text style={styles.componentList}>
+                {item.components.map((comp, idx) => 
+                  `${comp.marca} ${comp.modelo}${idx < item.components.length - 1 ? ', ' : ''}`
+                )}
+              </Text>
+            )}
+          </View>
+        ) : (
+          <Text style={styles.buildItemEmptyText}>
+            Sin seleccionar
+          </Text>
+        )}
+      </View>
+
+      <View style={styles.buildItemActions}>
+        {(item.component || item.components.length > 0) && (
+          <TouchableOpacity
+            style={styles.removeButton}
+            onPress={onRemove}
+          >
+            <Text style={styles.removeButtonText}>✕</Text>
+          </TouchableOpacity>
+        )}
+        <View style={[
+          styles.compatibilityCircle,
+          item.component || item.components.length > 0 ?
+            (item.compatible ? styles.compatibleCircle : styles.incompatibleCircle)
+            : styles.emptyCircle
+        ]} />
+      </View>
+    </View>
+
+    {item.component && (
+      <Text style={styles.buildItemSpecs}>
+        {item.component.especificaciones}
+      </Text>
+    )}
+  </View>
+));
+
+const CategoryButton = React.memo(({ 
+  category, 
+  isSelected, 
+  hasSelection, 
+  onPress 
+}: { 
+  category: ComponentCategory; 
+  isSelected: boolean; 
+  hasSelection: boolean;
+  onPress: () => void;
+}) => (
+  <TouchableOpacity
+    style={[
+      styles.categoryButton,
+      { backgroundColor: category.color },
+      isSelected && styles.categoryButtonActive,
+      hasSelection && styles.categoryButtonSelected
+    ]}
+    onPress={onPress}
+  >
+    <Text style={styles.categoryIcon}>{category.icon}</Text>
+    <Text style={styles.categoryName}>{category.name}</Text>
+    {hasSelection && <View style={styles.categorySelectionDot} />}
+  </TouchableOpacity>
+));
 
 export default function PcBuilder() {
   const { user } = useAuth();
@@ -90,10 +294,6 @@ export default function PcBuilder() {
   const { width: screenWidth } = useWindowDimensions();
   const isMobile = screenWidth < 768;
   
-  // Refs para los inputs
-  const projectNameRef = useRef<TextInput>(null);
-  const projectDescriptionRef = useRef<TextInput>(null);
-
   const componentCategories: ComponentCategory[] = [
     { type: 'cpu', name: 'Procesadores', icon: '⚡', color: '#FF6B6B', endpoint: 'processors' },
     { type: 'motherboard', name: 'Motherboards', icon: '🔌', color: '#4ECDC4', endpoint: 'motherboards' },
@@ -104,24 +304,18 @@ export default function PcBuilder() {
     { type: 'case', name: 'Gabinetes', icon: '🖥️', color: '#DDA0DD', endpoint: 'gabinetes' }
   ];
 
-  // ELIMINADO: debouncedProjectName y debouncedProjectDescription 
-  // que causaban re-renders innecesarios
-
+  // Cargar datos iniciales
   useEffect(() => {
     const init = async () => {
       try {
         setLoading(true);
         
         if (projectId) {
-          console.log(`Inicializando con proyecto ID: ${projectId}`);
-          // Cargar proyecto existente Y componentes
           await Promise.all([
             loadExistingProject(parseInt(projectId)),
             loadAllComponents()
           ]);
         } else {
-          console.log('Inicializando nuevo proyecto');
-          // Solo cargar componentes para nuevo proyecto
           await loadAllComponents();
           setProjectName(`Mi Build ${new Date().toLocaleDateString()}`);
           setProjectDescription(`Build creada el ${new Date().toLocaleString()}`);
@@ -137,74 +331,13 @@ export default function PcBuilder() {
     init();
   }, [projectId]);
 
-  // Separar el efecto de filtrado: solo se ejecuta cuando cambian componentes reales
-  useEffect(() => {
-    if (Object.keys(allComponents).length > 0) {
-      console.log('Aplicando filtros de compatibilidad');
-      filterComponentsByCompatibility();
-    }
-  }, [build, allComponents]);
-
-  const filterComponentsByCompatibility = useCallback(() => {
-    console.log('Filtrando componentes por compatibilidad');
-    
-    const cpu = build.find(item => item.type === 'cpu')?.component;
-    const motherboard = build.find(item => item.type === 'motherboard')?.component;
-
-    const newFilteredComponents: { [key: string]: Component[] } = {};
-
-    Object.keys(allComponents).forEach(type => {
-      const components = allComponents[type] || [];
-      let filtered = [...components];
-
-      switch (type) {
-        case 'motherboard':
-          if (cpu && cpu.socket) {
-            filtered = components.filter(mb => mb.socket === cpu.socket);
-            console.log(`  Motherboards filtrados por socket ${cpu.socket}: ${filtered.length}`);
-          }
-          break;
-
-        case 'ram':
-          if (motherboard && motherboard.tipo_memoria) {
-            filtered = components.filter(ram => 
-              (ram.tipo_memoria || '').toLowerCase() === motherboard.tipo_memoria?.toLowerCase()
-            );
-            console.log(`  RAM filtrada por tipo ${motherboard.tipo_memoria}: ${filtered.length}`);
-          }
-          break;
-
-        case 'cpu':
-          if (motherboard && motherboard.socket) {
-            filtered = components.filter(cpuComp => cpuComp.socket === motherboard.socket);
-            console.log(`  CPUs filtrados por socket ${motherboard.socket}: ${filtered.length}`);
-          }
-          break;
-
-        case 'case':
-          if (motherboard && motherboard.formato) {
-            filtered = components.filter(caseItem => 
-              isCaseCompatibleWithMotherboard(caseItem.formato, motherboard.formato)
-            );
-            console.log(`  Cases filtrados por formato ${motherboard.formato}: ${filtered.length}`);
-          }
-          break;
-      }
-
-      newFilteredComponents[type] = filtered;
-    });
-
-    setFilteredComponents(newFilteredComponents);
-  }, [build, allComponents]);
-
+  // Solo cargar componentes una vez
   const loadAllComponents = async () => {
     try {
-      console.log('🔄 Cargando todos los componentes desde el backend...');
       const componentsData: { [key: string]: Component[] } = {};
 
       for (const category of componentCategories) {
         try {
-          console.log(`📥 Solicitando ${category.name}...`);
           let result: ApiResponse<any[]>;
 
           switch (category.endpoint) {
@@ -234,7 +367,6 @@ export default function PcBuilder() {
           }
 
           if (result.success && result.data) {
-            console.log(`${category.name}: ${result.data.length} componentes recibidos`);
             componentsData[category.type] = result.data.map((comp: any) => ({
               ...comp,
               id: comp.id,
@@ -248,7 +380,6 @@ export default function PcBuilder() {
               imagen_url: comp.imagen_url,
             }));
           } else {
-            console.warn(`${category.name}: Sin datos - ${result.error}`);
             componentsData[category.type] = [];
           }
         } catch (error) {
@@ -257,7 +388,6 @@ export default function PcBuilder() {
         }
       }
 
-      console.log('Todos los componentes cargados en memoria');
       setAllComponents(componentsData);
       setFilteredComponents(componentsData);
       return componentsData;
@@ -271,28 +401,16 @@ export default function PcBuilder() {
 
   const loadExistingProject = async (id: number) => {
     try {
-      console.log(`Cargando proyecto con ID: ${id}`);
-      
       const result = await projectService.getProjectById(id);
       
       if (result.success && result.data) {
         const project = result.data;
-        
-        // Guardar datos iniciales
         setInitialProjectData(project);
-        
-        // Establecer nombre y descripción
         setProjectName(project.nombre || 'Sin nombre');
         setProjectDescription(project.descripcion || 'Sin descripción');
         setIsEditingProject(true);
-        
-        console.log(`Proyecto "${project.nombre}" cargado`);
-        console.log(`Componentes del proyecto:`, project.componentes);
-        
-        // Retornar los datos del proyecto para procesarlos después
         return project;
       } else {
-        console.error('Error en respuesta del proyecto:', result);
         toast.error(result.error || 'Error cargando proyecto');
         return null;
       }
@@ -303,108 +421,7 @@ export default function PcBuilder() {
     }
   };
 
-  const updateBuildWithProjectComponents = (projectComponents: any[], allComponentsData: any) => {
-    console.log('Actualizando build con componentes del proyecto');
-    console.log('Componentes del proyecto:', projectComponents);
-    console.log('Todos los componentes cargados:', allComponentsData);
-    
-    const componentsByType: { [key: string]: Component[] } = {};
-    
-    // Agrupar componentes del proyecto por tipo
-    projectComponents.forEach((projectComp: any) => {
-      const tipo = projectComp.tipo_componente?.toLowerCase();
-      if (!tipo) return;
-      
-      // Buscar componente en los datos cargados
-      const categoria = componentCategories.find(cat => cat.type === tipo);
-      if (!categoria) return;
-      
-      const componentsList = allComponentsData[tipo] || [];
-      const foundComponent = componentsList.find((comp: Component) => comp.id === projectComp.componente_id);
-      
-      if (foundComponent) {
-        if (!componentsByType[tipo]) {
-          componentsByType[tipo] = [];
-        }
-        componentsByType[tipo].push(foundComponent);
-        console.log(`Componente ${tipo} ID ${projectComp.componente_id} encontrado`);
-      } else {
-        console.warn(`Componente ${tipo} ID ${projectComp.componente_id} no encontrado en datos cargados`);
-        console.warn('Disponibles:', componentsList.map((c: Component) => ({id: c.id, modelo: c.modelo})));
-      }
-    });
-    
-    console.log('Componentes agrupados por tipo:', Object.keys(componentsByType).map(k => `${k}: ${componentsByType[k].length}`));
-    
-    // Actualizar build con los componentes encontrados
-    const updatedBuild = build.map(buildItem => {
-      const tipo = buildItem.type;
-      const projectComponentsForType = componentsByType[tipo] || [];
-      
-      if (projectComponentsForType.length > 0) {
-        console.log(`  Actualizando ${tipo} con ${projectComponentsForType.length} componentes`);
-        
-        if (tipo === 'ram' || tipo === 'storage') {
-          return {
-            ...buildItem,
-            components: projectComponentsForType,
-            component: projectComponentsForType[0]
-          };
-        } else {
-          return {
-            ...buildItem,
-            component: projectComponentsForType[0],
-            components: [projectComponentsForType[0]]
-          };
-        }
-      }
-      
-      return buildItem;
-    });
-    
-    console.log('Build actualizada:', updatedBuild.map(item => ({
-      type: item.type,
-      hasComponent: !!item.component,
-      count: item.components.length
-    })));
-    
-    setBuild(updatedBuild);
-    checkCompatibility(updatedBuild);
-  };
-
-  useEffect(() => {
-    const syncProjectWithComponents = async () => {
-      if (initialProjectData && Object.keys(allComponents).length > 0) {
-        console.log('Sincronizando proyecto cargado con componentes...');
-        if (initialProjectData.componentes && initialProjectData.componentes.length > 0) {
-          updateBuildWithProjectComponents(initialProjectData.componentes, allComponents);
-          toast.success(`Proyecto "${initialProjectData.nombre}" cargado con componentes`);
-        } else {
-          console.warn('Proyecto cargado pero sin componentes');
-        }
-      }
-    };
-    
-    syncProjectWithComponents();
-  }, [initialProjectData, allComponents]);
-
-  const isCaseCompatibleWithMotherboard = (caseFormat: string = '', mbFormat: string = ''): boolean => {
-    const compatibilityMap: { [key: string]: string[] } = {
-      'Mini-ITX': ['Mini-ITX', 'Micro-ATX', 'ATX', 'E-ATX'],
-      'Micro-ATX': ['Micro-ATX', 'ATX', 'E-ATX'],
-      'ATX': ['ATX', 'E-ATX'],
-      'E-ATX': ['E-ATX'],
-      'Mini Tower': ['Mini-ITX', 'Micro-ATX'],
-      'Mid Tower': ['Micro-ATX', 'ATX'],
-      'Full Tower': ['ATX', 'E-ATX']
-    };
-
-    const caseFormats = caseFormat?.split('/').map(f => f.trim()) || [];
-    const supportedFormats = caseFormats.flatMap(format => compatibilityMap[format] || []);
-    
-    return supportedFormats.includes(mbFormat);
-  };
-
+  // Función para generar especificaciones (sin dependencias de estado)
   const generateSpecifications = (component: any, type: string): string => {
     const specs = [];
 
@@ -451,130 +468,70 @@ export default function PcBuilder() {
     return specs.join(' • ') || 'Especificaciones no disponibles';
   };
 
+  // Función simple para agregar componentes
   const handleAddComponent = (component: Component) => {
-    console.log(`➕ Agregando componente: ${component.tipo} - ${component.marca} ${component.modelo}`);
-    
-    const updatedBuild = build.map(item => {
-      const shouldAdd = item.type === component.tipo;
-      
-      if (!shouldAdd) return item;
+    setBuild(prevBuild => {
+      const updatedBuild = prevBuild.map(item => {
+        if (item.type !== component.tipo) return item;
 
-      if (item.type === 'ram' || item.type === 'storage') {
-        // Verificar si ya existe este componente específico
-        const alreadyExists = item.components.some(comp => comp.id === component.id);
-        if (alreadyExists) {
-          toast.info('Este componente ya está en tu build');
-          return item;
-        }
-        
-        const newComponents = [...item.components, component];
-        console.log(`  ${item.type}: ahora tiene ${newComponents.length} componentes`);
-        
-        return {
-          ...item,
-          components: newComponents,
-          component: component
-        };
-      }
-
-      console.log(`  ${item.type}: seleccionado ${component.modelo}`);
-      return { ...item, component, components: [component] };
-    });
-
-    setBuild(updatedBuild);
-    toast.success(`${component.marca} ${component.modelo} agregado`);
-    checkCompatibility(updatedBuild);
-  };
-
-  const handleRemoveComponent = (buildItem: BuildComponent, componentIndex?: number) => {
-    console.log(`➖ Removiendo componente: ${buildItem.type}`);
-    
-    const updatedBuild = build.map(item => {
-      if (item.id !== buildItem.id) return item;
-
-      if (componentIndex !== undefined && (item.type === 'ram' || item.type === 'storage')) {
-        const newComponents = item.components.filter((_, idx) => idx !== componentIndex);
-        console.log(`  ${item.type}: removido índice ${componentIndex}, quedan ${newComponents.length}`);
-        
-        return {
-          ...item,
-          components: newComponents,
-          component: newComponents.length > 0 ? newComponents[newComponents.length - 1] : null,
-          compatible: true
-        };
-      }
-
-      console.log(`  ${item.type}: removido completamente`);
-      return {
-        ...item,
-        component: null,
-        components: [],
-        compatible: true
-      };
-    });
-
-    setBuild(updatedBuild);
-    toast.info('Componente removido');
-    checkCompatibility(updatedBuild);
-  };
-
-  const checkCompatibility = (currentBuild: BuildComponent[]) => {
-    console.log('Verificando compatibilidad...');
-    
-    const cpu = currentBuild.find(i => i.type === 'cpu')?.component;
-    const motherboard = currentBuild.find(i => i.type === 'motherboard')?.component;
-    const ram = currentBuild.find(i => i.type === 'ram')?.component;
-
-    const updatedBuild = currentBuild.map(item => {
-      let compatible = true;
-
-      if (!item.component && item.components.length === 0) {
-        return { ...item, compatible: true };
-      }
-
-      switch (item.type) {
-        case 'cpu':
-          if (motherboard && item.component?.socket && motherboard.socket) {
-            compatible = item.component.socket === motherboard.socket;
-            console.log(`  CPU socket ${item.component.socket} vs MB socket ${motherboard.socket}: ${compatible ? '✅' : '❌'}`);
-          }
-          break;
-
-        case 'motherboard':
-          if (cpu && item.component?.socket && cpu.socket) {
-            compatible = item.component.socket === cpu.socket;
-            console.log(`  MB socket ${item.component.socket} vs CPU socket ${cpu.socket}: ${compatible ? '✅' : '❌'}`);
+        if (item.type === 'ram' || item.type === 'storage') {
+          const alreadyExists = item.components.some(comp => comp.id === component.id);
+          if (alreadyExists) {
+            toast.info('Este componente ya está en tu build');
+            return item;
           }
           
-          if (ram && ram.tipo_memoria && item.component?.tipo_memoria) {
-            const ramCompatible = ram.tipo_memoria === item.component.tipo_memoria;
-            console.log(`  RAM tipo ${ram.tipo_memoria} vs MB soporte ${item.component.tipo_memoria}: ${ramCompatible ? '✅' : '❌'}`);
-            compatible = compatible && ramCompatible;
-          }
-          break;
+          const newComponents = [...item.components, component];
+          
+          return {
+            ...item,
+            components: newComponents,
+            component: component,
+            compatible: true // No verificar compatibilidad inmediatamente
+          };
+        }
 
-        case 'ram':
-          if (motherboard && item.component?.tipo_memoria && motherboard.tipo_memoria) {
-            compatible = item.component.tipo_memoria === motherboard.tipo_memoria;
-            console.log(`  RAM tipo ${item.component.tipo_memoria} vs MB soporte ${motherboard.tipo_memoria}: ${compatible ? '✅' : '❌'}`);
-          }
-          break;
+        return { 
+          ...item, 
+          component, 
+          components: [component],
+          compatible: true // No verificar compatibilidad inmediatamente
+        };
+      });
 
-        case 'case':
-          if (motherboard && item.component?.formato && motherboard.formato) {
-            compatible = isCaseCompatibleWithMotherboard(item.component.formato, motherboard.formato);
-            console.log(`  Case formato ${item.component.formato} vs MB formato ${motherboard.formato}: ${compatible ? '✅' : '❌'}`);
-          }
-          break;
-      }
-
-      return { ...item, compatible };
+      toast.success(`${component.marca} ${component.modelo} agregado`);
+      return updatedBuild;
     });
+  };
 
-    const incompatibles = updatedBuild.filter(item => !item.compatible).length;
-    console.log(`Compatibilidad: ${incompatibles} incompatibles de ${updatedBuild.length}`);
-    
-    setBuild(updatedBuild);
+  // Función simple para remover componentes
+  const handleRemoveComponent = (buildItemId: string, componentIndex?: number) => {
+    setBuild(prevBuild => {
+      const updatedBuild = prevBuild.map(item => {
+        if (item.id !== buildItemId) return item;
+
+        if (componentIndex !== undefined && (item.type === 'ram' || item.type === 'storage')) {
+          const newComponents = item.components.filter((_, idx) => idx !== componentIndex);
+          
+          return {
+            ...item,
+            components: newComponents,
+            component: newComponents.length > 0 ? newComponents[newComponents.length - 1] : null,
+            compatible: true
+          };
+        }
+
+        return {
+          ...item,
+          component: null,
+          components: [],
+          compatible: true
+        };
+      });
+
+      toast.info('Componente removido');
+      return updatedBuild;
+    });
   };
 
   const handleSaveBuild = async () => {
@@ -602,7 +559,6 @@ export default function PcBuilder() {
     const visto = new Set();
     
     for (const item of build) {
-      // Manejar componentes principales
       if (item.component) {
         const key = `${item.type}-${item.component.id}`;
         if (!visto.has(key)) {
@@ -614,7 +570,6 @@ export default function PcBuilder() {
         }
       }
       
-      // Manejar componentes múltiples (RAM, Storage)
       if (item.components.length > 0) {
         for (const component of item.components) {
           const key = `${item.type}-${component.id}`;
@@ -637,19 +592,14 @@ export default function PcBuilder() {
 
     try {
       setSaving(true);
-      console.log('Guardando proyecto:', projectData);
       
       let result;
       
       if (isEditingProject && projectId) {
-        console.log(`Actualizando proyecto ID: ${projectId}`);
         result = await projectService.updateProject(parseInt(projectId), projectData);
       } else {
-        console.log('Creando nuevo proyecto');
         result = await projectService.createProject(projectData);
       }
-      
-      console.log('Respuesta del servidor:', result);
       
       if (result.success) {
         const successMessage = isEditingProject ? 'Proyecto actualizado exitosamente!' : 'Build guardada exitosamente!';
@@ -660,7 +610,6 @@ export default function PcBuilder() {
         }, 1500);
         
       } else {
-        console.error('Error en la respuesta:', result);
         Alert.alert(
           'Error',
           `No se pudo ${isEditingProject ? 'actualizar' : 'guardar'} la build: ${result.error || 'Error desconocido'}`,
@@ -681,79 +630,7 @@ export default function PcBuilder() {
   };
 
   const getCurrentCategoryComponents = (): Component[] => {
-    const components = filteredComponents[selectedCategory] || allComponents[selectedCategory] || [];
-    console.log(`Mostrando ${components.length} componentes de ${selectedCategory}`);
-    return components;
-  };
-
-  // Funciones optimizadas de manejo de texto - SIN DEBOUNCE
-  const handleProjectNameChange = (text: string) => {
-    setProjectName(text);
-  };
-
-  const handleProjectDescriptionChange = (text: string) => {
-    setProjectDescription(text);
-  };
-
-  const ProjectInfoSection = () => {
-    return (
-      <View style={styles.projectInfoSection}>
-        <Text style={styles.projectInfoTitle}>
-          {isEditingProject ? 'Editando Proyecto' : 'Nueva Build'}
-        </Text>
-        
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Nombre de la Build *</Text>
-          <TextInput
-            ref={projectNameRef}
-            style={styles.textInput}
-            value={projectName}
-            onChangeText={handleProjectNameChange}
-            onBlur={() => {
-              // Solo validar cuando se pierde el foco
-              if (projectName.trim().length === 0 && !projectId) {
-                setProjectName(`Mi Build ${new Date().toLocaleDateString()}`);
-              }
-            }}
-            placeholder="Ej: Mi PC Gaming 2024"
-            placeholderTextColor="#8b9cb3"
-            maxLength={100}
-            autoCorrect={false}
-            autoCapitalize="words"
-            returnKeyType="next"
-            onSubmitEditing={() => projectDescriptionRef.current?.focus()}
-            blurOnSubmit={false}
-            selectTextOnFocus={true}
-          />
-          {projectName.length === 0 && (
-            <Text style={styles.inputErrorText}>El nombre es requerido</Text>
-          )}
-        </View>
-        
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Descripción (opcional)</Text>
-          <TextInput
-            ref={projectDescriptionRef}
-            style={[styles.textInput, styles.textArea]}
-            value={projectDescription}
-            onChangeText={handleProjectDescriptionChange}
-            placeholder="Describe tu build..."
-            placeholderTextColor="#8b9cb3"
-            multiline
-            numberOfLines={3}
-            maxLength={500}
-            autoCorrect={true}
-            autoCapitalize="sentences"
-            returnKeyType="default"
-            blurOnSubmit={true}
-            selectTextOnFocus={true}
-          />
-          <Text style={styles.inputCharCount}>
-            {projectDescription.length}/500 caracteres
-          </Text>
-        </View>
-      </View>
-    );
+    return allComponents[selectedCategory] || [];
   };
 
   if (loading) {
@@ -769,97 +646,6 @@ export default function PcBuilder() {
 
   const currentComponents = getCurrentCategoryComponents();
   const selectedComponentsCount = build.filter(item => item.component || item.components.length > 0).length;
-  const incompatibleComponentsCount = build.filter(item => !item.compatible && (item.component || item.components.length > 0)).length;
-
-  console.log('Estado actual de la build:', {
-    totalComponentes: selectedComponentsCount,
-    incompatibles: incompatibleComponentsCount,
-    build: build.map(item => ({
-      type: item.type,
-      component: item.component?.modelo || 'none',
-      components: item.components.length
-    }))
-  });
-
-  const BuildItem = ({ item }: { item: BuildComponent }) => (
-    <View style={[
-      styles.buildItem,
-      item.component || item.components.length > 0 ? 
-        (item.compatible ? styles.buildItemCompatible : styles.buildItemIncompatible) 
-        : styles.buildItemEmpty
-    ]}>
-      <View style={styles.buildItemHeader}>
-        <View style={styles.buildItemInfo}>
-          <Text style={styles.buildItemName}>{item.name}</Text>
-          {item.component ? (
-            <Text style={styles.buildItemModel}>
-              {item.component.marca} {item.component.modelo}
-            </Text>
-          ) : item.components.length > 0 ? (
-            <View>
-              <Text style={styles.buildItemModel}>
-                {item.components.length} {item.name.toLowerCase()}
-              </Text>
-              {item.components.length > 1 && (
-                <Text style={styles.componentList}>
-                  {item.components.map((comp, idx) => 
-                    `${comp.marca} ${comp.modelo}${idx < item.components.length - 1 ? ', ' : ''}`
-                  )}
-                </Text>
-              )}
-            </View>
-          ) : (
-            <Text style={styles.buildItemEmptyText}>
-              Sin seleccionar
-            </Text>
-          )}
-        </View>
-
-        <View style={styles.buildItemActions}>
-          {(item.component || item.components.length > 0) && (
-            <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => handleRemoveComponent(item)}
-            >
-              <Text style={styles.removeButtonText}>✕</Text>
-            </TouchableOpacity>
-          )}
-          <View style={[
-            styles.compatibilityCircle,
-            item.component || item.components.length > 0 ?
-              (item.compatible ? styles.compatibleCircle : styles.incompatibleCircle)
-              : styles.emptyCircle
-          ]} />
-        </View>
-      </View>
-
-      {item.component && (
-        <Text style={styles.buildItemSpecs}>
-          {item.component.especificaciones}
-        </Text>
-      )}
-    </View>
-  );
-
-  const CategoryButton = ({ category }: { category: ComponentCategory }) => {
-    const hasSelection = build.find(item => item.type === category.type)?.component;
-    
-    return (
-      <TouchableOpacity
-        style={[
-          styles.categoryButton,
-          { backgroundColor: category.color },
-          selectedCategory === category.type && styles.categoryButtonActive,
-          hasSelection && styles.categoryButtonSelected
-        ]}
-        onPress={() => setSelectedCategory(category.type)}
-      >
-        <Text style={styles.categoryIcon}>{category.icon}</Text>
-        <Text style={styles.categoryName}>{category.name}</Text>
-        {hasSelection && <View style={styles.categorySelectionDot} />}
-      </TouchableOpacity>
-    );
-  };
 
   // Render para móvil
   if (isMobile) {
@@ -916,27 +702,29 @@ export default function PcBuilder() {
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
           >
-            <ProjectInfoSection />
+            <ProjectInfoSection
+              projectName={projectName}
+              setProjectName={setProjectName}
+              projectDescription={projectDescription}
+              setProjectDescription={setProjectDescription}
+              isEditingProject={isEditingProject}
+              projectId={projectId}
+            />
 
             <View style={styles.buildSummary}>
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryNumber}>{selectedComponentsCount}</Text>
                 <Text style={styles.summaryLabel}>Componentes</Text>
               </View>
-              <View style={styles.summaryItem}>
-                <Text style={[
-                  styles.summaryNumber,
-                  incompatibleComponentsCount > 0 ? styles.summaryNumberError : styles.summaryNumberSuccess
-                ]}>
-                  {incompatibleComponentsCount}
-                </Text>
-                <Text style={styles.summaryLabel}>Incompatibles</Text>
-              </View>
             </View>
 
             <ScrollView style={styles.buildList} nestedScrollEnabled>
               {build.map((item) => (
-                <BuildItem key={item.id} item={item} />
+                <BuildItem
+                  key={item.id}
+                  item={item}
+                  onRemove={() => handleRemoveComponent(item.id)}
+                />
               ))}
             </ScrollView>
 
@@ -968,7 +756,13 @@ export default function PcBuilder() {
                 style={styles.categoriesScroll}
               >
                 {componentCategories.map((category) => (
-                  <CategoryButton key={category.type} category={category} />
+                  <CategoryButton
+                    key={category.type}
+                    category={category}
+                    isSelected={selectedCategory === category.type}
+                    hasSelection={!!build.find(item => item.type === category.type)?.component}
+                    onPress={() => setSelectedCategory(category.type)}
+                  />
                 ))}
               </ScrollView>
             </View>
@@ -1005,12 +799,6 @@ export default function PcBuilder() {
                   <View style={styles.noComponents}>
                     <Text style={styles.noComponentsText}>
                       No hay componentes disponibles
-                    </Text>
-                    <Text style={styles.noComponentsSubtext}>
-                      {selectedCategory === 'motherboard' && build.find(i => i.type === 'cpu')?.component ? 
-                        'Intenta con otro procesador o remueve el actual' : 
-                        'Esta categoría está vacía en la base de datos'
-                      }
                     </Text>
                   </View>
                 )}
@@ -1059,21 +847,19 @@ export default function PcBuilder() {
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
           >
-            <ProjectInfoSection />
+            <ProjectInfoSection
+              projectName={projectName}
+              setProjectName={setProjectName}
+              projectDescription={projectDescription}
+              setProjectDescription={setProjectDescription}
+              isEditingProject={isEditingProject}
+              projectId={projectId}
+            />
 
             <View style={styles.buildSummary}>
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryNumber}>{selectedComponentsCount}</Text>
                 <Text style={styles.summaryLabel}>Componentes</Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={[
-                  styles.summaryNumber,
-                  incompatibleComponentsCount > 0 ? styles.summaryNumberError : styles.summaryNumberSuccess
-                ]}>
-                  {incompatibleComponentsCount}
-                </Text>
-                <Text style={styles.summaryLabel}>Incompatibles</Text>
               </View>
             </View>
 
@@ -1081,7 +867,11 @@ export default function PcBuilder() {
             
             <View style={styles.buildList}>
               {build.map((item) => (
-                <BuildItem key={item.id} item={item} />
+                <BuildItem
+                  key={item.id}
+                  item={item}
+                  onRemove={() => handleRemoveComponent(item.id)}
+                />
               ))}
             </View>
 
@@ -1114,7 +904,13 @@ export default function PcBuilder() {
             <Text style={styles.categoriesTitle}>Selecciona una categoría:</Text>
             <View style={styles.categoriesGrid}>
               {componentCategories.map((category) => (
-                <CategoryButton key={category.type} category={category} />
+                <CategoryButton
+                  key={category.type}
+                  category={category}
+                  isSelected={selectedCategory === category.type}
+                  hasSelection={!!build.find(item => item.type === category.type)?.component}
+                  onPress={() => setSelectedCategory(category.type)}
+                />
               ))}
             </View>
           </View>
@@ -1138,11 +934,6 @@ export default function PcBuilder() {
                 >
                   <View style={styles.componentHeader}>
                     <Text style={styles.componentBrand}>{component.marca}</Text>
-                    {component.imagen_url && (
-                      <View style={styles.componentImagePlaceholder}>
-                        <Text style={styles.componentImageText}>📷</Text>
-                      </View>
-                    )}
                   </View>
 
                   <Text style={styles.componentModel}>{component.modelo}</Text>
@@ -1158,12 +949,6 @@ export default function PcBuilder() {
                 <View style={styles.noComponents}>
                   <Text style={styles.noComponentsText}>
                     No hay componentes disponibles
-                  </Text>
-                  <Text style={styles.noComponentsSubtext}>
-                    {selectedCategory === 'motherboard' && build.find(i => i.type === 'cpu')?.component ? 
-                      'Intenta con otro procesador o remueve el actual' : 
-                      'Esta categoría está vacía en la base de datos'
-                    }
                   </Text>
                 </View>
               )}
@@ -1252,7 +1037,6 @@ const styles = StyleSheet.create({
   guestInfoBold: {
     fontWeight: '700',
   },
-  // Tabs para móvil
   tabsContainer: {
     flexDirection: 'row',
     backgroundColor: '#1a1b27',
@@ -1277,13 +1061,11 @@ const styles = StyleSheet.create({
     color: '#667eea',
     fontWeight: '700',
   },
-  // Layout desktop
   desktopContent: {
     flex: 1,
     flexDirection: 'row',
     minHeight: 0,
   },
-  // Paneles
   buildPanel: {
     flex: 1,
     maxWidth: 450,
@@ -1304,7 +1086,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1a1b27',
   },
-  // Información del proyecto
   projectInfoSection: {
     marginBottom: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
@@ -1365,7 +1146,6 @@ const styles = StyleSheet.create({
   spacer: {
     height: 20,
   },
-  // Build Summary
   buildSummary: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -1394,7 +1174,6 @@ const styles = StyleSheet.create({
     color: '#8b9cb3',
     fontWeight: '600',
   },
-  // Build List
   buildList: {
     marginBottom: 20,
     minHeight: 300,
@@ -1469,7 +1248,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
-  // Círculos de compatibilidad
   compatibilityCircle: {
     width: 16,
     height: 16,
@@ -1484,7 +1262,6 @@ const styles = StyleSheet.create({
   emptyCircle: {
     backgroundColor: '#8b9cb3',
   },
-  // Botón guardar
   saveButton: {
     backgroundColor: '#667eea',
     padding: 16,
@@ -1511,7 +1288,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-  // CATEGORÍAS
   categoriesContainer: {
     padding: 16,
     paddingBottom: 8,
@@ -1583,7 +1359,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#1a1b27',
   },
-  // COMPONENTES
   componentsSection: {
     flex: 1,
     padding: 20,
